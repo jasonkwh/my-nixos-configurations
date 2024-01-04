@@ -48,7 +48,7 @@
 
     desktopManager = {
       plasma5.enable = true;
-      gnome.enable = true;
+      #gnome.enable = true;
     };
 
     displayManager = {
