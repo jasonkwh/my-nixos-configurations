@@ -52,7 +52,10 @@
     };
 
     displayManager = {
-      sddm.enable = true;
+      sddm = {
+        enable = true;
+        wayland.enable = true;
+      };
       defaultSession = "plasmawayland";
     };
 
@@ -110,6 +113,7 @@
     vim
     wget
     curl
+    xwayland
   ];
 
   environment.variables.EDITOR = "vim";
