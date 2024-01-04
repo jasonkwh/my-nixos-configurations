@@ -62,6 +62,7 @@
   home.packages = with pkgs; [
     # system related
     neofetch
+    thefuck
     vagrant
     buildah
     podman-compose
