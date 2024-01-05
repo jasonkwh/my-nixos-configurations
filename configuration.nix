@@ -129,6 +129,7 @@
     wget
     curl
     xwayland
+    gparted
   ];
 
   environment.variables.EDITOR = "vim";
