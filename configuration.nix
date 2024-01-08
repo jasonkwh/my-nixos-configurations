@@ -12,7 +12,16 @@
 
   # Bootloader.
   boot = {
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_6_6.override {
+      argsOverride = rec {
+        src = pkgs.fetchurl {
+              url = "mirror://kernel/linux/kernel/v6.x/linux-${version}.tar.xz";
+              sha256 = "9ee627e4c109aec7fca3eda5898e81d201af2c7eb2f7d9d7d94c1f0e1205546c";
+        };
+        version = "6.6.10";
+        modDirVersion = "6.6.10";
+        };
+    });
 
     loader = {
       systemd-boot = {
