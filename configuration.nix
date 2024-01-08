@@ -21,7 +21,7 @@
               sha256 = "ef31144a2576d080d8c31698e83ec9f66bf97c677fa2aaf0d5bbb9f3345b1069";
         };
         version = "6.7";
-        modDirVersion = "6.7";
+        modDirVersion = "6.7.0";
         };
     });
 
