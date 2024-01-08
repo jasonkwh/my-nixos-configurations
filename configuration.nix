@@ -12,6 +12,8 @@
 
   # Bootloader.
   boot = {
+    # compile linux kernel myself,
+    # because the binary from nix repository is a bit old...
     kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_6_6.override {
       argsOverride = rec {
         src = pkgs.fetchurl {
