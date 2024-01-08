@@ -14,14 +14,14 @@
   boot = {
     # compile linux kernel myself,
     # because the binary from nix repository is a bit old...
-    kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_6_6.override {
+    kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_latest.override {
       argsOverride = rec {
         src = pkgs.fetchurl {
               url = "mirror://kernel/linux/kernel/v6.x/linux-${version}.tar.xz";
-              sha256 = "9ee627e4c109aec7fca3eda5898e81d201af2c7eb2f7d9d7d94c1f0e1205546c";
+              sha256 = "ef31144a2576d080d8c31698e83ec9f66bf97c677fa2aaf0d5bbb9f3345b1069";
         };
-        version = "6.6.10";
-        modDirVersion = "6.6.10";
+        version = "6.7";
+        modDirVersion = "6.7";
         };
     });
 
