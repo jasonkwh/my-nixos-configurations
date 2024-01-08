@@ -78,6 +78,12 @@
       sddm = {
         enable = true;
         wayland.enable = true;
+        # settings = {
+        #   Autologin = {
+        #     Session = "plasmawayland";
+        #     User = "jasonkwh";
+        #   };
+        # };
       };
       defaultSession = "plasmawayland";
     };
