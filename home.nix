@@ -67,6 +67,7 @@
     vagrant
     buildah
     podman-compose
+    tmux
 
     # k8s
     kubectl
