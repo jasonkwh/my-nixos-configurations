@@ -68,6 +68,7 @@
     buildah
     podman-compose
     tmux
+    hw-probe
 
     # k8s
     kubectl
