@@ -66,6 +66,7 @@
     thefuck
     vagrant
     buildah
+    skopeo
     podman-compose
     tmux
     hw-probe
@@ -73,6 +74,7 @@
     # k8s
     kubectl
     kubectx
+    k9s
 
     # programming
     gh
