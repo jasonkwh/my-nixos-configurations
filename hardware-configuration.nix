@@ -43,7 +43,15 @@
       driSupport = true;
       driSupport32Bit = true;
     };
-    pulseaudio.support32Bit = true;
+    pulseaudio = {
+      # enable = false;
+      support32Bit = true;
+      # package = pkgs.pulseaudioFull;
+    };
     steam-hardware.enable = true;
+    bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
   };
 }
