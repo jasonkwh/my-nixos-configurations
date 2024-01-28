@@ -70,6 +70,8 @@
     podman-compose
     tmux
     hw-probe
+    pigz
+    pixz
 
     # k8s
     kubectl
