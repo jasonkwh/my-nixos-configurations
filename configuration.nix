@@ -18,10 +18,10 @@
       argsOverride = rec {
         src = pkgs.fetchurl {
               url = "mirror://kernel/linux/kernel/v6.x/linux-${version}.tar.xz";
-              sha256 = "c34de41baa29c475c0834e88a3171e255ff86cd32d83c6bffc2b797e60bfa671";
+              sha256 = "b7f08c652747574a3aa26e317d7a8f23ffab3fb645e1b1533b215dcfd5742b44";
         };
-        version = "6.7.2";
-        modDirVersion = "6.7.2";
+        version = "6.7.3";
+        modDirVersion = "6.7.3";
         };
     });
 
