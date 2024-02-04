@@ -150,10 +150,12 @@
     curl
     xwayland
     gparted
+    coreutils
     gcc
     gdb
     gnumake
     binutils
+    bc
   ];
 
   environment.variables.EDITOR = "vim";
