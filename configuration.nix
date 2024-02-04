@@ -25,6 +25,9 @@
         };
     });
 
+    # using NixOS prebuilt kernel
+    # kernelPackages = pkgs.linuxPackages_latest;
+
     loader = {
       systemd-boot = {
         enable = true;
@@ -147,6 +150,10 @@
     curl
     xwayland
     gparted
+    gcc
+    gdb
+    gnumake
+    binutils
   ];
 
   environment.variables.EDITOR = "vim";
