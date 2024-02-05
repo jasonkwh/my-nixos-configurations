@@ -178,6 +178,18 @@
     };
   };
 
+  fonts = {
+    fontconfig = {
+      # Fixes pixelation
+      antialias = true;
+
+      # Fixes antialiasing blur
+      hinting = {
+        enable = true;
+      };
+    };
+  };
+
   nix.gc = {
     automatic = true;
     dates = "weekly";
