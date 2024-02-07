@@ -17,6 +17,7 @@
       ll = "ls -l";
       kc = "kubectl";
       python = "python3";
+      vi = "nvim";
     };
     history = {
       size = 10000;
@@ -73,6 +74,7 @@
     k9s
 
     # programming
+    neovim
     gh
     go
     cargo
