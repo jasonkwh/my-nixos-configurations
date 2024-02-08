@@ -42,18 +42,6 @@
     initExtra = "exec zsh";
   };
 
-  programs.alacritty = {
-    enable = true;
-    settings = {
-      font = {
-        size = 12;
-        normal = {
-          family = "MesloLGS NF";
-        };
-      };
-    };
-  };
-
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     # system related
