@@ -13,7 +13,7 @@ let
           sha256 = "29f6464061b8179cbb77fc5591e06a2199324e018c9ed730ca3e6dfb145539ff";
         };
         version = kernelVersion;
-        modDirVersion = kernel;
+        modDirVersion = kernelVersion;
       };
     })
   else
