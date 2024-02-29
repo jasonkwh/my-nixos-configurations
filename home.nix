@@ -82,6 +82,9 @@
     # games
     steam
     protonup-qt
+
+    # office
+    libreoffice-qt
   ];
 
   # The state version is required and should stay at the version you
