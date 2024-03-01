@@ -62,7 +62,7 @@ in
     enable = true;
 
     desktopManager = {
-      plasma5.enable = true;
+      plasma6.enable = true;
       #gnome.enable = true;
     };
 
@@ -70,23 +70,19 @@ in
       sddm = {
         enable = true;
         wayland.enable = true;
-        # settings = {
-        #   Autologin = {
-        #     Session = "plasmawayland";
-        #     User = "jasonkwh";
-        #   };
-        # };
       };
-      defaultSession = "plasmawayland";
+      defaultSession = "plasma";
     };
 
     # Configure keymap in X11
-    layout = "au";
-    xkbVariant = "";
+    xkb = {
+      layout = "au";
+      variant = "";
+    };
   };
 
   # Use this for the kssshaskpass
-  programs.ssh.askPassword = lib.mkForce "${pkgs.plasma5Packages.ksshaskpass}/bin/ksshaskpass";
+  # programs.ssh.askPassword = lib.mkForce "${pkgs.plasma5Packages.ksshaskpass}/bin/ksshaskpass";
   # or this for seahorse
   # programs.ssh.askPassword = lib.mkForce "${pkgs.gnome.seahorse}/libexec/seahorse/ssh-askpass";
 
@@ -192,6 +188,11 @@ in
   #   enable = true;
   #   enableSSHSupport = true;
   # };
+
+
+  programs.dconf = {
+    enable = true;
+  };
 
   # List services that you want to enable:
 
