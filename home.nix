@@ -64,7 +64,7 @@
     # programming
     neovim
     gh
-    go
+    go_1_22
     cargo
     rustc
     python3
