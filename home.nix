@@ -84,7 +84,7 @@
     protonup-qt
 
     # office
-    libreoffice-qt
+    libreoffice-fresh
   ];
 
   # The state version is required and should stay at the version you
