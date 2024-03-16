@@ -47,7 +47,7 @@
     # system related
     neofetch
     thefuck
-    vagrant
+    # vagrant
     buildah
     skopeo
     podman-compose

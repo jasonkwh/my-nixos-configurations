@@ -57,27 +57,29 @@ in
     };
   };
 
-  services.xserver = {
-    # Enable the X11 windowing system.
-    enable = true;
-
+  services = {
     desktopManager = {
       plasma6.enable = true;
       #gnome.enable = true;
     };
+      
+    xserver = {
+      # Enable the X11 windowing system.
+      enable = true;
 
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = true;
+      displayManager = {
+        sddm = {
+          enable = true;
+          wayland.enable = true;
+        };
+        defaultSession = "plasma";
       };
-      defaultSession = "plasma";
-    };
 
-    # Configure keymap in X11
-    xkb = {
-      layout = "au";
-      variant = "";
+      # Configure keymap in X11
+      xkb = {
+        layout = "au";
+        variant = "";
+      };
     };
   };
 
@@ -151,16 +153,16 @@ in
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true;
     };
-    virtualbox = {
-      host = {
-        enable = true;
-        enableExtensionPack = true;
-      };
-      guest = {
-        enable = true;
-        x11 = true;
-      };
-    };
+    # virtualbox = {
+    #   host = {
+    #     enable = true;
+    #     enableExtensionPack = true;
+    #   };
+    #   guest = {
+    #     enable = true;
+    #     x11 = true;
+    #   };
+    # };
   };
 
   fonts = {
