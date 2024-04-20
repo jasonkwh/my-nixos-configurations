@@ -67,19 +67,19 @@ in
       # Enable the X11 windowing system.
       enable = true;
 
-      displayManager = {
-        sddm = {
-          enable = true;
-          wayland.enable = true;
-        };
-        defaultSession = "plasma";
-      };
-
       # Configure keymap in X11
       xkb = {
         layout = "au";
         variant = "";
       };
+    };
+
+    displayManager = {
+      sddm = {
+        enable = true;
+        wayland.enable = true;
+      };
+      defaultSession = "plasma";
     };
   };
 
