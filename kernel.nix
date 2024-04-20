@@ -2,7 +2,7 @@
 
 let
   # set the configurations here
-  compileKernel = true;
+  compileKernel = false;
   kernelVersion = "6.8.1";
   
   kernelPackages = if compileKernel then
