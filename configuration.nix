@@ -27,6 +27,15 @@ in
     };
   };
 
+  nix = {
+    settings = {
+      sandbox = true;
+      experimental-features = [ "nix-command" "flakes" ];
+      auto-optimise-store = true;
+      system-features = [ "kvm" ];
+    };
+  };
+
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -123,11 +132,6 @@ in
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
-    auto-optimise-store = true;
-  };
-
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -143,6 +147,7 @@ in
     gnumake
     binutils
     bc
+    nixVersions.latest
   ];
 
   environment.variables.EDITOR = "vim";
