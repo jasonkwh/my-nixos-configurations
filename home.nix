@@ -44,7 +44,7 @@
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
-    # system related
+    # utilities
     neofetch
     thefuck
     # vagrant
@@ -55,6 +55,7 @@
     hw-probe
     pigz
     pixz
+    rpi-imager
 
     # k8s
     kubectl
