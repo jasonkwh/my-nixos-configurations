@@ -56,6 +56,8 @@
     pigz
     pixz
     rpi-imager
+    distrobox
+    boxbuddy
 
     # k8s
     kubectl
