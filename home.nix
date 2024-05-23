@@ -78,7 +78,6 @@
     meslo-lgs-nf
 
     # internet
-    brave
     firefox
     thunderbird
 
