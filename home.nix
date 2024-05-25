@@ -78,7 +78,6 @@
     meslo-lgs-nf
 
     # internet
-    vivaldi
     firefox
     thunderbird
 
