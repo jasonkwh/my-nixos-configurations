@@ -74,9 +74,6 @@
     vscode
     kate
 
-    # fonts
-    meslo-lgs-nf
-
     # internet
     firefox
     thunderbird
