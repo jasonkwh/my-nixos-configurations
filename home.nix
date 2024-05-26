@@ -80,6 +80,7 @@
 
     # games
     steam
+    heroic
     protonup-qt
 
     # office
