@@ -13,5 +13,5 @@ sudo nixos-rebuild switch --flake /etc/nixos#nixos-jasonkwh --upgrade-all
 ### Remote build
 
 ```bash
-sudo nixos-rebuild switch --fast --flake /etc/nixos#nixos-jasonkwh --upgrade-all --build-host jasonkwh@192.168.1.43 --use-remote-sudo
+sudo nixos-rebuild switch --fast --flake /etc/nixos#nixos-jasonkwh --upgrade-all --build-host jasonkwh@192.168.50.43 --use-remote-sudo
 ```
