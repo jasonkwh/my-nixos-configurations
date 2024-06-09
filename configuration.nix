@@ -36,15 +36,29 @@ in
     };
   };
 
-  networking.hostName = "nixos"; # Define your hostname.
+  networking = {
+    hostName = "nixos"; # Define your hostname.
+
+    networkmanager = {
+      enable = true; # Enable networking
+    };
+
+    firewall = {
+      allowedTCPPorts = [
+        6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
+        # 2379 # k3s, etcd clients: required if using a "High Availability Embedded etcd" configuration
+        # 2380 # k3s, etcd peers: required if using a "High Availability Embedded etcd" configuration
+      ];
+      allowedUDPPorts = [
+        # 8472 # k3s, flannel: required if using multi-node for inter-node networking
+      ];
+    };
+  };
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
-  networking.networkmanager.enable = true;
 
   # Set your time zone.
   time.timeZone = "Australia/Sydney";
@@ -66,32 +80,6 @@ in
     };
   };
 
-  services = {
-    desktopManager = {
-      plasma6.enable = true;
-      #gnome.enable = true;
-    };
-      
-    xserver = {
-      # Enable the X11 windowing system.
-      enable = true;
-
-      # Configure keymap in X11
-      xkb = {
-        layout = "au";
-        variant = "";
-      };
-    };
-
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = true;
-      };
-      defaultSession = "plasma";
-    };
-  };
-
   # Use this for the kssshaskpass
   # programs.ssh.askPassword = lib.mkForce "${pkgs.plasma5Packages.ksshaskpass}/bin/ksshaskpass";
   # or this for seahorse
@@ -105,9 +93,6 @@ in
       extraGroups = [ "networkmanager" "wheel" "podman" ];
     };
   };
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
 
   # Enable sound with pipewire.
   sound.enable = true;
@@ -165,7 +150,6 @@ in
     #   };
     #   guest = {
     #     enable = true;
-    #     x11 = true;
     #   };
     # };
   };
@@ -219,22 +203,53 @@ in
 
   # List services that you want to enable:
 
-  # Enable the OpenSSH daemon.
-  services.openssh = {
-    enable = true;
-    settings = {
-      X11Forwarding = true;
-      PermitRootLogin = "yes";
-      PasswordAuthentication = true;
+  services = {
+    desktopManager = {
+      plasma6.enable = true;
+      #gnome.enable = true;
     };
-    openFirewall = true;
-  };
+      
+    xserver = {
+      # Enable the X11 windowing system.
+      enable = true;
 
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+      # Configure keymap in X11
+      xkb = {
+        layout = "au";
+        variant = "";
+      };
+    };
+
+    displayManager = {
+      sddm = {
+        enable = true;
+        wayland.enable = true;
+      };
+      defaultSession = "plasma";
+    };
+
+    printing = {
+      enable = true; # Enable CUPS to print documents.
+    };
+
+    openssh = {
+      enable = true; # Enable the OpenSSH daemon.
+      settings = {
+        X11Forwarding = true;
+        PermitRootLogin = "yes";
+        PasswordAuthentication = true;
+      };
+      openFirewall = true;
+    };
+
+    k3s = {
+      enable = true;
+      role = "server";
+      extraFlags = toString [
+        # "--kubelet-arg=v=4" # Optionally add additional args to k3s
+      ];
+    };
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
