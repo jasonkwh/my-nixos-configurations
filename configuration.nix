@@ -38,6 +38,21 @@ in
 
   networking = {
     hostName = "nixos"; # Define your hostname.
+    useDHCP = false;
+
+    interfaces = {
+      wlp58s0 = {
+        ipv4 = {
+          addresses = [
+            {
+              address = "192.168.50.72";
+              prefixLength = 24;
+            }
+          ];
+        };
+      };
+    };
+    defaultGateway = "192.168.50.1";
 
     networkmanager = {
       enable = true; # Enable networking
