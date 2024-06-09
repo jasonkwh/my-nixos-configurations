@@ -244,7 +244,7 @@ in
     };
 
     k3s = {
-      enable = false;
+      enable = true;
       role = "server";
       extraFlags = toString [
         # "--kubelet-arg=v=4" # Optionally add additional args to k3s
