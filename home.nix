@@ -14,7 +14,7 @@
   programs.zsh = {
     enable = true;
     shellAliases = {
-      ll = "ls -l";
+      ll = "ls -l --color=auto";
       kc = "kubectl";
       python = "python3";
       vi = "nvim";
@@ -58,6 +58,7 @@
     rpi-imager
     distrobox
     boxbuddy
+    htop
 
     # k8s
     kubectl
