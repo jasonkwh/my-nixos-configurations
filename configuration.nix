@@ -218,6 +218,8 @@ in
         layout = "us";
         variant = "";
       };
+
+      videoDrivers = [ "amdgpu" ];
     };
 
     displayManager = {
