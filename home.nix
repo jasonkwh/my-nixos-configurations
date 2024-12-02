@@ -19,6 +19,7 @@
         kc = "kubectl";
         python = "python3";
         vi = "nvim";
+        neofetch = "fastfetch";
       };
       history = {
         size = 10000;
@@ -48,7 +49,7 @@
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     # utilities
-    neofetch
+    fastfetch
     thefuck
     # vagrant
     buildah
@@ -78,8 +79,7 @@
     kate
 
     # internet
-    firefox
-    thunderbird
+    brave
 
     # games
     steam
