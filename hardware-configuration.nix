@@ -38,6 +38,12 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
+  # use evtest to find out the device id & key num
+  services.udev.extraHwdb = ''
+    evdev:atkbd:*
+      KEYBOARD_KEY_56=leftshift
+  '';
+
   hardware = {
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     graphics = {
