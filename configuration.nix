@@ -96,7 +96,6 @@ in
   };
 
   # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -159,7 +158,7 @@ in
     packages = with pkgs; [
       nerdfonts
       noto-fonts
-      noto-fonts-cjk
+      noto-fonts-cjk-sans
       noto-fonts-emoji
       source-code-pro
       source-han-mono
