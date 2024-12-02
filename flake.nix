@@ -26,7 +26,7 @@
     # The most widely used is `github:owner/name/reference`,
     # which represents the GitHub repository URL + branch/commit-id/tag.
 
-    # Official NixOS package source, using nixos-23.11 branch here
+    # Official NixOS package source, using nixos-24.11 branch here
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     # home-manager, used for managing user configuration
     home-manager = {
