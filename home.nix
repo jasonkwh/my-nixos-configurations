@@ -58,7 +58,6 @@
     hw-probe
     pigz
     pixz
-    rpi-imager
     distrobox
     boxbuddy
     htop
