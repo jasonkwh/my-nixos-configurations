@@ -88,6 +88,7 @@
 
     # office
     libreoffice-qt
+    zoom-us
   ];
 
   # The state version is required and should stay at the version you
