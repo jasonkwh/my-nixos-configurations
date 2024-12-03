@@ -63,6 +63,7 @@
     boxbuddy
     htop
     timeshift
+    graphviz
 
     # k8s
     kubectl
@@ -90,6 +91,7 @@
     # office
     libreoffice-qt
     zoom-us
+    discord
   ];
 
   # The state version is required and should stay at the version you
