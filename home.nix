@@ -62,6 +62,7 @@
     distrobox
     boxbuddy
     htop
+    timeshift
 
     # k8s
     kubectl
