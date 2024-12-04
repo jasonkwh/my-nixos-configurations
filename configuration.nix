@@ -45,7 +45,7 @@ in
 
     firewall = {
       allowedTCPPorts = [
-        # 6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
+        6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
         # 10250 # kubelet metrics
         # 2379 # k3s, etcd clients: required if using a "High Availability Embedded etcd" configuration
         # 2380 # k3s, etcd peers: required if using a "High Availability Embedded etcd" configuration
@@ -244,15 +244,15 @@ in
       openFirewall = true;
     };
 
-    # k3s = {
-    #   enable = true;
-    #   role = "agent";
-    #   serverAddr = "https://192.168.50.83:6443";
-    #   token = "K10ebf9fb321146db052836301d715f814f7da5c5ac377ef6625cfc27e992b987c7::server:9372a521d208ab7126ad7fc95ee71db1";
-    #   extraFlags = toString [
-    #     # "--kubelet-arg=v=4" # Optionally add additional args to k3s
-    #   ];
-    # };
+    k3s = {
+      enable = true;
+      role = "server"; # or agent
+      # serverAddr = "https://192.168.50.83:6443";
+      # token = "K10ebf9fb321146db052836301d715f814f7da5c5ac377ef6625cfc27e992b987c7::server:9372a521d208ab7126ad7fc95ee71db1";
+      extraFlags = toString [
+        # "--kubelet-arg=v=4" # Optionally add additional args to k3s
+      ];
+    };
   };
 
   # This value determines the NixOS release from which the default
