@@ -64,6 +64,8 @@
     htop
     timeshift
     graphviz
+    postman
+    mongodb-compass
 
     # k8s
     kubectl
