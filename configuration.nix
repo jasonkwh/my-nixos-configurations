@@ -245,10 +245,10 @@ in
     };
 
     k3s = {
-      enable = true;
+      enable = false;
       role = "server"; # or agent
       # serverAddr = "https://192.168.50.83:6443";
-      # token = "K10ebf9fb321146db052836301d715f814f7da5c5ac377ef6625cfc27e992b987c7::server:9372a521d208ab7126ad7fc95ee71db1";
+      # token = "";
       extraFlags = toString [
         # "--kubelet-arg=v=4" # Optionally add additional args to k3s
       ];
