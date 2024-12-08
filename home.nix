@@ -80,7 +80,6 @@
     rustc
     python3
     vscode
-    kate
 
     # internet
     brave
