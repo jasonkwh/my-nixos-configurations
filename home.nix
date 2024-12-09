@@ -15,7 +15,7 @@
     zsh = {
       enable = true;
       shellAliases = {
-        ll = "ls -l --color=auto";
+        ll = "ls -lh --color=auto";
         kc = "kubectl";
         python = "python3";
         vi = "nvim";
