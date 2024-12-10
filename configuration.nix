@@ -132,6 +132,7 @@ in
     gnumake
     binutils
     bc
+    file
     nixVersions.latest
   ];
 
