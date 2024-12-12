@@ -65,6 +65,7 @@
     graphviz
     postman
     mongodb-compass
+    warp
 
     # k8s
     kubectl
