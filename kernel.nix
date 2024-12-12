@@ -17,6 +17,6 @@ let
       };
     })
   else
-    pkgs.linuxPackages_latest;
+    pkgs.linuxPackages_6_6;
 in
   kernelPackages
