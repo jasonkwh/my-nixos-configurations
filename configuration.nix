@@ -205,17 +205,17 @@ in
   # List services that you want to enable:
 
   services = {
+    displayManager = {
+      sddm.enable = true;
+    };
+      
+    desktopManager = {
+      plasma6.enable = true;
+    };
+
     xserver = {
       # Enable the X11 windowing system.
       enable = true;
-      
-      displayManager = {
-      	gdm.enable = true;
-      };
-      
-      desktopManager = {
-      	gnome.enable = true;
-      };
 
       # Configure keymap in X11
       xkb = {
