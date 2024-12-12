@@ -45,7 +45,7 @@ in
 
     firewall = {
       allowedTCPPorts = [
-        6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
+        # 6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
         # 10250 # kubelet metrics
         # 2379 # k3s, etcd clients: required if using a "High Availability Embedded etcd" configuration
         # 2380 # k3s, etcd peers: required if using a "High Availability Embedded etcd" configuration
@@ -205,14 +205,17 @@ in
   # List services that you want to enable:
 
   services = {
-    desktopManager = {
-      plasma6.enable = true;
-      #gnome.enable = true;
-    };
-      
     xserver = {
       # Enable the X11 windowing system.
       enable = true;
+      
+      displayManager = {
+      	gdm.enable = true;
+      };
+      
+      desktopManager = {
+      	gnome.enable = true;
+      };
 
       # Configure keymap in X11
       xkb = {
@@ -221,14 +224,6 @@ in
       };
 
       videoDrivers = [ "amdgpu" ];
-    };
-
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = true;
-      };
-      defaultSession = "plasma";
     };
 
     printing = {

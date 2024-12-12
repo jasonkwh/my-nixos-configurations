@@ -62,7 +62,6 @@
     distrobox
     boxbuddy
     htop
-    timeshift
     graphviz
     postman
     mongodb-compass
@@ -80,7 +79,6 @@
     rustc
     python3
     vscode
-    kate
 
     # internet
     brave
