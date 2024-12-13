@@ -80,6 +80,7 @@
     rustc
     python3
     vscode
+    nodejs_22
 
     # internet
     brave
