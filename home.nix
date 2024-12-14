@@ -66,6 +66,7 @@
     postman
     mongodb-compass
     warp
+    ngrok
 
     # k8s
     kubectl
