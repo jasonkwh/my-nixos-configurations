@@ -67,6 +67,7 @@
     mongodb-compass
     warp
     ngrok
+    isoimagewriter
 
     # k8s
     kubectl
