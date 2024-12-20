@@ -233,6 +233,12 @@ in
         # "--kubelet-arg=v=4" # Optionally add additional args to k3s
       ];
     };
+
+    # use evtest to find out the device id & key num
+    udev.extraHwdb = ''
+      evdev:atkbd:*
+        KEYBOARD_KEY_56=leftshift
+    '';
   };
 
   # This value determines the NixOS release from which the default
