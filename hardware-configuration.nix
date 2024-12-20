@@ -43,24 +43,18 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
-  # use evtest to find out the device id & key num
-  services.udev.extraHwdb = ''
-    evdev:atkbd:*
-      KEYBOARD_KEY_56=leftshift
-  '';
-
   hardware = {
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+    
     graphics = {
       enable = true;
       enable32Bit = true;
     };
-    pulseaudio = {
-      # enable = false;
-      support32Bit = true;
-      # package = pkgs.pulseaudioFull;
+
+    steam-hardware = {
+      enable = true;
     };
-    steam-hardware.enable = true;
+
     bluetooth = {
       enable = true;
       powerOnBoot = true;
