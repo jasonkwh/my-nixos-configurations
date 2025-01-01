@@ -51,7 +51,7 @@
     # utilities
     fastfetch
     thefuck
-    # vagrant
+    vagrant
     buildah
     skopeo
     podman-compose
