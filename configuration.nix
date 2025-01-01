@@ -128,15 +128,15 @@ in
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true;
     };
-    # virtualbox = {
-    #   host = {
-    #     enable = true;
-    #     enableExtensionPack = true;
-    #   };
-    #   guest = {
-    #     enable = true;
-    #   };
-    # };
+    virtualbox = {
+      host = {
+        enable = true;
+        enableExtensionPack = true;
+      };
+      guest = {
+        enable = true;
+      };
+    };
   };
 
   fonts = {
