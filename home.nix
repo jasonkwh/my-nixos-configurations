@@ -83,6 +83,7 @@
     python3
     vscode
     nodejs_22
+    php84
 
     # internet
     brave
