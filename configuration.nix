@@ -41,6 +41,10 @@ in
 
     networkmanager = {
       enable = true; # Enable networking
+
+      wifi = {
+        powersave = false;
+      };
     };
 
     firewall = {
