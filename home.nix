@@ -73,6 +73,7 @@
     kubectl
     kubectx
     k9s
+    terraform
 
     # programming
     neovim
