@@ -68,12 +68,12 @@
     warp
     ngrok
     isoimagewriter
+    mysql-workbench
 
     # k8s
     kubectl
     kubectx
     k9s
-    terraform
 
     # programming
     neovim
@@ -85,6 +85,9 @@
     vscode
     nodejs_22
     php84
+    awscli2
+    ssm-session-manager-plugin
+    terraform
 
     # internet
     brave
