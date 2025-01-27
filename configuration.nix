@@ -49,7 +49,7 @@ in
 
     firewall = {
       allowedTCPPorts = [
-        # 6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
+        6443 # k3s: required so that pods can reach the API server (running on port 6443 by default)
         # 10250 # kubelet metrics
         # 2379 # k3s, etcd clients: required if using a "High Availability Embedded etcd" configuration
         # 2380 # k3s, etcd peers: required if using a "High Availability Embedded etcd" configuration
@@ -132,15 +132,15 @@ in
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true;
     };
-    virtualbox = {
-      host = {
-        enable = true;
-        enableExtensionPack = true;
-      };
-      guest = {
-        enable = true;
-      };
-    };
+    # virtualbox = {
+    #   host = {
+    #     enable = true;
+    #     enableExtensionPack = true;
+    #   };
+    #   guest = {
+    #     enable = true;
+    #   };
+    # };
   };
 
   fonts = {
@@ -229,7 +229,7 @@ in
     };
 
     k3s = {
-      enable = false;
+      enable = true;
       role = "server"; # or agent
       # serverAddr = "https://192.168.50.83:6443";
       # token = "";
