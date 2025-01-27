@@ -51,7 +51,7 @@
     # utilities
     fastfetch
     thefuck
-    vagrant
+    # vagrant
     buildah
     skopeo
     podman-compose
@@ -69,6 +69,9 @@
     ngrok
     isoimagewriter
     mysql-workbench
+    tilt
+    golangci-lint
+    percona-toolkit
 
     # k8s
     kubectl
@@ -85,6 +88,7 @@
     vscode
     nodejs_22
     php84
+    php84Extensions.mysqli
     awscli2
     ssm-session-manager-plugin
     terraform
