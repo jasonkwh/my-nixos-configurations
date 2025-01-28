@@ -91,6 +91,7 @@
     php84Extensions.mysqli
     awscli2
     ssm-session-manager-plugin
+    awsebcli
     terraform
 
     # internet
