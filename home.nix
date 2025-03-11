@@ -27,6 +27,7 @@
       };
       initExtra = "
         export KUBECONFIG=~/.kube/config
+        export PATH=\"$PATH:$(go env GOPATH)/bin\"
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
         eval $(thefuck --alias)
       ";
@@ -72,8 +73,9 @@
     tilt
     golangci-lint
     percona-toolkit
-
-    # k8s
+    ollama
+    mongodb-compass
+    go-migrate
     kubectl
     kubectx
     k9s
@@ -82,6 +84,7 @@
     neovim
     gh
     go_1_23
+    protobuf
     cargo
     rustc
     python3

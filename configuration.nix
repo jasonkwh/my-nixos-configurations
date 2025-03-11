@@ -194,11 +194,16 @@ in
 
   services = {
     displayManager = {
-      sddm.enable = true;
+      sddm = {
+        enable = true;
+      };
     };
       
     desktopManager = {
-      plasma6.enable = true;
+      plasma6 = {
+        enable = true;
+        enableQt5Integration = true;
+      };
     };
 
     xserver = {
@@ -216,6 +221,7 @@ in
 
     printing = {
       enable = true; # Enable CUPS to print documents.
+      openFirewall = true;
     };
 
     openssh = {
