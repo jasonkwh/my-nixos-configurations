@@ -79,6 +79,7 @@
     kubectl
     kubectx
     k9s
+    lazygit
 
     # programming
     neovim
