@@ -1,8 +1,21 @@
 { config, pkgs, ... }:
 
 {
-  home.username = "jasonkwh";
-  home.homeDirectory = "/home/jasonkwh";
+  home = {
+    username = "jasonkwh";
+    homeDirectory = "/home/jasonkwh";
+
+    file.".config/powermanagementprofilesrc".text = ''
+      [AC]
+      lidAction=0
+
+      [Battery]
+      lidAction=0
+
+      [LowBattery]
+      lidAction=0
+    '';
+  };
 
   programs = {
     # basic configuration of git, please change to your own
@@ -80,6 +93,8 @@
     kubectx
     k9s
     lazygit
+    act
+    tree
 
     # programming
     neovim
@@ -97,6 +112,8 @@
     ssm-session-manager-plugin
     awsebcli
     terraform
+    kubernetes-helm
+    helmfile
 
     # internet
     brave
