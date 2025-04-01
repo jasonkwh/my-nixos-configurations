@@ -244,6 +244,12 @@ in
       ];
     };
 
+    logind = {
+      lidSwitch = "ignore";
+      lidSwitchDocked = "ignore";
+      lidSwitchExternalPower = "ignore";
+    };
+
     # use evtest to find out the device id & key num
     udev.extraHwdb = ''
       evdev:atkbd:*
