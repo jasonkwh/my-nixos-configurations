@@ -37,7 +37,7 @@ in
   };
 
   networking = {
-    hostName = "nixos"; # Define your hostname.
+    hostName = "jasonkwh-7300u"; # Define your hostname.
 
     networkmanager = {
       enable = true; # Enable networking
@@ -216,7 +216,7 @@ in
         variant = "";
       };
 
-      videoDrivers = [ "amdgpu" ];
+      videoDrivers = [ "intel" ];
     };
 
     printing = {
@@ -236,9 +236,9 @@ in
 
     k3s = {
       enable = true;
-      role = "server"; # or agent
-      # serverAddr = "https://192.168.50.83:6443";
-      # token = "";
+      role = "agent"; # or agent
+      serverAddr = "https://10.191.125.80:6443";
+      token = "K107554bc617e907cf70466a0af218deb9c9ae15f18a29b3033da9583b51be61f6e::server:f9a22d3080e522af42b6e380c413b17d";
       extraFlags = toString [
         # "--kubelet-arg=v=4" # Optionally add additional args to k3s
       ];
@@ -249,12 +249,6 @@ in
       lidSwitchDocked = "ignore";
       lidSwitchExternalPower = "ignore";
     };
-
-    # use evtest to find out the device id & key num
-    udev.extraHwdb = ''
-      evdev:atkbd:*
-        KEYBOARD_KEY_56=leftshift
-    '';
   };
 
   hardware = {    

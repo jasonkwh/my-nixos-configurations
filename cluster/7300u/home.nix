@@ -95,6 +95,7 @@
     lazygit
     act
     tree
+    fluxcd
 
     # programming
     neovim
