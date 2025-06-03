@@ -38,7 +38,7 @@
         size = 10000;
         path = "${config.xdg.dataHome}/zsh/history";
       };
-      initExtra = "
+      initContent = "
         export KUBECONFIG=~/.kube/config
         export PATH=\"$PATH:$(go env GOPATH)/bin\"
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -96,6 +96,10 @@
     act
     tree
     fluxcd
+    slack
+    eksctl
+    openssl
+    tcpdump
 
     # programming
     neovim
