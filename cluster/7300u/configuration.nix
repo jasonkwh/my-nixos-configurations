@@ -100,8 +100,14 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+  nixpkgs.config = {
   # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+    allowUnfree = true;
+
+    permittedInsecurePackages = [
+      "electron-33.4.11"
+    ];
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -143,7 +149,8 @@ in
 
   fonts = {
     packages = with pkgs; [
-      nerdfonts
+      nerd-fonts.noto
+      nerd-fonts.jetbrains-mono
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-emoji
