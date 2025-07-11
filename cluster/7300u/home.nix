@@ -1,1 +1,0 @@
-(import ../common/home.nix)
