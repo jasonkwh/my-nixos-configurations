@@ -23,3 +23,5 @@ go.work
 # others
 .vscode
 hardware-configuration.nix
+etc-nixos-backup/
+flake.lock
