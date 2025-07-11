@@ -87,6 +87,8 @@
     };
   };
 
+  home-manager.users.jasonkwh = import ../common/home.nix;
+
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
