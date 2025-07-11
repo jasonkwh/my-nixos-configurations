@@ -15,6 +15,16 @@
       [LowBattery]
       lidAction=0
     '';
+
+    sessionVariables = {
+      CR_PAT = "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";
+      GEMINI_API_KEY = "AIzaSyDH1kTX7Wjon06NzctfcUrO0cJyKwyoN7g";
+      KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
+    };
+
+    file.".npmrc".text = ''
+      prefix=${config.home.homeDirectory}/.npm-global
+    '';
   };
 
   programs = {
@@ -39,8 +49,8 @@
         path = "${config.xdg.dataHome}/zsh/history";
       };
       initContent = "
-        export KUBECONFIG=~/.kube/config
-        export PATH=\"$PATH:$(go env GOPATH)/bin\"
+        export PATH=$PATH:$(go env GOPATH)/bin:$HOME/.npm-global/bin
+
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
         eval $(thefuck --alias)
       ";
@@ -59,6 +69,23 @@
       initExtra = "exec zsh";
     };
   };
+
+  xdg.autostart.enable = true;
+
+  xdg.configFile."autostart/yakuake.desktop".source =
+    pkgs.writeTextFile {
+      name = "yakuake-autostart.desktop";
+      text = ''
+        [Desktop Entry]
+        Type=Application
+        Exec=yakuake
+        Hidden=false
+        NoDisplay=false
+        X-GNOME-Autostart-enabled=true
+        Name=Yakuake
+        Comment=Drop-down terminal
+      '';
+    };
 
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
@@ -79,7 +106,6 @@
     graphviz
     postman
     mongodb-compass
-    warp
     ngrok
     isoimagewriter
     mysql-workbench
@@ -87,11 +113,11 @@
     golangci-lint
     percona-toolkit
     ollama
-    mongodb-compass
     go-migrate
     kubectl
     kubectx
     k9s
+    kustomize
     lazygit
     act
     tree
@@ -106,11 +132,10 @@
     gh
     go_1_23
     protobuf
-    cargo
-    rustc
+    rustup
     python3
     vscode
-    nodejs_22
+    nodejs_24
     php84
     php84Extensions.mysqli
     awscli2
