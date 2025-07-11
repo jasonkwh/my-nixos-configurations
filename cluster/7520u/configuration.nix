@@ -4,9 +4,6 @@
 
 { config, pkgs, lib, ... }:
 
-let
-  linuxKernel = import ./kernel.nix { inherit pkgs; };
-in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -15,7 +12,7 @@ in
 
   # Bootloader.
   boot = {
-    kernelPackages = linuxKernel;
+    kernelPackages = pkgs.linuxPackages_latest;
 
     loader = {
       systemd-boot = {
