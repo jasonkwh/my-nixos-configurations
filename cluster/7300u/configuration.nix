@@ -4,9 +4,6 @@
 
 { config, pkgs, lib, ... }:
 
-let
-  linuxKernel = import ./kernel.nix { inherit pkgs; };
-in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -15,7 +12,7 @@ in
 
   # Bootloader.
   boot = {
-    kernelPackages = linuxKernel;
+    kernelPackages = pkgs.linuxPackages_latest;
 
     loader = {
       systemd-boot = {
@@ -49,11 +46,11 @@ in
 
     firewall = {
       allowedTCPPorts = [
-        6443   # Kubernetes API server (always required)
-        10250  # Kubelet metrics / logs (optional, but often useful)
+        6443   # Kubernetes API server (required)
+        10250  # Kubelet API (optional but recommended for metrics/logs/debugging)
       ];
       allowedUDPPorts = [
-        8472   # Flannel VXLAN inter-node traffic (REQUIRED for multi-node)
+        8472   # Flannel VXLAN (required for inter-node pod networking)
       ];
     };
   };
@@ -126,6 +123,11 @@ in
     bc
     file
     nixVersions.latest
+    kdePackages.yakuake
+    kdePackages.konqueror
+    kdePackages.ktorrent
+    wineWowPackages.full
+    winetricks
   ];
 
   environment.variables.EDITOR = "vim";
