@@ -4,14 +4,14 @@ My personal NixOS configuration nix files
 
 ## Apply the config on NixOS
 
-### Local build
+### 7520u laptop
 
 ```bash
-sudo nixos-rebuild switch --flake /etc/nixos#nixos-jasonkwh --upgrade-all
+sudo nixos-rebuild switch --flake .#jasonkwh-7520u --upgrade-all
 ```
 
-### Remote build
+### 7300u laptop
 
 ```bash
-sudo nixos-rebuild switch --fast --flake /etc/nixos#nixos-jasonkwh --upgrade-all --build-host jasonkwh@192.168.50.43 --use-remote-sudo
+sudo nixos-rebuild switch --flake .#jasonkwh-7300u --upgrade-all
 ```
