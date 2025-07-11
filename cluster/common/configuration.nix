@@ -121,6 +121,7 @@
     kdePackages.ktorrent
     wineWowPackages.full
     winetricks
+    samba
   ];
 
   environment.variables.EDITOR = "vim";
