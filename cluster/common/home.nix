@@ -126,6 +126,7 @@
     eksctl
     openssl
     tcpdump
+    packet
 
     # programming
     neovim
