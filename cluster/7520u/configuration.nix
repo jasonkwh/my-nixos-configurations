@@ -10,13 +10,17 @@
   boot = {
     # Fix for Realtek RTL8821CE intermittent disconnections
     extraModprobeConfig = ''
-      options rtw88_core disable_lps_deep=Y
+      options rtw88_core disable_lps_deep=Y disable_lps=Y
       options rtw88_pci disable_msi=Y disable_aspm=Y
+      options rtw88_8821ce disable_lps_deep=Y disable_lps=Y
     '';
     
     kernelParams = [
       "pcie_aspm.policy=performance"
       "pci=noaer"
+      "iwlwifi.power_save=0"
+      "rtw88_core.disable_lps_deep=Y"
+      "rtw88_pci.disable_msi=Y"
     ];
   };
 
