@@ -1,11 +1,14 @@
-{ lib, ... }:
+
+{ config, lib, pkgs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ../../hardware-configuration.nix
-      ../common/configuration.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ../../hardware-configuration.nix
+    ../common/configuration.nix
+  ];
+
+  hardware.enableRedistributableFirmware = true;
 
   boot = {
     # Fix for Realtek RTL8821CE intermittent disconnections
@@ -26,6 +29,7 @@
 
   networking = {
     hostName = "jasonkwh-7520u"; # Define your hostname.
+    networkmanager.wifi.powersave = false;
   };
 
   services = {
