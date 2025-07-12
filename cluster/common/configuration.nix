@@ -225,6 +225,10 @@
       openFirewall = true;
     };
 
+    flatpak = {
+      enable = true;
+    };
+
     openssh = {
       enable = true; # Enable the OpenSSH daemon.
       settings = {
@@ -266,4 +270,7 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.11"; # Did you read the comment?
 
+  system.activationScripts.flathub-remote = ''
+    ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >&2
+  '';
 }
