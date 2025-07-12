@@ -7,6 +7,19 @@
       ../common/configuration.nix
     ];
 
+  boot = {
+    # Fix for Realtek RTL8821CE intermittent disconnections
+    extraModprobeConfig = ''
+      options rtw88_core disable_lps_deep=Y
+      options rtw88_pci disable_msi=Y disable_aspm=Y
+    '';
+    
+    kernelParams = [
+      "pcie_aspm.policy=performance"
+      "pci=noaer"
+    ];
+  };
+
   networking = {
     hostName = "jasonkwh-7520u"; # Define your hostname.
   };
