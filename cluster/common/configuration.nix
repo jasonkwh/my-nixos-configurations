@@ -43,6 +43,7 @@
       allowedTCPPorts = [
         6443   # Kubernetes API server (required)
         10250  # Kubelet API (optional but recommended for metrics/logs/debugging)
+        6600   # MPD
       ];
       allowedUDPPorts = [
         8472   # Flannel VXLAN (required for inter-node pod networking)
@@ -245,6 +246,33 @@
       lidSwitch = "ignore";
       lidSwitchDocked = "ignore";
       lidSwitchExternalPower = "ignore";
+    };
+
+    mpd = {
+      enable = true;
+      user = "jasonkwh";
+      group = "users";
+      musicDirectory = "/home/jasonkwh/Music";
+      network = {
+        listenAddress = "127.0.0.1";
+        port = 6600;
+      };
+      extraConfig = ''
+        # Main audio output for listening
+        audio_output {
+          type "pulse"
+          name "PulseAudio"
+          server "unix:/run/user/1000/pulse/native"
+        }
+        
+        # FIFO output for visualizer
+        audio_output {
+          type "fifo"
+          name "Visualizer"
+          path "/tmp/mpd.fifo"
+          format "44100:16:2"
+        }
+      '';
     };
   };
 
