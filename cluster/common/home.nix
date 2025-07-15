@@ -87,6 +87,30 @@
       '';
     };
 
+  programs.ncmpcpp = {
+    enable = true;
+    mpdMusicDir = config.home.homeDirectory + "/Music";
+    settings = {
+      mpd_host = "127.0.0.1";
+      mpd_port = "6600";
+      
+      # UI settings
+      user_interface = "alternative";
+      alternative_header_first_line_format = "{$b$2%a$9} $1»$9 {$5%t$9}|{$8%f$9}";
+      alternative_header_second_line_format = "{{$6%b$9}{ [$6%y$9]}}|{$6%D$9}";
+      
+      # Visualizer settings
+      visualizer_data_source = "/tmp/mpd.fifo";
+      visualizer_output_name = "Visualizer";
+      visualizer_in_stereo = "yes";
+      visualizer_type = "wave";  # Valid options: "wave", "wave_filled", "ellipse"
+      visualizer_look = "●▮";
+      visualizer_color = "blue, cyan, green, yellow, magenta, red";
+      
+      startup_screen = "playlist";
+    };
+  };
+
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     # utilities
@@ -107,7 +131,7 @@
     postman
     mongodb-compass
     ngrok
-    isoimagewriter
+    kdePackages.isoimagewriter
     mysql-workbench
     tilt
     golangci-lint
@@ -127,11 +151,13 @@
     openssl
     tcpdump
     packet
+    wireshark
+    mpc_cli
 
     # programming
     neovim
     gh
-    go_1_23
+    go_1_24
     protobuf
     rustup
     python3
