@@ -116,8 +116,11 @@
     coreutils
     gcc
     gdb
+    cmake
     gnumake
     binutils
+    gcc-arm-embedded
+    picotool
     bc
     file
     nixVersions.latest
