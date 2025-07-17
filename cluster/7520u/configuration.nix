@@ -3,10 +3,15 @@
 
 {
   imports = [
-    # Include the results of the hardware scan.
-    ../../hardware-configuration.nix
     ../common/configuration.nix
   ];
+
+  home-manager.users.jasonkwh = {
+    imports = [
+      ../common/home.nix
+      ./home.nix
+    ];
+  };
 
   hardware.enableRedistributableFirmware = true;
 
