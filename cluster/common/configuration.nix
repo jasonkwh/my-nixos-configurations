@@ -124,9 +124,6 @@
     bc
     file
     nixVersions.latest
-    kdePackages.yakuake
-    kdePackages.konqueror
-    kdePackages.ktorrent
     wineWowPackages.full
     winetricks
     samba
