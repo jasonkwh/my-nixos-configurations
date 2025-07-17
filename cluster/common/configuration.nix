@@ -5,6 +5,10 @@
 { config, pkgs, lib, ... }:
 
 {
+  imports = [
+    ../../hardware-configuration.nix
+  ];
+
   # Bootloader.
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
@@ -89,8 +93,6 @@
       extraGroups = [ "networkmanager" "wheel" "podman" ];
     };
   };
-
-  home-manager.users.jasonkwh = import ../common/home.nix;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;

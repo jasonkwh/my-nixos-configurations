@@ -72,20 +72,7 @@
 
   xdg.autostart.enable = true;
 
-  xdg.configFile."autostart/yakuake.desktop".source =
-    pkgs.writeTextFile {
-      name = "yakuake-autostart.desktop";
-      text = ''
-        [Desktop Entry]
-        Type=Application
-        Exec=yakuake
-        Hidden=false
-        NoDisplay=false
-        X-GNOME-Autostart-enabled=true
-        Name=Yakuake
-        Comment=Drop-down terminal
-      '';
-    };
+  
 
   programs.ncmpcpp = {
     enable = true;
@@ -128,14 +115,7 @@
     boxbuddy
     htop
     graphviz
-    postman
-    mongodb-compass
     ngrok
-    kdePackages.isoimagewriter
-    kdePackages.yakuake
-    kdePackages.konqueror
-    kdePackages.ktorrent
-    mysql-workbench
     tilt
     golangci-lint
     percona-toolkit
@@ -149,12 +129,10 @@
     act
     tree
     fluxcd
-    slack
     eksctl
     openssl
     tcpdump
     packet
-    wireshark
     mpc_cli
 
     # programming
@@ -177,16 +155,6 @@
 
     # internet
     brave
-
-    # games
-    steam
-    heroic
-    protonup-qt
-
-    # office
-    libreoffice-qt
-    zoom-us
-    discord
   ];
 
   # The state version is required and should stay at the version you
