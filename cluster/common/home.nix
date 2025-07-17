@@ -132,6 +132,9 @@
     mongodb-compass
     ngrok
     kdePackages.isoimagewriter
+    kdePackages.yakuake
+    kdePackages.konqueror
+    kdePackages.ktorrent
     mysql-workbench
     tilt
     golangci-lint
