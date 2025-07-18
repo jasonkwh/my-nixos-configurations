@@ -83,9 +83,11 @@
   i18n.inputMethod = {
     enabled = "fcitx5";
     fcitx5.addons = with pkgs; [
-      fcitx5-chinese-addons
       fcitx5-gtk
-      fcitx5-qt
+      fcitx5-rime
+      librime
+      rime-data
+      fcitx5-configtool
     ];
   };
 
@@ -117,30 +119,40 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    git
-    vim
-    wget
-    curl
-    xwayland
-    gparted
-    coreutils
-    gcc
-    gdb
-    cmake
-    gnumake
-    binutils
-    gcc-arm-embedded
-    picotool
-    bc
-    file
-    nixVersions.latest
-    wineWowPackages.full
-    winetricks
-    samba
-  ];
+  environment = {
+    systemPackages = with pkgs; [
+      git
+      vim
+      wget
+      curl
+      xwayland
+      gparted
+      coreutils
+      gcc
+      gdb
+      cmake
+      gnumake
+      binutils
+      gcc-arm-embedded
+      picotool
+      bc
+      file
+      nixVersions.latest
+      wineWowPackages.full
+      winetricks
+      samba
+    ];
 
-  environment.variables.EDITOR = "vim";
+    variables = {
+      EDITOR = "vim";
+      GTK_IM_MODULE = "fcitx";
+      QT_IM_MODULE = "fcitx";
+      XMODIFIERS = "@im=fcitx";
+      # These are important for KDE/Qt applications
+      QT_QPA_PLATFORMTHEME = "kde";
+      GLFW_IM_MODULE = "fcitx"; # Some apps need this
+    };
+  };
 
   virtualisation = {
     podman = {
@@ -164,7 +176,6 @@
       nerd-fonts.noto
       nerd-fonts.jetbrains-mono
       noto-fonts
-      noto-fonts-cjk
       noto-fonts-cjk-sans
       noto-fonts-emoji
       source-code-pro
@@ -285,6 +296,20 @@
           format "44100:16:2"
         }
       '';
+    };
+  };
+
+  
+
+  systemd.user.services.fcitx5 = {
+    description = "Fcitx5 Input Method";
+    wantedBy = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.fcitx5}/bin/fcitx5";
+      Restart = "on-failure";
+      RestartSec = 3;
     };
   };
 
