@@ -134,6 +134,7 @@
     tcpdump
     packet
     mpc_cli
+    warp
 
     # programming
     neovim
