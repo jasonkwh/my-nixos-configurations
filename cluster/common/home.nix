@@ -135,7 +135,6 @@
     packet
     mpc_cli
     warp
-    arp-scan
 
     # programming
     neovim
