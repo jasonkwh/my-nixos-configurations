@@ -80,17 +80,6 @@
     };
   };
 
-  i18n.inputMethod = {
-    enabled = "fcitx5";
-    fcitx5.addons = with pkgs; [
-      fcitx5-gtk
-      fcitx5-rime
-      librime
-      rime-data
-      fcitx5-configtool
-    ];
-  };
-
   # Use this for the kssshaskpass
   # programs.ssh.askPassword = lib.mkForce "${pkgs.plasma5Packages.ksshaskpass}/bin/ksshaskpass";
   # or this for seahorse
@@ -145,12 +134,6 @@
 
     variables = {
       EDITOR = "vim";
-      GTK_IM_MODULE = "fcitx";
-      QT_IM_MODULE = "fcitx";
-      XMODIFIERS = "@im=fcitx";
-      # These are important for KDE/Qt applications
-      QT_QPA_PLATFORMTHEME = "kde";
-      GLFW_IM_MODULE = "fcitx"; # Some apps need this
     };
   };
 
@@ -298,20 +281,6 @@
           format "44100:16:2"
         }
       '';
-    };
-  };
-
-  
-
-  systemd.user.services.fcitx5 = {
-    description = "Fcitx5 Input Method";
-    wantedBy = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${pkgs.fcitx5}/bin/fcitx5";
-      Restart = "on-failure";
-      RestartSec = 3;
     };
   };
 
