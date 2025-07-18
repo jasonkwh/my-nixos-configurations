@@ -80,6 +80,15 @@
     };
   };
 
+  i18n.inputMethod = {
+    enabled = "fcitx5";
+    fcitx5.addons = with pkgs; [
+      fcitx5-chinese-addons
+      fcitx5-gtk
+      fcitx5-qt
+    ];
+  };
+
   # Use this for the kssshaskpass
   # programs.ssh.askPassword = lib.mkForce "${pkgs.plasma5Packages.ksshaskpass}/bin/ksshaskpass";
   # or this for seahorse
@@ -155,6 +164,7 @@
       nerd-fonts.noto
       nerd-fonts.jetbrains-mono
       noto-fonts
+      noto-fonts-cjk
       noto-fonts-cjk-sans
       noto-fonts-emoji
       source-code-pro
