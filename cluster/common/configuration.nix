@@ -221,6 +221,8 @@
 
   # List services that you want to enable:
 
+  security.pam.services.sddm.enableKwallet = true;
+
   services = {
     displayManager = {
       sddm = {
