@@ -91,6 +91,7 @@
       isNormalUser = true;
       description = "Jason Huang";
       extraGroups = [ "networkmanager" "wheel" "podman" ];
+      shell = pkgs.zsh;
     };
   };
 
@@ -201,6 +202,8 @@
   programs.dconf = {
     enable = true;
   };
+
+  programs.zsh.enable = true;
 
   # List services that you want to enable:
 

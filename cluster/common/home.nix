@@ -63,11 +63,6 @@
         ];
       };
     };
-
-    bash = {
-      enable = true;
-      initExtra = "exec zsh";
-    };
   };
 
   xdg.autostart.enable = true;
