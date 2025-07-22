@@ -15,6 +15,7 @@
     zoom-us
     discord
     slack
+    warp-terminal
 
     # games
     steam
