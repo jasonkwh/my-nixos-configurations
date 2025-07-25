@@ -9,13 +9,13 @@
     neo4j-desktop
     kdePackages.isoimagewriter
     kdePackages.yakuake
-    kdePackages.konqueror
-    kdePackages.ktorrent
     libreoffice-qt
     zoom-us
     discord
     slack
     warp-terminal
+    code-cursor
+    windsurf
 
     # games
     steam
