@@ -199,11 +199,19 @@
   # };
 
 
-  programs.dconf = {
-    enable = true;
-  };
+  programs = {
+    dconf = {
+      enable = true;
+    };
 
-  programs.zsh.enable = true;
+    zsh = {
+      enable = true;
+    };
+
+    nix-ld = {
+      enable = true;
+    };
+  };
 
   # List services that you want to enable:
 
