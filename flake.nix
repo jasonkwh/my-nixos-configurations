@@ -23,9 +23,25 @@
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
     let
       system = "x86_64-linux";
+
+      kernelOverlay = final: prev: {
+        linux_latest = prev.linux_latest.overrideAttrs (oldAttrs: {
+          structuredExtraConfig = with prev.lib.kernelConfig; {
+            NF_TABLES = module;
+            NFT_COUNTER = module;
+            NFT_EXPR_COUNTER = module;
+            VXLAN = module;
+            BRIDGE_NETFILTER = module;
+          };
+        });
+      };
+
       mkHost = { name, ... }: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
+          ({
+            nixpkgs.overlays = [ kernelOverlay ];
+          })
           ./cluster/${name}/configuration.nix
           {
             nix.settings.trusted-users = [ "jasonkwh" ];
