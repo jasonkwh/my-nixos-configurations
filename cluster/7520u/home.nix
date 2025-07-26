@@ -15,7 +15,6 @@
     slack
     warp-terminal
     code-cursor
-    windsurf
 
     # games
     steam

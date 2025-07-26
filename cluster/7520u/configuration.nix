@@ -16,6 +16,8 @@
   hardware.enableRedistributableFirmware = true;
 
   boot = {
+    kernelModules = [ "nft_expr_counter" ];
+
     # Fix for Realtek RTL8821CE intermittent disconnections
     extraModprobeConfig = ''
       options rtw88_core disable_lps_deep=Y disable_lps=Y
@@ -48,7 +50,9 @@
       # serverAddr = "https://192.168.50.83:6443";
       # token = "";
       extraFlags = toString [
-        # "--kubelet-arg=v=4" # Optionally add additional args to k3s
+        "--tls-san=${config.networking.hostName}"
+        "--flannel-iface=wlp2s0"
+        "--disable-network-policy"
       ];
     };
 
