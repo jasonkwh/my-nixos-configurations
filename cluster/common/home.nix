@@ -17,7 +17,7 @@
     '';
 
     sessionVariables = {
-      CR_PAT = "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";
+      CR_PAT = "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";
       GEMINI_API_KEY = "AIzaSyDH1kTX7Wjon06NzctfcUrO0cJyKwyoN7g";
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
     };
@@ -130,6 +130,7 @@
     packet
     mpc_cli
     warp
+    cloc
 
     # programming
     neovim
