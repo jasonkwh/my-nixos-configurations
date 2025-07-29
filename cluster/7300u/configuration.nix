@@ -13,6 +13,8 @@
     ];
   };
 
+  boot.kernelModules = [ "nft_expr_counter" ];
+
   networking = {
     hostName = "jasonkwh-7300u"; # Define your hostname.
   };
