@@ -22,7 +22,7 @@
     extraModprobeConfig = ''
       options rtw88_core disable_lps_deep=Y disable_lps=Y
       options rtw88_pci disable_msi=Y disable_aspm=Y
-      options rtw88_8821ce disable_lps_deep=Y disable_lps=Y
+      options rtw88_8821ce disable_lps_deep=Y disable_lps=Y ant_sel=2
     '';
     
     kernelParams = [
