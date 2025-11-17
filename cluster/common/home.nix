@@ -131,6 +131,8 @@
     mpc_cli
     warp
     cloc
+    azure-cli
+    yamllint
 
     # programming
     neovim
