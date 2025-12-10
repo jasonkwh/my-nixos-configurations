@@ -218,6 +218,8 @@
   security.pam.services.sddm.enableKwallet = true;
 
   services = {
+    gnome.gnome-keyring.enable = true;
+
     displayManager = {
       sddm = {
         enable = true;

@@ -25,6 +25,13 @@
     file.".npmrc".text = ''
       prefix=${config.home.homeDirectory}/.npm-global
     '';
+
+    # Disable KWallet's Secret Service API so GNOME Keyring handles it
+    # (fixes NetworkManager not saving WiFi passwords)
+    file.".config/kwalletrc".text = ''
+      [org.freedesktop.secrets]
+      apiEnabled=false
+    '';
   };
 
   programs = {
