@@ -32,6 +32,7 @@ in
     ffmpeg
     shntool
     flac
+    yq
 
     # games
     steam
