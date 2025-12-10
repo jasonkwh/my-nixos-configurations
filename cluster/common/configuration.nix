@@ -161,7 +161,7 @@
       nerd-fonts.jetbrains-mono
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       source-code-pro
       source-han-mono
       source-han-sans
@@ -262,9 +262,13 @@
     };
 
     logind = {
-      lidSwitch = "ignore";
-      lidSwitchDocked = "ignore";
-      lidSwitchExternalPower = "ignore";
+      settings = {
+        Login = {
+          HandleLidSwitch = "ignore";
+          HandleLidSwitchDocked = "ignore";
+          HandleLidSwitchExternalPower = "ignore";
+        };
+      };
     };
 
     mpd = {

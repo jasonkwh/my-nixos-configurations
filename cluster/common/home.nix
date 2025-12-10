@@ -31,8 +31,12 @@
     # basic configuration of git, please change to your own
     git = {
       enable = true;
-      userName = "Jason Huang";
-      userEmail = "jasonkwh@users.noreply.github.com";
+      settings = {
+        user = {
+          email = "jasonkwh@users.noreply.github.com";
+          name = "Jason Huang";
+        };
+      };
     };
 
     zsh = {
@@ -52,7 +56,6 @@
         export PATH=$PATH:$(go env GOPATH)/bin:$HOME/.npm-global/bin
 
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-        eval $(thefuck --alias)
       ";
       zplug = {
         enable = true;
@@ -97,7 +100,6 @@
   home.packages = with pkgs; [
     # utilities
     fastfetch
-    thefuck
     # vagrant
     buildah
     skopeo
@@ -128,7 +130,7 @@
     openssl
     tcpdump
     packet
-    mpc_cli
+    mpc
     warp
     cloc
     azure-cli
