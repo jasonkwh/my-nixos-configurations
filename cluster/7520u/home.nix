@@ -3,11 +3,12 @@
 let
   cursor = pkgs.appimageTools.wrapType2 {
     pname = "cursor";
-    version = "1.7.36";
+    version = "2.2.17";
 
     src = pkgs.fetchurl {
-      url = "https://downloads.cursor.com/production/493c403e4a45c5f971d1c76cc74febd0968d57d8/linux/x64/Cursor-1.7.36-x86_64.AppImage";
-      sha256 = "sha256-zY9kM9td0yKAMxVmad7saN4c6z2p5OFEa7ScCA3Qo3I=";
+      url = "https://downloads.cursor.com/production/cf858ca030e9c9a99ea444ec6efcbcfc40bfda75/linux/x64/Cursor-2.2.17-x86_64.AppImage";
+      # use pkgs.lib.fakeSha256 to avoid downloading the file
+      sha256 = "sha256-8TTNIGlatkHE8O87h8VGevjaiyWDR8qq8PA7l64Bijs=";
     };
 
     extraPkgs = pkgs: with pkgs; [ ];
