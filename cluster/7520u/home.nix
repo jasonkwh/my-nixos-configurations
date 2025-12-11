@@ -27,9 +27,7 @@ in
     zoom-us
     discord
     slack
-    warp-terminal
     cursor
-    googleearth-pro
     ffmpeg
     shntool
     flac

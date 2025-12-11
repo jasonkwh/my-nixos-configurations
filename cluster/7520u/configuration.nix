@@ -39,12 +39,6 @@
     networkmanager.wifi.powersave = false;
   };
 
-  nixpkgs.config = {
-    permittedInsecurePackages = [
-      "googleearth-pro-7.3.6.10201"
-    ];
-  };
-
   services = {
     xserver = {
       videoDrivers = [ "amdgpu" ];
