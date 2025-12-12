@@ -301,5 +301,8 @@
       gnumake
       sudo
     ];
+    serviceOverrides = {
+      NoNewPrivileges = lib.mkForce false;
+    };
   };
 }
