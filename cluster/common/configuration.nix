@@ -112,32 +112,11 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment = {
+    # System-level packages only (user packages are in home.nix)
     systemPackages = with pkgs; [
-      git
-      vim
-      wget
-      curl
       xwayland
-      gparted
-      coreutils
-      gcc
-      gdb
-      cmake
-      gnumake
-      binutils
-      gcc-arm-embedded
-      picotool
-      bc
-      file
-      nixVersions.latest
-      wineWowPackages.full
-      winetricks
       samba
     ];
-
-    variables = {
-      EDITOR = "vim";
-    };
   };
 
   virtualisation = {
@@ -158,19 +137,7 @@
   };
 
   fonts = {
-    packages = with pkgs; [
-      nerd-fonts.noto
-      nerd-fonts.jetbrains-mono
-      noto-fonts
-      noto-fonts-cjk-sans
-      noto-fonts-color-emoji
-      source-code-pro
-      source-han-mono
-      source-han-sans
-      source-han-serif
-      wqy_zenhei
-    ];
-
+    # Font packages are now in home.nix
     fontDir.enable = true;
 
     fontconfig = {
@@ -275,32 +242,7 @@
       };
     };
 
-    mpd = {
-      enable = true;
-      user = "jasonkwh";
-      group = "users";
-      musicDirectory = "/home/jasonkwh/Music";
-      network = {
-        listenAddress = "127.0.0.1";
-        port = 6600;
-      };
-      extraConfig = ''
-        # Main audio output for listening
-        audio_output {
-          type "pulse"
-          name "PulseAudio"
-          server "unix:/run/user/1000/pulse/native"
-        }
-        
-        # FIFO output for visualizer
-        audio_output {
-          type "fifo"
-          name "Visualizer"
-          path "/tmp/mpd.fifo"
-          format "44100:16:2"
-        }
-      '';
-    };
+    # MPD service moved to home.nix
   };
 
   hardware = {    
