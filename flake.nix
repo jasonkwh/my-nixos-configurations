@@ -60,18 +60,5 @@
         "jasonkwh-7300u" = mkHost { name = "7300u"; };
         "jasonkwh-7520u" = mkHost { name = "7520u"; };
       };
-
-      # Standalone Home Manager configuration for non-NixOS systems (e.g., distrobox on SteamOS, Silverblue, etc.)
-      homeConfigurations = {
-        "jasonkwh-distrobox" = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-          };
-          modules = [
-            ./cluster/distrobox/home.nix
-          ];
-        };
-      };
     };
 }
