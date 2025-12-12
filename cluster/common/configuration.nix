@@ -43,15 +43,16 @@
       };
     };
 
-    firewall = {
-      allowedTCPPorts = [
-        6443   # Kubernetes API server (required)
-        10250  # Kubelet API (optional but recommended for metrics/logs/debugging)
-      ];
-      allowedUDPPorts = [
-        8472   # Flannel VXLAN (required for inter-node pod networking)
-      ];
-    };
+    # Kubernetes firewall rules (uncomment if running k8s)
+    # firewall = {
+    #   allowedTCPPorts = [
+    #     6443   # Kubernetes API server (required)
+    #     10250  # Kubelet API (optional but recommended for metrics/logs/debugging)
+    #   ];
+    #   allowedUDPPorts = [
+    #     8472   # Flannel VXLAN (required for inter-node pod networking)
+    #   ];
+    # };
   };
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
