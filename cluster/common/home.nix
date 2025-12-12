@@ -20,6 +20,7 @@
       CR_PAT = "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";
       GEMINI_API_KEY = "AIzaSyDH1kTX7Wjon06NzctfcUrO0cJyKwyoN7g";
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
+      EDITOR = "vim";
     };
 
     file.".npmrc".text = ''
@@ -77,6 +78,8 @@
 
   xdg.autostart.enable = true;
 
+  fonts.fontconfig.enable = true;
+
   
 
   programs.ncmpcpp = {
@@ -101,6 +104,30 @@
       
       startup_screen = "playlist";
     };
+  };
+
+  services.mpd = {
+    enable = true;
+    musicDirectory = config.home.homeDirectory + "/Music";
+    network = {
+      listenAddress = "127.0.0.1";
+      port = 6600;
+    };
+    extraConfig = ''
+      # Main audio output for listening
+      audio_output {
+        type "pipewire"
+        name "PipeWire"
+      }
+      
+      # FIFO output for visualizer
+      audio_output {
+        type "fifo"
+        name "Visualizer"
+        path "/tmp/mpd.fifo"
+        format "44100:16:2"
+      }
+    '';
   };
 
   # Packages that should be installed to the user profile.
@@ -163,6 +190,38 @@
 
     # internet
     brave
+
+    # migrated from system packages
+    git
+    vim
+    wget
+    curl
+    gparted
+    coreutils
+    gcc
+    # gdb - conflicts with gcc-arm-embedded (which includes its own ARM GDB)
+    cmake
+    gnumake
+    binutils
+    gcc-arm-embedded
+    picotool
+    bc
+    file
+    nixVersions.latest
+    wineWowPackages.full
+    winetricks
+
+    # fonts
+    nerd-fonts.noto
+    nerd-fonts.jetbrains-mono
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-color-emoji
+    source-code-pro
+    source-han-mono
+    source-han-sans
+    source-han-serif
+    wqy_zenhei
   ];
 
   # The state version is required and should stay at the version you

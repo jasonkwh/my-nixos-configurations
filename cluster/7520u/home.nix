@@ -32,6 +32,8 @@ in
     shntool
     flac
     yq
+    distrobox
+    boxbuddy
 
     # games
     steam
