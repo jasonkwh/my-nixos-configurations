@@ -300,13 +300,5 @@
       git
       gnumake
     ];
-    serviceOverrides = {
-      ProtectSystem = lib.mkForce false;
-      ProtectHome = lib.mkForce false;
-      PrivateMounts = lib.mkForce false;
-      PrivateDevices = lib.mkForce false;
-      PrivateTmp = lib.mkForce false;
-      SystemCallFilter = lib.mkForce [ ];
-    };
   };
 }
