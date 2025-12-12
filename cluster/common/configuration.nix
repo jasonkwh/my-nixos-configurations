@@ -299,20 +299,29 @@
       nixVersions.latest
       git
       gnumake
+      systemd
     ];
-    serviceOverrides = {
-      # Disable all security restrictions for nixos-rebuild to work
-      ProtectSystem = lib.mkForce false;
-      ProtectHome = lib.mkForce false;
-      PrivateMounts = lib.mkForce false;
-      PrivateTmp = lib.mkForce false;
-      PrivateDevices = lib.mkForce false;
-      PrivateUsers = lib.mkForce false;
-      SystemCallFilter = lib.mkForce [ ];
-      RestrictNamespaces = lib.mkForce false;
-      RestrictSUIDSGID = lib.mkForce false;
-      MemoryDenyWriteExecute = lib.mkForce false;
-      LockPersonality = lib.mkForce false;
+  };
+
+  # NixOS rebuild service - runs outside GitHub runner's restricted context
+  systemd.services.nixos-rebuild-switch = {
+    description = "NixOS Rebuild Switch";
+    path = [ pkgs.git pkgs.nix pkgs.nixos-rebuild ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'cd /home/jasonkwh/Documents/my-nixos-configurations && git pull && nixos-rebuild switch --flake .#${config.networking.hostName} --impure --upgrade-all --accept-flake-config'";
+      RemainAfterExit = false;
     };
   };
+
+  # Allow the runner to trigger the rebuild service via polkit
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.systemd1.manage-units" &&
+          action.lookup("unit") == "nixos-rebuild-switch.service" &&
+          subject.user == "root") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
 }
