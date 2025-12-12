@@ -303,7 +303,9 @@
     serviceOverrides = {
       ProtectSystem = lib.mkForce false;
       ProtectHome = lib.mkForce false;
-      ReadWritePaths = [ "/nix" ];
+      PrivateMounts = lib.mkForce false;
+      PrivateDevices = lib.mkForce false;
+      PrivateTmp = lib.mkForce false;
       SystemCallFilter = lib.mkForce [ ];
     };
   };
