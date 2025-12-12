@@ -293,19 +293,12 @@
     enable = true;
     url = "https://github.com/jasonkwh/my-nixos-configurations";
     tokenFile = "/etc/github-runner-token";
-    user = "jasonkwh";
+    user = "root";
     extraLabels = [ "nixos" config.networking.hostName ];
     extraPackages = with pkgs; [
       nixVersions.latest
       git
       gnumake
-      sudo
     ];
-    serviceOverrides = {
-      NoNewPrivileges = lib.mkForce false;
-      PrivateTmp = lib.mkForce false;
-      ProtectSystem = lib.mkForce false;
-      ProtectHome = lib.mkForce false;
-    };
   };
 }
