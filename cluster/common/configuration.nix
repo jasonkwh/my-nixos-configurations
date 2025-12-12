@@ -300,5 +300,9 @@
       git
       gnumake
     ];
+    serviceOverrides = {
+      ProtectSystem = lib.mkForce false;
+      ReadWritePaths = [ "/nix/var" ];
+    };
   };
 }
