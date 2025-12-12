@@ -303,6 +303,9 @@
     ];
     serviceOverrides = {
       NoNewPrivileges = lib.mkForce false;
+      PrivateTmp = lib.mkForce false;
+      ProtectSystem = lib.mkForce false;
+      ProtectHome = lib.mkForce false;
     };
   };
 }
