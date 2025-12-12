@@ -288,18 +288,12 @@
     ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >&2
   '';
 
-  # GitHub Actions self-hosted runner
-  # Setup:
-  # 1. Create a GitHub Personal Access Token (classic) with 'repo' scope
-  # 2. Save it to /etc/github-runner-token (root only):
-  #    echo "ghp_your_token_here" | sudo tee /etc/github-runner-token
-  #    sudo chmod 600 /etc/github-runner-token
-  # 3. Rebuild NixOS configuration
-  services.github-runners.nixos-builder = {
+  # GitHub Actions self-hosted runner (see README for setup)
+  services.github-runners.${config.networking.hostName} = {
     enable = true;
     url = "https://github.com/jasonkwh/my-nixos-configurations";
     tokenFile = "/etc/github-runner-token";
-    extraLabels = [ "nixos" ];
+    extraLabels = [ "nixos" config.networking.hostName ];
     extraPackages = with pkgs; [
       nixVersions.latest
       git
