@@ -61,15 +61,15 @@
         "jasonkwh-7520u" = mkHost { name = "7520u"; };
       };
 
-      # Standalone Home Manager configuration for non-NixOS systems (e.g., Steam Deck distrobox)
+      # Standalone Home Manager configuration for non-NixOS systems (e.g., distrobox on SteamOS, Silverblue, etc.)
       homeConfigurations = {
-        "jasonkwh-steamdeck" = home-manager.lib.homeManagerConfiguration {
+        "jasonkwh-distrobox" = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
           };
           modules = [
-            ./cluster/steamdeck/home.nix
+            ./cluster/distrobox/home.nix
           ];
         };
       };
