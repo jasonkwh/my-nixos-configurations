@@ -301,8 +301,18 @@
       gnumake
     ];
     serviceOverrides = {
+      # Disable all security restrictions for nixos-rebuild to work
       ProtectSystem = lib.mkForce false;
+      ProtectHome = lib.mkForce false;
+      PrivateMounts = lib.mkForce false;
+      PrivateTmp = lib.mkForce false;
+      PrivateDevices = lib.mkForce false;
+      PrivateUsers = lib.mkForce false;
       SystemCallFilter = lib.mkForce [ ];
+      RestrictNamespaces = lib.mkForce false;
+      RestrictSUIDSGID = lib.mkForce false;
+      MemoryDenyWriteExecute = lib.mkForce false;
+      LockPersonality = lib.mkForce false;
     };
   };
 }
