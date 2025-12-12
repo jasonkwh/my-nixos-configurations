@@ -7,13 +7,13 @@ My personal NixOS configuration nix files
 ### 7520u laptop
 
 ```bash
-sudo nixos-rebuild switch --flake .#jasonkwh-7520u --upgrade-all
+sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure --upgrade-all
 ```
 
 ### 7300u laptop
 
 ```bash
-sudo nixos-rebuild switch --flake .#jasonkwh-7300u --upgrade-all
+sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
 ```
 
 ## Distrobox Setup (for SteamOS, Fedora Silverblue, or any immutable OS)
