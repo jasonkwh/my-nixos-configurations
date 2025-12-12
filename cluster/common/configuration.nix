@@ -309,19 +309,15 @@
     path = [ pkgs.git pkgs.nix pkgs.nixos-rebuild ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c 'cd /home/jasonkwh/Documents/my-nixos-configurations && git pull && nixos-rebuild switch --flake .#${config.networking.hostName} --impure --upgrade-all --accept-flake-config'";
+      WorkingDirectory = "/var/lib/nixos-config";
+      ExecStartPre = "${pkgs.bash}/bin/bash -c 'if [ ! -d /var/lib/nixos-config/.git ]; then git clone https://github.com/jasonkwh/my-nixos-configurations.git /var/lib/nixos-config; else git -C /var/lib/nixos-config pull; fi'";
+      ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /var/lib/nixos-config#${config.networking.hostName} --impure --upgrade-all --accept-flake-config";
       RemainAfterExit = false;
     };
   };
 
-  # Allow the runner to trigger the rebuild service via polkit
-  security.polkit.extraConfig = ''
-    polkit.addRule(function(action, subject) {
-      if (action.id == "org.freedesktop.systemd1.manage-units" &&
-          action.lookup("unit") == "nixos-rebuild-switch.service" &&
-          subject.user == "root") {
-        return polkit.Result.YES;
-      }
-    });
-  '';
+  # Create the config directory
+  systemd.tmpfiles.rules = [
+    "d /var/lib/nixos-config 0755 root root -"
+  ];
 }
