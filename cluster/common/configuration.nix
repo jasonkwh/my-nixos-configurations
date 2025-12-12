@@ -47,7 +47,6 @@
       allowedTCPPorts = [
         6443   # Kubernetes API server (required)
         10250  # Kubelet API (optional but recommended for metrics/logs/debugging)
-        6600   # MPD
       ];
       allowedUDPPorts = [
         8472   # Flannel VXLAN (required for inter-node pod networking)
@@ -241,8 +240,6 @@
         };
       };
     };
-
-    # MPD service moved to home.nix
   };
 
   hardware = {    
