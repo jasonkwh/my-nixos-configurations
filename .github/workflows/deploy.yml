@@ -14,7 +14,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, "${{ github.event.inputs.machine }}"]
 
     steps:
       - name: Checkout repository
@@ -22,5 +22,5 @@ jobs:
 
       - name: Deploy NixOS configuration
         run: |
-          echo "🚀 Deploying to ${{ github.event.inputs.machine || 'jasonkwh-7520u' }}..."
-          make build ${{ github.event.inputs.machine || 'jasonkwh-7520u' }}
+          echo "🚀 Deploying to ${{ github.event.inputs.machine }}..."
+          make build ${{ github.event.inputs.machine }}

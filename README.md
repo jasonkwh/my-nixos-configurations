@@ -22,19 +22,21 @@ You can trigger builds remotely via GitHub Actions using a self-hosted runner ma
 
 ### Setup self-hosted runner
 
-1. Create a GitHub Personal Access Token (classic) with `repo` scope:
+1. Create a Fine-grained PAT:
 
-   - Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Generate new token with `repo` scope
+   - Go to GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
+   - Repository access: Select `my-nixos-configurations`
+   - Permissions: **Administration** → Read and Write
 
 2. Save the token on your NixOS machine:
 
    ```bash
-   echo "ghp_your_token_here" | sudo tee /etc/github-runner-token
+   echo "github_pat_xxx" | sudo tee /etc/github-runner-token
    sudo chmod 600 /etc/github-runner-token
    ```
 
 3. Rebuild NixOS:
+
    ```bash
    make build jasonkwh-7520u
    ```
