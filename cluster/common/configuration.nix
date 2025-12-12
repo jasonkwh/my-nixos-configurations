@@ -302,7 +302,9 @@
     ];
     serviceOverrides = {
       ProtectSystem = lib.mkForce false;
-      ReadWritePaths = [ "/nix/var" ];
+      ProtectHome = lib.mkForce false;
+      ReadWritePaths = [ "/nix" ];
+      SystemCallFilter = lib.mkForce [ ];
     };
   };
 }
