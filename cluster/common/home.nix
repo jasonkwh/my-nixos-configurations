@@ -80,56 +80,6 @@
 
   fonts.fontconfig.enable = true;
 
-  
-
-  programs.ncmpcpp = {
-    enable = true;
-    mpdMusicDir = config.home.homeDirectory + "/Music";
-    settings = {
-      mpd_host = "127.0.0.1";
-      mpd_port = "6600";
-      
-      # UI settings
-      user_interface = "alternative";
-      alternative_header_first_line_format = "{$b$2%a$9} $1»$9 {$5%t$9}|{$8%f$9}";
-      alternative_header_second_line_format = "{{$6%b$9}{ [$6%y$9]}}|{$6%D$9}";
-      
-      # Visualizer settings
-      visualizer_data_source = "/tmp/mpd.fifo";
-      visualizer_output_name = "Visualizer";
-      visualizer_in_stereo = "yes";
-      visualizer_type = "wave";  # Valid options: "wave", "wave_filled", "ellipse"
-      visualizer_look = "●▮";
-      visualizer_color = "blue, cyan, green, yellow, magenta, red";
-      
-      startup_screen = "playlist";
-    };
-  };
-
-  services.mpd = {
-    enable = true;
-    musicDirectory = config.home.homeDirectory + "/Music";
-    network = {
-      listenAddress = "127.0.0.1";
-      port = 6600;
-    };
-    extraConfig = ''
-      # Main audio output for listening
-      audio_output {
-        type "pipewire"
-        name "PipeWire"
-      }
-      
-      # FIFO output for visualizer
-      audio_output {
-        type "fifo"
-        name "Visualizer"
-        path "/tmp/mpd.fifo"
-        format "44100:16:2"
-      }
-    '';
-  };
-
   # Packages that should be installed to the user profile.
   home.packages = with pkgs; [
     # utilities
@@ -164,7 +114,6 @@
     openssl
     tcpdump
     packet
-    mpc
     warp
     cloc
     azure-cli
