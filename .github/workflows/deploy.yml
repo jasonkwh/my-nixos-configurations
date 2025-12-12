@@ -1,0 +1,26 @@
+name: Deploy NixOS Configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      machine:
+        description: "Target machine"
+        required: true
+        default: "jasonkwh-7520u"
+        type: choice
+        options:
+          - jasonkwh-7520u
+          - jasonkwh-7300u
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy NixOS configuration
+        run: |
+          echo "🚀 Deploying to ${{ github.event.inputs.machine || 'jasonkwh-7520u' }}..."
+          make build ${{ github.event.inputs.machine || 'jasonkwh-7520u' }}
