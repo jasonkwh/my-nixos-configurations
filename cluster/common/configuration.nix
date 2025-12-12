@@ -311,7 +311,10 @@
     serviceConfig = {
       Type = "oneshot";
       WorkingDirectory = "/var/lib/nixos-config";
-      ExecStartPre = "${pkgs.bash}/bin/bash -c 'TOKEN=$(cat /etc/github-runner-token); if [ ! -d /var/lib/nixos-config/.git ]; then git clone https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git /var/lib/nixos-config; else cd /var/lib/nixos-config && git remote set-url origin https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git && git pull; fi'";
+      ExecStartPre = [
+        "${pkgs.bash}/bin/bash -c 'TOKEN=$(cat /etc/github-runner-token); if [ ! -d /var/lib/nixos-config/.git ]; then git clone https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git /var/lib/nixos-config; else cd /var/lib/nixos-config && git remote set-url origin https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git && git pull; fi'"
+        "${pkgs.nix}/bin/nix flake update /var/lib/nixos-config"
+      ];
       ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /var/lib/nixos-config#${config.networking.hostName} --impure --upgrade-all --accept-flake-config";
       RemainAfterExit = false;
     };
