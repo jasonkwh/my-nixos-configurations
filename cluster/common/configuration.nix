@@ -293,11 +293,13 @@
     enable = true;
     url = "https://github.com/jasonkwh/my-nixos-configurations";
     tokenFile = "/etc/github-runner-token";
+    user = "jasonkwh";
     extraLabels = [ "nixos" config.networking.hostName ];
     extraPackages = with pkgs; [
       nixVersions.latest
       git
       gnumake
+      sudo
     ];
   };
 }
