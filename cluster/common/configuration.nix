@@ -300,5 +300,8 @@
       git
       gnumake
     ];
+    serviceOverrides = {
+      ProtectSystem = lib.mkForce false;
+    };
   };
 }
