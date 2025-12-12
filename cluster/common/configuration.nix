@@ -302,6 +302,7 @@
     ];
     serviceOverrides = {
       ProtectSystem = lib.mkForce false;
+      SystemCallFilter = lib.mkForce [ ];
     };
   };
 }
