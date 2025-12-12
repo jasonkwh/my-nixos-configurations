@@ -84,23 +84,15 @@
   home.packages = with pkgs; [
     # utilities
     fastfetch
-    # vagrant
-    buildah
-    skopeo
-    podman-compose
     tmux
-    hw-probe
     pigz
     pixz
-    distrobox
-    boxbuddy
     htop
     graphviz
     ngrok
     tilt
     golangci-lint
     percona-toolkit
-    ollama
     go-migrate
     kubectl
     kubectx
@@ -112,7 +104,6 @@
     fluxcd
     eksctl
     openssl
-    tcpdump
     packet
     warp
     cloc
@@ -126,7 +117,6 @@
     protobuf
     rustup
     python3
-    vscode
     nodejs_24
     php84
     php84Extensions.mysqli
@@ -137,28 +127,19 @@
     kubernetes-helm
     helmfile
 
-    # internet
-    brave
-
     # migrated from system packages
     git
     vim
     wget
     curl
-    gparted
     coreutils
     gcc
-    # gdb - conflicts with gcc-arm-embedded (which includes its own ARM GDB)
     cmake
     gnumake
     binutils
-    gcc-arm-embedded
-    picotool
     bc
     file
     nixVersions.latest
-    wineWowPackages.full
-    winetricks
 
     # fonts
     nerd-fonts.noto
