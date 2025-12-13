@@ -6,9 +6,9 @@
   #   
   # ];
 
-  # Disable KDE Tablet Mode
-  home.file.".config/kdeglobals".text = ''
-    [KDE]
-    TabletMode=Never
-  '';
+  # Disable KDE Tablet Mode (using plasma-manager to avoid overwriting other settings)
+  programs.plasma = {
+    enable = true;
+    configFile."kdeglobals"."KDE"."TabletMode" = "Never";
+  };
 }
