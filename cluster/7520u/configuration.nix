@@ -56,16 +56,6 @@
       ];
     };
 
-    avahi = {
-      enable = true;
-      nssmdns4 = true;  # Enable mDNS name resolution in the NSS layer
-      publish = {
-        enable = true;
-        addresses = true;  # Publish the host's IP addresses
-        workstation = true;  # Publish the workstation service
-      };
-    };
-
     # use evtest to find out the device id & key num
     udev.extraHwdb = ''
       evdev:atkbd:*
