@@ -1,5 +1,8 @@
 { config, pkgs, ... }:
 
+let
+  cursor = import ./cursor.nix { inherit pkgs; };
+in
 {
   home = {
     username = "jasonkwh";
@@ -126,6 +129,7 @@
     terraform
     kubernetes-helm
     helmfile
+    cursor
 
     # migrated from system packages
     git
