@@ -33,10 +33,5 @@
           "--flannel-iface=wlp58s0"
         ];
     };
-
-    avahi = {
-      enable = true;
-      nssmdns4 = true;  # Enable mDNS name resolution in the NSS layer
-    };
   };
 }

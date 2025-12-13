@@ -240,6 +240,16 @@
       enable = true;
     };
 
+    avahi = {
+      enable = true;
+      nssmdns4 = true;  # Enable mDNS name resolution in the NSS layer
+      publish = {
+        enable = true;
+        addresses = true;  # Publish the host's IP addresses
+        workstation = true;  # Publish the workstation service
+      };
+    };
+
     openssh = {
       enable = true; # Enable the OpenSSH daemon.
       settings = {
