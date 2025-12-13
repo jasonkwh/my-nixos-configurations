@@ -48,8 +48,8 @@ in
       colorScheme = "BreezeDark";
     };
     
-    # Disable Tablet Mode
     configFile."kdeglobals"."KDE"."TabletMode" = "Never";
+    configFile."bluedevilglobalrc"."Global"."launchState" = "enable";
   };
 
   programs = {
