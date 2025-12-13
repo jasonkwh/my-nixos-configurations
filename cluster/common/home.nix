@@ -51,14 +51,26 @@ in
     configFile."kdeglobals"."KDE"."TabletMode" = "Never";
   };
 
-  # Ensure Bluetooth is enabled at KDE startup
-  xdg.configFile."autostart/enable-bluetooth.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=Enable Bluetooth
-    Exec=${pkgs.util-linux}/bin/rfkill unblock bluetooth
-    X-KDE-autostart-phase=2
-  '';
+  # Ensure Bluetooth is enabled at login via systemd user service
+  systemd.user.services.enable-bluetooth = {
+    Unit = {
+      Description = "Enable Bluetooth at login";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellScript "enable-bluetooth" ''
+        ${pkgs.util-linux}/bin/rfkill unblock bluetooth
+        sleep 1
+        echo "power on" | ${pkgs.bluez}/bin/bluetoothctl
+      ''}";
+      RemainAfterExit = true;
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
 
   programs = {
     # basic configuration of git, please change to your own
