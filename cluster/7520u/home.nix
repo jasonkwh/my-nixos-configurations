@@ -1,8 +1,5 @@
 { config, pkgs, ... }:
 
-let
-  cursor = import ./cursor.nix { inherit pkgs; };
-in
 {
   home.packages = with pkgs; [
     mysql-workbench
@@ -16,7 +13,6 @@ in
     zoom-us
     discord
     slack
-    cursor
     ffmpeg
     shntool
     flac
