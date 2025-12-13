@@ -130,6 +130,7 @@ in
     kubernetes-helm
     helmfile
     cursor
+    vscode
 
     # migrated from system packages
     git
