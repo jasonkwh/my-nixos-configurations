@@ -38,6 +38,20 @@ in
     '';
   };
 
+  # KDE Plasma configuration (using plasma-manager)
+  programs.plasma = {
+    enable = true;
+    
+    # Use Breeze Dark theme
+    workspace = {
+      lookAndFeel = "org.kde.breezedark.desktop";
+      colorScheme = "BreezeDark";
+    };
+    
+    # Disable Tablet Mode
+    configFile."kdeglobals"."KDE"."TabletMode" = "Never";
+  };
+
   programs = {
     # basic configuration of git, please change to your own
     git = {
