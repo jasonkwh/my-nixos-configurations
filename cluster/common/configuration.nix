@@ -250,15 +250,15 @@
       openFirewall = true;
     };
 
-    logind = {
-      settings = {
-        Login = {
-          HandleLidSwitch = "ignore";
-          HandleLidSwitchDocked = "ignore";
-          HandleLidSwitchExternalPower = "ignore";
-        };
-      };
-    };
+    # logind = {
+    #   settings = {
+    #     Login = {
+    #       HandleLidSwitch = "ignore";
+    #       HandleLidSwitchDocked = "ignore";
+    #       HandleLidSwitchExternalPower = "ignore";
+    #     };
+    #   };
+    # };
   };
 
   hardware = {    
