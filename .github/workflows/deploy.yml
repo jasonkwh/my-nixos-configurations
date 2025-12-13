@@ -20,6 +20,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Write secrets to files
+        run: |
+          echo "🔐 Writing secrets..."
+          echo '${{ secrets.CR_PAT }}' > /etc/nixos-secrets-cr-pat
+          echo '${{ secrets.GEMINI_API_KEY }}' > /etc/nixos-secrets-gemini-api-key
+
       - name: Deploy NixOS configuration
         run: |
           echo "🚀 Deploying to ${{ github.event.inputs.machine }}..."

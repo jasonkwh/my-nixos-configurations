@@ -308,12 +308,13 @@
   # NixOS rebuild service - runs outside GitHub runner's restricted context
   systemd.services.nixos-rebuild-switch = {
     description = "NixOS Rebuild Switch";
-    path = [ pkgs.git pkgs.nix pkgs.nixos-rebuild ];
+    path = [ pkgs.git pkgs.nix pkgs.nixos-rebuild pkgs.gnused ];
     serviceConfig = {
       Type = "oneshot";
       WorkingDirectory = "/var/lib/nixos-config";
       ExecStartPre = [
         "${pkgs.bash}/bin/bash -c 'TOKEN=$(cat /etc/github-runner-token); if [ ! -d /var/lib/nixos-config/.git ]; then git clone https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git /var/lib/nixos-config; else cd /var/lib/nixos-config && git remote set-url origin https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git && git pull; fi'"
+        "${pkgs.bash}/bin/bash -c 'sed -i \"s|__CR_PAT__|$(cat /etc/nixos-secrets-cr-pat)|g\" /var/lib/nixos-config/cluster/common/home.nix && sed -i \"s|__GEMINI_API_KEY__|$(cat /etc/nixos-secrets-gemini-api-key)|g\" /var/lib/nixos-config/cluster/common/home.nix'"
         "${pkgs.nix}/bin/nix flake update --flake /var/lib/nixos-config"
       ];
       ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /var/lib/nixos-config#${config.networking.hostName} --impure --upgrade-all --accept-flake-config";
