@@ -49,8 +49,16 @@ in
     };
     
     configFile."kdeglobals"."KDE"."TabletMode" = "Never";
-    configFile."bluedevilglobalrc"."Global"."launchState" = "enable";
   };
+
+  # Ensure Bluetooth is enabled at KDE startup
+  xdg.configFile."autostart/enable-bluetooth.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=Enable Bluetooth
+    Exec=${pkgs.util-linux}/bin/rfkill unblock bluetooth
+    X-KDE-autostart-phase=2
+  '';
 
   programs = {
     # basic configuration of git, please change to your own
