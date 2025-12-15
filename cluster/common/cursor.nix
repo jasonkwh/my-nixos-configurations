@@ -9,6 +9,7 @@ let
     # use pkgs.lib.fakeSha256 to avoid downloading the file
     sha256 = "sha256-dY42LaaP7CRbqY2tuulJOENa+QUGSL09m07PvxsZCr0=";
   };
+  #test
 
   appimageContents = pkgs.appimageTools.extractType2 { inherit pname version src; };
 
