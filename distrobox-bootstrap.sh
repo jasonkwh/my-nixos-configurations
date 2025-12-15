@@ -1,5 +1,10 @@
 #!/bin/bash
 # Bootstrap script for distrobox development environment
+# Synced with cluster/common/home.nix
+#
+# IMPORTANT: When updating cluster/common/home.nix, also update the dnf install commands below
+# to keep Fedora/distrobox environment in sync with your NixOS configuration.
+#
 # Run this inside the distrobox container after entering it
 #
 # First-time setup (run on host):
@@ -14,47 +19,58 @@ set -e
 
 echo "🚀 Starting distrobox bootstrap..."
 
-# Install development tools via dnf
+# Install all packages from home.nix (mapped to Fedora equivalents)
 echo "📦 Installing development tools via dnf..."
 sudo dnf install -y \
+    fastfetch \
+    tmux \
+    pigz \
+    pixz \
+    htop \
+    graphviz \
+    cloc \
+    openssl \
+    tree \
+    yamllint \
+    jq \
     git \
     vim \
     neovim \
     wget \
     curl \
+    coreutils \
     gcc \
     gcc-c++ \
     cmake \
     make \
-    htop \
-    tmux \
-    tree \
-    zsh \
-    util-linux-user \
-    golang \
-    nodejs \
-    npm \
-    python3 \
-    python3-pip \
-    php \
-    php-mysqli \
-    openssl \
-    jq \
-    ripgrep \
-    fd-find \
-    fastfetch \
-    pigz \
-    graphviz \
-    cloc \
-    yamllint \
     binutils \
     bc \
     file \
     protobuf \
     protobuf-compiler \
-    unzip
+    python3 \
+    python3-pip \
+    nodejs \
+    npm \
+    php \
+    php-cli \
+    php-mysqli \
+    ripgrep \
+    fd-find \
+    unzip \
+    azure-cli \
+    util-linux-user \
+    zsh \
+    code
 
-# Install GitHub CLI
+echo "📝 Syncing with home.nix packages..."
+
+# Install Go (go_1_24 in home.nix)
+echo "🐹 Installing Go..."
+if ! command -v go &> /dev/null; then
+    sudo dnf install -y golang
+fi
+
 echo "🐙 Installing GitHub CLI..."
 if ! command -v gh &> /dev/null; then
     sudo dnf install -y 'dnf-command(config-manager)'
@@ -163,7 +179,7 @@ if ! command -v rustup &> /dev/null; then
     source "$HOME/.cargo/env"
 fi
 
-# Install Go tools
+# Install Go tools (golangci-lint, go-migrate from home.nix)
 echo "🐹 Installing Go tools..."
 export PATH=$PATH:$(go env GOPATH)/bin
 if ! command -v golangci-lint &> /dev/null; then
@@ -183,6 +199,31 @@ fi
 echo "🔧 Installing Tilt..."
 if ! command -v tilt &> /dev/null; then
     curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+fi
+
+# Install Cursor (from cursor.nix in home.nix)
+# Can be exported to host with: distrobox-export --app cursor
+echo "💻 Installing Cursor..."
+if ! command -v cursor &> /dev/null; then
+    CURSOR_VERSION="2.2.20"
+    CURSOR_URL="https://downloads.cursor.com/production/b3573281c4775bfc6bba466bf6563d3d498d1074/linux/x64/Cursor-${CURSOR_VERSION}-x86_64.AppImage"
+    CURSOR_PATH="/tmp/cursor.AppImage"
+    
+    echo "Downloading Cursor ${CURSOR_VERSION}..."
+    curl -L "${CURSOR_URL}" -o "${CURSOR_PATH}"
+    chmod +x "${CURSOR_PATH}"
+    
+    # Install AppImage support
+    sudo dnf install -y fuse2 libfuse2
+    
+    # Create wrapper script
+    sudo tee /usr/local/bin/cursor > /dev/null << 'CURSOR_WRAPPER'
+#!/bin/bash
+exec /tmp/cursor.AppImage "$@"
+CURSOR_WRAPPER
+    sudo chmod +x /usr/local/bin/cursor
+    
+    echo "✅ Cursor installed. Use 'distrobox-export --app cursor' to expose on host."
 fi
 
 # Install ngrok
@@ -253,15 +294,15 @@ plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
-# Aliases
+# Aliases (from home.nix)
 alias ll="ls -lh --color=auto"
 alias kc="kubectl"
 alias python="python3"
 alias vi="nvim"
 alias neofetch="fastfetch"
 
-# PATH
-export PATH="$HOME/.local/bin:$HOME/go/bin:$HOME/.npm-global/bin:$HOME/.cargo/bin:$PATH"
+# PATH (from home.nix initContent)
+export PATH=$PATH:$(go env GOPATH)/bin:$HOME/.npm-global/bin
 
 # Environment variables
 export EDITOR="vim"
@@ -271,8 +312,24 @@ export KUBECONFIG="$HOME/.kube/config"
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 EOF
 
+# Export GUI applications to host
+echo "📦 Exporting GUI applications to host..."
+if command -v distrobox-export &> /dev/null; then
+    distrobox-export --app code 2>/dev/null || echo "  ⚠️  Could not export VS Code (may not be in distrobox)"
+    distrobox-export --app cursor 2>/dev/null || echo "  ⚠️  Could not export Cursor (may not be in distrobox)"
+else
+    echo "  ⚠️  distrobox-export not available (run this inside distrobox)"
+fi
+
 echo ""
 echo "✅ Bootstrap complete!"
 echo ""
-echo "Please restart your shell or run: exec zsh"
-echo "Then run 'p10k configure' to set up powerlevel10k theme."
+echo "Next steps:"
+echo "1. Restart your shell or run: exec zsh"
+echo "2. Then run 'p10k configure' to set up powerlevel10k theme"
+echo ""
+echo "📦 For GUI apps on the host:"
+echo "   distrobox-export --app code      # Exports VS Code"
+echo "   distrobox-export --app cursor    # Exports Cursor"
+echo ""
+echo "📝 This bootstrap syncs packages from: cluster/common/home.nix"
