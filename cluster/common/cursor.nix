@@ -72,14 +72,14 @@ pkgs.stdenv.mkDerivation {
 
   src = wrappedCursor;
 
-  nativeBuildInputs = [ pkgs.makeWrapper ];
+  nativeBuildInputs = [ pkgs.makeWrapper pkgs.findutils ];
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/bin
     mkdir -p $out/share/applications
-    mkdir -p $out/share/icons/hicolor/512x512/apps
+    mkdir -p $out/share/icons/hicolor/256x256/apps
 
     # Create wrapper with flags to suppress errors and warnings
     makeWrapper ${wrappedCursor}/bin/cursor $out/bin/cursor \
@@ -89,14 +89,31 @@ pkgs.stdenv.mkDerivation {
       --set G_MESSAGES_DEBUG "" \
       --set G_DEBUG "fatal-criticals"
 
-    # Copy desktop file and icon
-    cp ${appimageContents}/cursor.desktop $out/share/applications/cursor.desktop
-    cp ${appimageContents}/cursor.png $out/share/icons/hicolor/512x512/apps/cursor.png
+    # Copy icon from extracted AppImage (find the actual location)
+    icon=$(find ${appimageContents} -name "cursor.png" -type f | head -n 1)
+    if [ -n "$icon" ]; then
+      cp "$icon" $out/share/icons/hicolor/256x256/apps/cursor.png
+    else
+      # Fallback: copy any PNG icon found
+      icon=$(find ${appimageContents} -name "*.png" -path "*/icons/*" -type f | head -n 1)
+      if [ -n "$icon" ]; then
+        cp "$icon" $out/share/icons/hicolor/256x256/apps/cursor.png
+      fi
+    fi
 
-    # Fix desktop file paths
-    substituteInPlace $out/share/applications/cursor.desktop \
-      --replace-fail "Exec=cursor" "Exec=$out/bin/cursor" \
-      --replace-fail "Icon=cursor" "Icon=$out/share/icons/hicolor/512x512/apps/cursor.png"
+    # Create desktop file
+    cat > $out/share/applications/cursor.desktop <<EOF
+[Desktop Entry]
+Name=Cursor
+Comment=AI-first Code Editor
+Exec=$out/bin/cursor %F
+Icon=$out/share/icons/hicolor/256x256/apps/cursor.png
+Type=Application
+Categories=Development;IDE;TextEditor;
+MimeType=text/plain;inode/directory;
+StartupWMClass=Cursor
+Terminal=false
+EOF
 
     runHook postInstall
   '';
