@@ -81,14 +81,12 @@ pkgs.stdenv.mkDerivation {
     mkdir -p $out/share/applications
     mkdir -p $out/share/icons/hicolor/256x256/apps
 
-    # Create wrapper script that suppresses all terminal output
+    # Create wrapper script with environment fixes
     cat > $out/bin/cursor <<EOF
 #!/bin/sh
 export G_MESSAGES_DEBUG=""
 export G_DEBUG="fatal-criticals"
-export WAYLAND_DEBUG=""
-export ELECTRON_ENABLE_LOGGING=0
-exec ${wrappedCursor}/bin/cursor "\$@" --disable-logging >/dev/null 2>&1
+exec ${wrappedCursor}/bin/cursor "\$@"
 EOF
     chmod +x $out/bin/cursor
 
