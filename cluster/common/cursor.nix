@@ -72,7 +72,7 @@ pkgs.stdenv.mkDerivation {
 
   src = wrappedCursor;
 
-  nativeBuildInputs = [ pkgs.makeWrapper pkgs.findutils ];
+  nativeBuildInputs = [ pkgs.findutils ];
 
   installPhase = ''
     runHook preInstall
@@ -81,13 +81,15 @@ pkgs.stdenv.mkDerivation {
     mkdir -p $out/share/applications
     mkdir -p $out/share/icons/hicolor/256x256/apps
 
-    # Create wrapper with flags to suppress errors and warnings
-    makeWrapper ${wrappedCursor}/bin/cursor $out/bin/cursor \
-      --add-flags "--disable-gpu-vsync" \
-      --add-flags "--enable-features=UseOzonePlatform" \
-      --add-flags "--ozone-platform-hint=auto" \
-      --set G_MESSAGES_DEBUG "" \
-      --set G_DEBUG "fatal-criticals"
+    # Create wrapper script that suppresses all terminal output
+    cat > $out/bin/cursor <<EOF
+#!/bin/sh
+export G_MESSAGES_DEBUG=""
+export G_DEBUG="fatal-criticals"
+export WAYLAND_DEBUG=""
+exec ${wrappedCursor}/bin/cursor "\$@" >/dev/null 2>&1
+EOF
+    chmod +x $out/bin/cursor
 
     # Copy icon from extracted AppImage (find the actual location)
     icon=$(find ${appimageContents} -name "cursor.png" -type f | head -n 1)
