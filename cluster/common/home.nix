@@ -92,6 +92,7 @@ in
         python = "python3";
         vi = "nvim";
         neofetch = "fastfetch";
+        cursor = "cursor 2>/dev/null";
       };
       history = {
         size = 10000;

@@ -36,10 +36,6 @@ pkgs.appimageTools.wrapType2 {
     libdrm
     vulkan-loader
 
-    # NOTE: Removed GTK/desktop libs - they can conflict with bundled versions
-    # and cause dialog hangs:
-    # gtk3, glib, pango, cairo, gdk-pixbuf, atk, at-spi2-atk, at-spi2-core, dbus
-
     # Other dependencies
     nss
     nspr
