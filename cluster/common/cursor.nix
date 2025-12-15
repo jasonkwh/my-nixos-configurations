@@ -53,5 +53,4 @@ pkgs.appimageTools.wrapType2 {
     # For native modules
     stdenv.cc.cc.lib
   ];
-  # test
 }
