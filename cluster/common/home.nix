@@ -92,17 +92,22 @@ in
         python = "python3";
         vi = "nvim";
         neofetch = "fastfetch";
-        cursor = "cursor &>/dev/null &";
       };
       history = {
         size = 10000;
         path = "${config.xdg.dataHome}/zsh/history";
       };
-      initContent = "
+      initContent = ''
         export PATH=$PATH:$(go env GOPATH)/bin:$HOME/.npm-global/bin
 
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-      ";
+
+        # Wrapper function to run cursor silently
+        cursor() {
+          command cursor "$@" &>/dev/null &
+          disown
+        }
+      '';
       zplug = {
         enable = true;
         plugins = [
