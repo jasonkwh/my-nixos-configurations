@@ -81,11 +81,13 @@ pkgs.stdenv.mkDerivation {
     mkdir -p $out/share/applications
     mkdir -p $out/share/icons/hicolor/512x512/apps
 
-    # Create wrapper with flags to suppress VSync errors
+    # Create wrapper with flags to suppress errors and warnings
     makeWrapper ${wrappedCursor}/bin/cursor $out/bin/cursor \
       --add-flags "--disable-gpu-vsync" \
       --add-flags "--enable-features=UseOzonePlatform" \
-      --add-flags "--ozone-platform-hint=auto"
+      --add-flags "--ozone-platform-hint=auto" \
+      --set G_MESSAGES_DEBUG "" \
+      --set G_DEBUG "fatal-criticals"
 
     # Copy desktop file and icon
     cp ${appimageContents}/cursor.desktop $out/share/applications/cursor.desktop
