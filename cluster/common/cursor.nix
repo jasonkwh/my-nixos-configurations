@@ -10,5 +10,54 @@ pkgs.appimageTools.wrapType2 {
     sha256 = "sha256-dY42LaaP7CRbqY2tuulJOENa+QUGSL09m07PvxsZCr0=";
   };
 
-  extraPkgs = pkgs: with pkgs; [ ];
+  extraPkgs = pkgs: with pkgs; [
+    # Core libraries for Electron/native modules
+    libxkbcommon
+    xorg.libX11
+    xorg.libXrandr
+    xorg.libXcursor
+    xorg.libXi
+    xorg.libXdamage
+    xorg.libXcomposite
+    xorg.libXfixes
+    xorg.libXtst
+    xorg.libxcb
+    xorg.libxshmfence
+
+    # Audio/video
+    alsa-lib
+    pipewire
+    pulseaudio
+    libpulseaudio
+
+    # Graphics
+    mesa
+    libGL
+    libdrm
+    vulkan-loader
+
+    # GTK/desktop integration
+    gtk3
+    glib
+    pango
+    cairo
+    gdk-pixbuf
+    atk
+    at-spi2-atk
+    at-spi2-core
+    dbus
+
+    # Other dependencies
+    nss
+    nspr
+    cups
+    expat
+    libxkbfile
+    systemd
+    libsecret
+    gnome-keyring
+
+    # For native modules
+    stdenv.cc.cc.lib
+  ];
 }
