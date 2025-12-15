@@ -87,7 +87,8 @@ pkgs.stdenv.mkDerivation {
 export G_MESSAGES_DEBUG=""
 export G_DEBUG="fatal-criticals"
 export WAYLAND_DEBUG=""
-exec ${wrappedCursor}/bin/cursor "\$@" >/dev/null 2>&1
+export ELECTRON_ENABLE_LOGGING=0
+exec ${wrappedCursor}/bin/cursor "\$@" --disable-logging >/dev/null 2>&1
 EOF
     chmod +x $out/bin/cursor
 
