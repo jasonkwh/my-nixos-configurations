@@ -312,7 +312,6 @@
       git
       gnumake
       systemd
-      gh  # GitHub CLI for managing secrets
     ];
   };
 
