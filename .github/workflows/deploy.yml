@@ -11,6 +11,14 @@ on:
         options:
           - jasonkwh-7520u
           - jasonkwh-7300u
+      k3s_role:
+        description: "K3S role"
+        required: true
+        default: "server"
+        type: choice
+        options:
+          - server
+          - agent
 
 jobs:
   deploy:
@@ -19,6 +27,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Write K3S token for agent nodes
+        if: github.event.inputs.k3s_role == 'agent'
+        run: |
+          echo "🔑 Writing k3s token for agent node..."
+          echo "${{ secrets.K3S_TOKEN }}" | sudo tee /var/lib/k3s-token > /dev/null
+          sudo chmod 600 /var/lib/k3s-token
+          echo "✅ K3s token written to /var/lib/k3s-token"
 
       - name: Deploy NixOS configuration
         run: |
@@ -35,3 +51,18 @@ jobs:
             exit 1
           fi
           echo "✅ Rebuild completed successfully!"
+
+      - name: Update K3S token secret
+        if: github.event.inputs.k3s_role == 'server'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔑 Reading k3s token from server..."
+          if [ -f /var/lib/rancher/k3s/server/node-token ]; then
+            K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token)
+            echo "📝 Updating GitHub secret K3S_TOKEN..."
+            echo "$K3S_TOKEN" | gh secret set K3S_TOKEN --repo ${{ github.repository }}
+            echo "✅ K3S_TOKEN secret updated successfully!"
+          else
+            echo "⚠️ K3s token file not found, skipping secret update"
+          fi
