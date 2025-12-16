@@ -45,7 +45,7 @@
     };
 
     k3s = {
-      enable = false;
+      enable = true;
       role = "server"; # or agent
       # serverAddr = "https://192.168.50.83:6443";
       # token = "";
