@@ -24,7 +24,6 @@ in
 
     sessionVariables = {
       CR_PAT = "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";
-      GEMINI_API_KEY = "AIzaSyAzT5eZyvN49MTYMKH_1wYjJiTbjzXanno";
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
     };
