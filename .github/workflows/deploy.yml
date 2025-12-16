@@ -32,8 +32,8 @@ jobs:
         if: github.event.inputs.k3s_role == 'agent'
         run: |
           echo "🔑 Writing k3s token for agent node..."
-          echo "${{ secrets.K3S_TOKEN }}" > /var/lib/k3s-token
-          chmod 600 /var/lib/k3s-token
+          echo "${{ secrets.K3S_TOKEN }}" | sudo tee /var/lib/k3s-token > /dev/null
+          sudo chmod 600 /var/lib/k3s-token
           echo "✅ K3s token written to /var/lib/k3s-token"
 
       - name: Deploy NixOS configuration
@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "🔑 Reading k3s token from server..."
           if [ -f /var/lib/rancher/k3s/server/node-token ]; then
-            K3S_TOKEN=$(cat /var/lib/rancher/k3s/server/node-token)
+            K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token)
             echo "📝 Updating GitHub secret K3S_TOKEN..."
             echo "$K3S_TOKEN" | gh secret set K3S_TOKEN --repo ${{ github.repository }}
             echo "✅ K3S_TOKEN secret updated successfully!"
