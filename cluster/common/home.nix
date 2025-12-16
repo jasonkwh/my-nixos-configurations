@@ -8,16 +8,19 @@ in
     username = "jasonkwh";
     homeDirectory = "/home/jasonkwh";
 
-    file.".config/powermanagementprofilesrc".text = ''
-      [AC]
-      lidAction=0
-    
-      [Battery]
-      lidAction=0
-    
-      [LowBattery]
-      lidAction=0
-    '';
+    file.".config/powermanagementprofilesrc" = {
+      text = ''
+        [AC]
+        lidAction=0
+      
+        [Battery]
+        lidAction=0
+      
+        [LowBattery]
+        lidAction=0
+      '';
+      force = true;
+    };
 
     sessionVariables = {
       CR_PAT = "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";
@@ -119,8 +122,11 @@ in
     };
   };
 
-  xdg.autostart.enable = true;
-
+  xdg = {
+    mimeApps.enable = false;
+    autostart.enable = true;
+  };
+  
   fonts.fontconfig.enable = true;
 
   # Packages that should be installed to the user profile.
