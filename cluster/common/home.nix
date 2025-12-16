@@ -4,9 +4,6 @@ let
   cursor = import ./cursor.nix { inherit pkgs; };
 in
 {
-  imports = [
-    ./gemini-cli.nix
-  ];
   home = {
     username = "jasonkwh";
     homeDirectory = "/home/jasonkwh";
@@ -27,7 +24,7 @@ in
 
     sessionVariables = {
       CR_PAT = "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";
-      GEMINI_API_KEY = "AIzaSyDH1kTX7Wjon06NzctfcUrO0cJyKwyoN7g";
+      GEMINI_API_KEY = "AIzaSyAzT5eZyvN49MTYMKH_1wYjJiTbjzXanno";
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
     };
