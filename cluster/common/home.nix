@@ -8,16 +8,16 @@ in
     username = "jasonkwh";
     homeDirectory = "/home/jasonkwh";
 
-    # file.".config/powermanagementprofilesrc".text = ''
-    #   [AC]
-    #   lidAction=0
-    #
-    #   [Battery]
-    #   lidAction=0
-    #
-    #   [LowBattery]
-    #   lidAction=0
-    # '';
+    file.".config/powermanagementprofilesrc".text = ''
+      [AC]
+      lidAction=0
+    
+      [Battery]
+      lidAction=0
+    
+      [LowBattery]
+      lidAction=0
+    '';
 
     sessionVariables = {
       CR_PAT = "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";
