@@ -2,6 +2,7 @@
 
 let
   cursor = import ./cursor.nix { inherit pkgs; };
+  gemini-cli = import ./gemini-cli.nix { inherit pkgs; };
 in
 {
   home = {
@@ -176,6 +177,7 @@ in
     kubernetes-helm
     helmfile
     cursor
+    gemini-cli
     vscode
 
     # migrated from system packages
