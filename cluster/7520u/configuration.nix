@@ -46,9 +46,7 @@
 
     k3s = {
       enable = true;
-      role = "server"; # or agent
-      # serverAddr = "https://192.168.50.83:6443";
-      # token = "";
+      role = "server";
       extraFlags = toString [
         "--tls-san=${config.networking.hostName}"
         "--flannel-iface=wlp2s0"
