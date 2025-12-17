@@ -60,4 +60,10 @@
         KEYBOARD_KEY_56=leftshift
     '';
   };
+
+  nixpkgs.config = {
+    permittedInsecurePackages = [
+      "beekeeper-studio-5.3.4"
+    ];
+  };
 }
