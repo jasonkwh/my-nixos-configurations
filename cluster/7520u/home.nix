@@ -2,7 +2,7 @@
 
 {
   home.packages = with pkgs; [
-    mysql-workbench
+    beekeeper-studio
     wireshark
     postman
     mongodb-compass
