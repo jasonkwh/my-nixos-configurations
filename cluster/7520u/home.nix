@@ -2,21 +2,15 @@
 
 {
   home.packages = with pkgs; [
-    beekeeper-studio
     wireshark
-    postman
-    mongodb-compass
-    neo4j-desktop
     kdePackages.isoimagewriter
     kdePackages.yakuake
-    libreoffice-qt
     zoom-us
     discord
     slack
     ffmpeg
     shntool
     flac
-    yq
 
     # games
     steam
