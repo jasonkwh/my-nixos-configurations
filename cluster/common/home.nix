@@ -157,6 +157,8 @@ in
     cloc
     azure-cli
     yamllint
+    yq
+    libreoffice-qt
 
     # programming
     neovim
@@ -176,6 +178,10 @@ in
     helmfile
     cursor
     vscode
+    beekeeper-studio
+    postman
+    mongodb-compass
+    neo4j-desktop
 
     # migrated from system packages
     git
