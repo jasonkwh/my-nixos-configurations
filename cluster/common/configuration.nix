@@ -29,6 +29,9 @@
       experimental-features = [ "nix-command" "flakes" ];
       auto-optimise-store = true;
       system-features = [ "kvm" ];
+      # Use all available CPU cores for parallel Nix builds
+      max-jobs = "auto";
+      cores = 0;
     };
   };
 

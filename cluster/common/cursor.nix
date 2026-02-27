@@ -2,12 +2,12 @@
 
 pkgs.appimageTools.wrapType2 {
   pname = "cursor";
-  version = "2.5.20";
+  version = "2.5.25";
 
   src = pkgs.fetchurl {
-    url = "https://downloads.cursor.com/production/511523af765daeb1fa69500ab0df5b6524424612/linux/x64/Cursor-2.5.20-x86_64.AppImage";
+    url = "https://downloads.cursor.com/production/7150844152b426ed50d2b68dd6b33b5c5beb73ca/linux/x64/Cursor-2.5.25-x86_64.AppImage";
     # use pkgs.lib.fakeSha256 to avoid downloading the file
-    sha256 = "sha256-csvj0THOX/RPi7Docv033mi8DlEOEdnjFIQ8jL7HPO8=";
+    sha256 = "sha256-6ldXKM21FP/ICwowJa6Fi48CR/4MMRNQ0VUv75xOZYE=";
   };
 
   extraPkgs = pkgs: with pkgs; [
