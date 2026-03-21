@@ -117,5 +117,19 @@
       evdev:atkbd:*
         KEYBOARD_KEY_56=leftshift
     '';
+
+    resilio = {
+      enable = true;
+      enableWebUI = true;
+      httpListenAddr = "127.0.0.1";
+      httpListenPort = 9000;
+    };
   };
+
+  users.users.jasonkwh = {
+    extraGroups = [ "rslsync" ];
+    homeMode = "0750";
+  };
+
+  users.users.rslsync.extraGroups = [ "users" ];
 }

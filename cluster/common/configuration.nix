@@ -93,7 +93,7 @@
     jasonkwh = {
       isNormalUser = true;
       description = "Jason Huang";
-      extraGroups = [ "networkmanager" "wheel" "podman" ];
+      extraGroups = [ "networkmanager" "wheel" "podman" "rslsync" ];
       shell = pkgs.zsh;
       subUidRanges = [{ startUid = 100000; count = 65536; }];
       subGidRanges = [{ startGid = 100000; count = 65536; }];
