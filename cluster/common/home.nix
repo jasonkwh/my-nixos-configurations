@@ -23,7 +23,6 @@ in
     };
 
     sessionVariables = {
-      CR_PAT = "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";
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
     };
@@ -82,6 +81,13 @@ in
         export PATH=$PATH:$(go env GOPATH)/bin:$HOME/.npm-global/bin
 
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+        # Load secrets from files if they exist
+        [[ -f ~/.secrets/github-pat ]] && export CR_PAT="$(< ~/.secrets/github-pat)"
+        [[ -f ~/.secrets/openclaw-gateway-token ]] && export OPENCLAW_GATEWAY_TOKEN="$(< ~/.secrets/openclaw-gateway-token)"
+        [[ -f ~/.secrets/anthropic-api-key ]] && export ANTHROPIC_API_KEY="$(< ~/.secrets/anthropic-api-key)"
+        [[ -f ~/.secrets/gemini-api-key ]] && export GEMINI_API_KEY="$(< ~/.secrets/gemini-api-key)"
+        [[ -f ~/.secrets/openai-api-key ]] && export OPENAI_API_KEY="$(< ~/.secrets/openai-api-key)"
 
         # Wrapper function to run cursor silently
         cursor() {
@@ -192,6 +198,26 @@ in
     source-han-serif
     wqy_zenhei
   ];
+
+  # OpenClaw - AI assistant gateway (Discord bot on your machine)
+  programs.openclaw = {
+    enable = true;
+    config = {
+      gateway = {
+        mode = "local";
+      };
+      channels.discord = {
+        accounts.main = {
+          token = {
+            source = "file";
+            id = "/home/jasonkwh/.secrets/discord-bot-token";
+            provider = "secrets";
+          };
+          allowFrom = [ 426146931232997376 ];
+        };
+      };
+    };
+  };
 
   # Automatically run podman system migrate after home-manager activation
   home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''
