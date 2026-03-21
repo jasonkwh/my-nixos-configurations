@@ -142,7 +142,7 @@ in
     # programming
     neovim
     gh
-    go_1_24
+    go_1_25
     protobuf
     rustup
     python3

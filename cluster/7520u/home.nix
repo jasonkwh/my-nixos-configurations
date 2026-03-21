@@ -11,6 +11,8 @@
     ffmpeg
     shntool
     flac
+    calibre
+    vlc
 
     # games
     steam
