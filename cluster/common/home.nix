@@ -213,7 +213,7 @@ in
             id = "DISCORD_BOT_TOKEN";
             provider = "env";
           };
-          allowFrom = [ 426146931232997376 ];
+          allowFrom = [ "426146931232997376" ];
         };
       };
     };
