@@ -219,14 +219,67 @@ in
       };
 
       providers.ollama_remote = {
-        provider = "openai-compatible";
+        api = "openai-completions";
         baseUrl = "http://10.157.78.106:11435/v1";
         apiKey = "";
-        timeout = 120;
-        
-        models = {
-          default = "deepseek-r1:14b"; 
+        models = [
+          {
+            id = "deepseek-r1:14b";
+            name = "deepseek-r1:14b";
+          }
+        ];
+      };
+
+      providers.openai = {
+        api = "openai-responses";
+        baseUrl = "https://api.openai.com/v1";
+        apiKey = {
+          source = "env";
+          id = "OPENAI_API_KEY";
+          provider = "env";
         };
+        models = [
+          {
+            id = "gpt-5.4-mini";
+            name = "gpt-5.4-mini";
+          }
+          {
+            id = "gpt-5.4-nano";
+            name = "gpt-5.4-nano";
+          }
+        ];
+      };
+
+      providers.anthropic = {
+        api = "anthropic-messages";
+        baseUrl = "https://api.anthropic.com";
+        apiKey = {
+          source = "env";
+          id = "ANTHROPIC_API_KEY";
+          provider = "env";
+        };
+        models = [
+          {
+            id = "claude-haiku-4-5";
+            name = "claude-haiku-4-5";
+          }
+        ];
+      };
+
+      providers.google = {
+        api = "google-generative-ai";
+        baseUrl = "https://generativelanguage.googleapis.com";
+        apiKey = {
+          source = "env";
+          id = "GOOGLE_API_KEY";
+          provider = "env";
+        };
+        models = [
+          {
+            id = "gemini-2.5-flash";
+            name = "gemini-2.5-flash";
+          }
+        ];
       };
     };
   };
