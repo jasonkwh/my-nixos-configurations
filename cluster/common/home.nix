@@ -25,8 +25,6 @@ in
     sessionVariables = {
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
-      LINE_CHANNEL_SECRET = "dummy_secret_for_line_channel";
-      LINE_CHANNEL_ACCESS_TOKEN = "dummy_access_token_for_line_channel";
     };
 
     file.".npmrc".text = ''
@@ -204,7 +202,6 @@ in
   # OpenClaw - AI assistant gateway (Discord bot on your machine)
   programs.openclaw = {
     enable = true;
-    systemd.enable = true;
 
     config = {
       gateway = {
@@ -226,6 +223,13 @@ in
 
     };
   };
+
+  systemd.services.openclaw.wantedBy = [ "multi-user.target" ];
+
+  systemd.services.openclaw.serviceConfig.Environment = [
+    "LINE_CHANNEL_SECRET=dummy_secret"
+    "LINE_CHANNEL_ACCESS_TOKEN=dummy_token"
+  ];
 
   # Automatically run podman system migrate after home-manager activation
   home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''
