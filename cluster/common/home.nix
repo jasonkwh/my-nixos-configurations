@@ -202,21 +202,26 @@ in
   # OpenClaw - AI assistant gateway (Discord bot on your machine)
   programs.openclaw = {
     enable = true;
+    systemd.enable = true;
+
     config = {
       gateway = {
         mode = "local";
       };
 
-      channels.discord = {
-        accounts.main = {
-          token = {
-            source = "env";
-            id = "DISCORD_BOT_TOKEN";
-            provider = "env";
+      channels = {        
+        discord = {
+          accounts.main = {
+            token = {
+              source = "env";
+              provider = "default";
+              id = "DISCORD_BOT_TOKEN";
+            };
+            allowFrom = [ "426146931232997376" ];
           };
-          allowFrom = [ "426146931232997376" ];
         };
       };
+
     };
   };
 
