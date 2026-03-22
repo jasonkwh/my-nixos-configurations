@@ -171,7 +171,7 @@ in
     postman
     mongodb-compass
     neo4j-desktop
-
+    
     # migrated from system packages
     git
     vim
@@ -210,6 +210,7 @@ in
 
       channels = {        
         discord = {
+          enabled = true;
           accounts.main = {
             token = {
               source = "env";
@@ -224,12 +225,11 @@ in
     };
   };
 
-  systemd.services.openclaw.wantedBy = [ "multi-user.target" ];
-
-  systemd.services.openclaw.serviceConfig.Environment = [
-    "LINE_CHANNEL_SECRET=dummy_secret"
-    "LINE_CHANNEL_ACCESS_TOKEN=dummy_token"
-  ];
+  systemd.user.services.openclaw-gateway = {
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
+  };
 
   # Automatically run podman system migrate after home-manager activation
   home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''
