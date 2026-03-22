@@ -218,6 +218,8 @@ in
         };
       };
 
+      agents.defaults.model = "ollama_remote/deepseek-r1:14b";
+
       providers.ollama_remote = {
         api = "openai-completions";
         baseUrl = "http://10.157.78.106:11435/v1";
