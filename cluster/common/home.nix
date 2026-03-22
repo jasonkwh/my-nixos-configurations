@@ -206,6 +206,7 @@ in
       gateway = {
         mode = "local";
       };
+
       channels.discord = {
         accounts.main = {
           token = {
@@ -214,6 +215,17 @@ in
             provider = "env";
           };
           allowFrom = [ "426146931232997376" ];
+        };
+      };
+
+      providers.ollama_remote = {
+        provider = "openai-compatible";
+        baseUrl = "http://10.157.78.106:11435/v1";
+        apiKey = "";
+        timeout = 120;
+        
+        models = {
+          default = "deepseek-r1:14b"; 
         };
       };
     };
