@@ -25,6 +25,8 @@ in
     sessionVariables = {
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
+      LINE_CHANNEL_SECRET = "dummy_secret_for_line_channel";
+      LINE_CHANNEL_ACCESS_TOKEN = "dummy_access_token_for_line_channel";
     };
 
     file.".npmrc".text = ''
