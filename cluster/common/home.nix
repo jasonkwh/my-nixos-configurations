@@ -200,36 +200,36 @@ in
   ];
 
   # OpenClaw - AI assistant gateway (Discord bot on your machine)
-  programs.openclaw = {
-    enable = true;
+  # programs.openclaw = {
+  #   enable = false;
 
-    config = {
-      gateway = {
-        mode = "local";
-      };
+  #   config = {
+  #     gateway = {
+  #       mode = "local";
+  #     };
 
-      channels = {        
-        discord = {
-          enabled = true;
-          accounts.main = {
-            token = {
-              source = "env";
-              provider = "default";
-              id = "DISCORD_BOT_TOKEN";
-            };
-            allowFrom = [ "426146931232997376" ];
-          };
-        };
-      };
+  #     channels = {        
+  #       discord = {
+  #         enabled = true;
+  #         accounts.main = {
+  #           token = {
+  #             source = "env";
+  #             provider = "default";
+  #             id = "DISCORD_BOT_TOKEN";
+  #           };
+  #           allowFrom = [ "426146931232997376" ];
+  #         };
+  #       };
+  #     };
 
-    };
-  };
+  #   };
+  # };
 
-  systemd.user.services.openclaw-gateway = {
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
+  # systemd.user.services.openclaw-gateway = {
+  #   Install = {
+  #     WantedBy = [ "default.target" ];
+  #   };
+  # };
 
   # Automatically run podman system migrate after home-manager activation
   home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''
