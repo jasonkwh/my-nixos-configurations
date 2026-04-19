@@ -21,6 +21,12 @@
 
       efi.canTouchEfiVariables = true;
     };
+
+    kernel.sysctl = {
+      # Allow more inotify watchers — Cursor/VSCode language servers use many
+      "fs.inotify.max_user_watches" = 524288;
+      "fs.inotify.max_user_instances" = 1024;
+    };
   };
 
   nix = {
@@ -122,7 +128,6 @@
       samba
 
       # Desktop apps
-      brave
       gparted
       boxbuddy
       distrobox
