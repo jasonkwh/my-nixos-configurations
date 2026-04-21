@@ -8,7 +8,7 @@ let
     src = pkgs.fetchurl {
       url = "https://downloads.cursor.com/production/fce1e9ab7844f9ea35793da01e634aa7e50bce90/linux/x64/Cursor-3.1.17-x86_64.AppImage";
       # use pkgs.lib.fakeSha256 to avoid downloading the file
-      sha256 = "sha256-SPwRpyiaSgPUSxiqFHKGi8cQw1vhOIFyRjhQLVMbdOQ=";
+      sha256 = "sha256-+Pk5MvQSjhoKJdtN+pWX/vcyWnHmbXvJ5wFDvgtHo20=";
     };
 
     extraPkgs = pkgs: with pkgs; [
