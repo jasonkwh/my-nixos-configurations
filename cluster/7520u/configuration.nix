@@ -17,6 +17,8 @@
 
   boot = {
     kernelModules = [ "nft_expr_counter" ];
+    # Resume hibernation image from the 7520u swap partition.
+    resumeDevice = "/dev/disk/by-uuid/97c60ea8-adcf-444b-a44d-e9eeac24138f";
 
     # Fix for Realtek RTL8821CE intermittent disconnections
     extraModprobeConfig = ''
@@ -33,8 +35,6 @@
       "rtw88_pci.disable_msi=Y"
       # Use the modern AMD P-State driver for better CPU frequency scaling
       "amd_pstate=active"
-      # Unlock all amdgpu power management feature flags
-      "amdgpu.ppfeaturemask=0xffffffff"
       # Reduce watchdog overhead
       "nowatchdog"
     ];
@@ -47,6 +47,14 @@
       "vm.dirty_background_ratio" = 5;
     };
   };
+
+  # On-disk swap for reliable hibernate/resume after battery loss.
+  swapDevices = [
+    {
+      device = "/dev/disk/by-uuid/97c60ea8-adcf-444b-a44d-e9eeac24138f";
+      discardPolicy = "both";
+    }
+  ];
 
   networking = {
     hostName = "jasonkwh-7520u"; # Define your hostname.
