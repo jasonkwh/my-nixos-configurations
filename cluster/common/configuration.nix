@@ -12,6 +12,10 @@
   # Bootloader.
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
+    kernelParams = [
+      # Prefer S3/deep sleep over s2idle where supported to avoid flaky resume.
+      "mem_sleep_default=deep"
+    ];
 
     loader = {
       systemd-boot = {
@@ -214,6 +218,13 @@
   security.pam.services.sddm.enableKwallet = true;
 
   services = {
+    upower = {
+      enable = true;
+      # If the battery becomes critical, do a clean shutdown instead of
+      # entering a potentially unrecoverable low-power suspend state.
+      criticalPowerAction = "PowerOff";
+    };
+
     gnome.gnome-keyring.enable = true;
 
     displayManager = {
