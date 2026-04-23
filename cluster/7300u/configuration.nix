@@ -13,7 +13,17 @@
     ];
   };
 
-  boot.kernelModules = [ "nft_expr_counter" ];
+  boot = {
+    kernelModules = [ "nft_expr_counter" ];
+    kernelParams = [
+      "nowatchdog"
+    ];
+    kernel.sysctl = {
+      "vm.swappiness" = 10;
+      "vm.dirty_ratio" = 15;
+      "vm.dirty_background_ratio" = 5;
+    };
+  };
 
   zramSwap = {
     enable = true;
@@ -32,6 +42,7 @@
     thermald.enable = true;
     fstrim.enable = true;
     power-profiles-daemon.enable = true;
+    irqbalance.enable = true;
 
     libinput = {
       enable = true;
