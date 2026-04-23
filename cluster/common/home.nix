@@ -191,6 +191,7 @@ in
     yamllint
     yq
     libreoffice-qt
+    kdePackages.isoimagewriter
 
     # programming
     neovim
