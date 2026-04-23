@@ -130,7 +130,6 @@ in
 
         # Load secrets from files if they exist
         [[ -f ~/.secrets/github-pat ]] && export CR_PAT="$(< ~/.secrets/github-pat)"
-        [[ -f ~/.secrets/openclaw-gateway-token ]] && export OPENCLAW_GATEWAY_TOKEN="$(< ~/.secrets/openclaw-gateway-token)"
         [[ -f ~/.secrets/discord-bot-token ]] && export DISCORD_BOT_TOKEN="$(< ~/.secrets/discord-bot-token)"
         [[ -f ~/.secrets/anthropic-api-key ]] && export ANTHROPIC_API_KEY="$(< ~/.secrets/anthropic-api-key)"
         [[ -f ~/.secrets/gemini-api-key ]] && export GEMINI_API_KEY="$(< ~/.secrets/gemini-api-key)"
@@ -245,38 +244,6 @@ in
     source-han-serif
     wqy_zenhei
   ];
-
-  # OpenClaw - AI assistant gateway (Discord bot on your machine)
-  # programs.openclaw = {
-  #   enable = false;
-
-  #   config = {
-  #     gateway = {
-  #       mode = "local";
-  #     };
-
-  #     channels = {        
-  #       discord = {
-  #         enabled = true;
-  #         accounts.main = {
-  #           token = {
-  #             source = "env";
-  #             provider = "default";
-  #             id = "DISCORD_BOT_TOKEN";
-  #           };
-  #           allowFrom = [ "426146931232997376" ];
-  #         };
-  #       };
-  #     };
-
-  #   };
-  # };
-
-  # systemd.user.services.openclaw-gateway = {
-  #   Install = {
-  #     WantedBy = [ "default.target" ];
-  #   };
-  # };
 
   # Automatically run podman system migrate after home-manager activation
   home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''
