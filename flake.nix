@@ -23,13 +23,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
-    nix-openclaw = {
-      url = "github:openclaw/nix-openclaw";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, home-manager, plasma-manager, nix-openclaw, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, plasma-manager, ... }@inputs:
     let
       system = "x86_64-linux";
 
@@ -49,7 +45,7 @@
         inherit system;
         modules = [
           ({
-            nixpkgs.overlays = [ kernelOverlay nix-openclaw.overlays.default ];
+            nixpkgs.overlays = [ kernelOverlay ];
           })
           ./cluster/${name}/configuration.nix
           {
@@ -62,7 +58,6 @@
             home-manager.backupFileExtension = "backup";
             home-manager.sharedModules = [
               plasma-manager.homeModules.plasma-manager
-              nix-openclaw.homeManagerModules.openclaw
             ];
           }
         ];
