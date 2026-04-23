@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 {
   imports =
@@ -15,6 +15,12 @@
 
   boot.kernelModules = [ "nft_expr_counter" ];
 
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+  };
+
   networking = {
     hostName = "jasonkwh-7300u"; # Define your hostname.
   };
@@ -23,6 +29,10 @@
     xserver = {
       videoDrivers = [ "intel" ];
     };
+    thermald.enable = true;
+    fstrim.enable = true;
+    power-profiles-daemon.enable = true;
+
     libinput = {
       enable = true;
       touchpad = {
@@ -45,5 +55,14 @@
           "--flannel-iface=wlp58s0"
         ];
     };
+  };
+
+  hardware = {
+    cpu.intel.updateMicrocode = true;
+    graphics.extraPackages = with pkgs; [
+      intel-media-driver
+      libva-vdpau-driver
+      libvdpau-va-gl
+    ];
   };
 }
