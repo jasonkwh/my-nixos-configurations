@@ -23,6 +23,18 @@
     xserver = {
       videoDrivers = [ "intel" ];
     };
+    libinput = {
+      enable = true;
+      touchpad = {
+        tapping = true;
+        naturalScrolling = true;
+        scrollMethod = "twofinger";
+        clickMethod = "clickfinger";
+        accelProfile = "flat";
+        disableWhileTyping = true;
+        accelSpeed = "0.6";
+      };
+    };
 
     k3s = {
       enable = false;
