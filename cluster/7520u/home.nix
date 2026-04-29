@@ -3,7 +3,7 @@
 {
   home.packages = with pkgs; [
     wireshark
-    kdePackages.yakuake
+    # kdePackages.yakuake
     zoom-us
     discord
     slack
@@ -19,18 +19,18 @@
     protonup-qt
   ];
 
-  xdg.configFile."autostart/yakuake.desktop".source =
-    pkgs.writeTextFile {
-      name = "yakuake-autostart.desktop";
-      text = ''
-        [Desktop Entry]
-        Type=Application
-        Exec=yakuake
-        Hidden=false
-        NoDisplay=false
-        X-GNOME-Autostart-enabled=true
-        Name=Yakuake
-        Comment=Drop-down terminal
-      '';
-    };
+  # xdg.configFile."autostart/yakuake.desktop".source =
+  #   pkgs.writeTextFile {
+  #     name = "yakuake-autostart.desktop";
+  #     text = ''
+  #       [Desktop Entry]
+  #       Type=Application
+  #       Exec=yakuake
+  #       Hidden=false
+  #       NoDisplay=false
+  #       X-GNOME-Autostart-enabled=true
+  #       Name=Yakuake
+  #       Comment=Drop-down terminal
+  #     '';
+  #   };
 }
