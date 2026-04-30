@@ -196,7 +196,7 @@ in
     # programming
     neovim
     gh
-    go_1_25
+    go_1_26
     protobuf
     rustup
     python3
