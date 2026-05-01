@@ -171,9 +171,7 @@ in
     graphviz
     ngrok
     tilt
-    golangci-lint
     percona-toolkit
-    go-migrate
     kubectl
     kubectx
     k9s
