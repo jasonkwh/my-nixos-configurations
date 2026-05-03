@@ -113,6 +113,16 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+  nixpkgs.config = {
+  # Allow unfree packages
+    allowUnfree = true;
+
+    permittedInsecurePackages = [
+      "electron-33.4.11"
+      "beekeeper-studio-5.3.4"
+    ];
+  };
+
   virtualisation = {
     podman = {
       enable = true;

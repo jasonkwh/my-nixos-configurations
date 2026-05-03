@@ -66,6 +66,13 @@
       mkHome = { name, ... }: home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
+          config = {
+            allowUnfree = true;
+            permittedInsecurePackages = [
+              "electron-33.4.11"
+              "beekeeper-studio-5.3.4"
+            ];
+          };
         };
         modules = [
           plasma-manager.homeModules.plasma-manager
