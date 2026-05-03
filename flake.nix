@@ -18,6 +18,10 @@
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -25,7 +29,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, plasma-manager, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, nixgl, plasma-manager, ... }@inputs:
     let
       system = "x86_64-linux";
 
@@ -73,6 +77,9 @@
               "beekeeper-studio-5.3.4"
             ];
           };
+        };
+        extraSpecialArgs = {
+          inherit nixgl;
         };
         modules = [
           plasma-manager.homeModules.plasma-manager

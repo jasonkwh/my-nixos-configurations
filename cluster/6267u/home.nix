@@ -1,6 +1,19 @@
-{ config, pkgs, ... }:
+{ config, pkgs, nixgl, ... }:
 
 {
+  # Configure nixGL wrappers for non-NixOS GPU acceleration.
+  targets.genericLinux.nixGL = {
+    packages = nixgl.packages;
+    defaultWrapper = "mesa";
+    installScripts = [ "mesa" ];
+  };
+
+  programs.zsh.shellAliases = {
+    brave = "nixGLMesa brave";
+    cursor = "nixGLMesa cursor";
+    code = "nixGLMesa code";
+  };
+
   # Add user-specific packages here.
   # home.packages = with pkgs; [
   #   
