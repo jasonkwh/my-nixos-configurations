@@ -32,16 +32,6 @@ let
   };
 in
 {
-  nixpkgs.config = {
-    # Allow unfree packages in user profile.
-    allowUnfree = true;
-
-    permittedInsecurePackages = [
-      "electron-33.4.11"
-      "beekeeper-studio-5.3.4"
-    ];
-  };
-
   home = {
     username = "jasonkwh";
     homeDirectory = "/home/jasonkwh";
