@@ -40,7 +40,7 @@ sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
 3. Install Home Manager CLI:
 
    ```bash
-   nix profile install nixpkgs#home-manager
+   nix profile add nixpkgs#home-manager
    ```
 
 ### Apply
