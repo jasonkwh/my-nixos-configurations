@@ -16,6 +16,41 @@ sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure --upgrade-all
 sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
 ```
 
+## Apply Home Manager on Debian (6267u)
+
+### Prerequisites
+
+1. Install Nix (multi-user/daemon mode):
+
+   ```bash
+   curl -L https://nixos.org/nix/install | sh -s -- --daemon
+   ```
+
+   Then restart your shell (or log out/in) so `nix` is on `PATH`.
+
+2. Enable flakes:
+
+   ```bash
+   mkdir -p ~/.config/nix
+   cat > ~/.config/nix/nix.conf << 'EOF'
+   experimental-features = nix-command flakes
+   EOF
+   ```
+
+3. Install Home Manager CLI:
+
+   ```bash
+   nix profile install nixpkgs#home-manager
+   ```
+
+### Apply
+
+```bash
+git clone https://github.com/jasonkwh/my-nixos-configurations.git
+cd my-nixos-configurations
+make jasonkwh-6267u
+```
+
 ## GitHub Actions (Self-hosted Runner)
 
 You can trigger builds remotely via GitHub Actions using a self-hosted runner managed by NixOS.
@@ -52,32 +87,3 @@ The runner will automatically start and register with your GitHub repo.
 3. Click "Run workflow"
 4. Select your target machine and click "Run workflow"
 
-## Distrobox Setup (for SteamOS, Fedora Silverblue, or any immutable OS)
-
-For immutable operating systems where the root filesystem gets wiped on updates, use distrobox with a separate home directory.
-
-### First-time setup (run on host)
-
-```bash
-# Create distrobox with its own home directory
-mkdir -p ~/distrobox-homes/fedora-dev
-distrobox-create --name fedora-dev --image registry.fedoraproject.org/fedora-toolbox:43 --home ~/distrobox-homes/fedora-dev
-
-# Enter the distrobox
-distrobox enter fedora-dev
-```
-
-### Inside the distrobox
-
-```bash
-# Clone this repo
-git clone https://github.com/jasonkwh/my-nixos-configurations.git
-cd my-nixos-configurations
-
-# Run the bootstrap script
-./distrobox-bootstrap.sh
-
-# Restart shell and configure powerlevel10k
-exec zsh
-p10k configure
-```
