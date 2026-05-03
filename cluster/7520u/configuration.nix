@@ -76,6 +76,14 @@
   ];
 
   programs = {
+    steam = {
+      enable = true;
+    };
+
+    wireshark = {
+      enable = true;
+    };
+
     # Gamemode: temporarily boosts CPU governor and GPU clocks during gaming
     gamemode = {
       enable = true;

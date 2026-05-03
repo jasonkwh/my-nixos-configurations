@@ -2,7 +2,6 @@
 
 {
   home.packages = with pkgs; [
-    wireshark
     # kdePackages.yakuake
     zoom-us
     discord
@@ -14,7 +13,6 @@
     vlc
 
     # games
-    steam
     heroic
     protonup-qt
   ];

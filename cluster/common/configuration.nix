@@ -123,6 +123,13 @@
     ];
   };
 
+  # System tools that require root/polkit integration.
+  environment.systemPackages = with pkgs; [
+    gparted
+    tcpdump
+    hw-probe
+  ];
+
   virtualisation = {
     podman = {
       enable = true;
