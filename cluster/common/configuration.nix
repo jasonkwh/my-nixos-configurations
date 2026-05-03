@@ -132,21 +132,11 @@
       samba
 
       # Desktop apps
-      gparted
       boxbuddy
       distrobox
 
       # Hardware/system tools
-      hw-probe
-      ollama
-      buildah
-      skopeo
-      podman-compose
       gcc-arm-embedded
-      picotool
-      wineWowPackages.full
-      winetricks
-      tcpdump
     ];
   };
 
