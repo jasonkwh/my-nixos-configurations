@@ -32,6 +32,8 @@ let
   };
 in
 {
+  targets.genericLinux.enable = true;
+
   home = {
     username = "jasonkwh";
     homeDirectory = "/home/jasonkwh";
