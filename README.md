@@ -51,6 +51,8 @@ cd my-nixos-configurations
 make jasonkwh-6267u
 ```
 
+Note: the `jasonkwh-6267u` make target uses `home-manager switch -b backup`, so if a managed file already exists (for example `~/.config/kwalletrc`), Home Manager will keep a `*.backup` copy instead of failing.
+
 ## GitHub Actions (Self-hosted Runner)
 
 You can trigger builds remotely via GitHub Actions using a self-hosted runner managed by NixOS.
