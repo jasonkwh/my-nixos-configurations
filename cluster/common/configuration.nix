@@ -113,33 +113,6 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  nixpkgs.config = {
-  # Allow unfree packages
-    allowUnfree = true;
-
-    permittedInsecurePackages = [
-      "electron-33.4.11"
-      "beekeeper-studio-5.3.4"
-    ];
-  };
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment = {
-    # System-level packages only (user packages are in home.nix)
-    systemPackages = with pkgs; [
-      xwayland
-      samba
-
-      # Desktop apps
-      boxbuddy
-      distrobox
-
-      # Hardware/system tools
-      gcc-arm-embedded
-    ];
-  };
-
   virtualisation = {
     podman = {
       enable = true;
