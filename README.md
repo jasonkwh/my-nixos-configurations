@@ -37,17 +37,7 @@ sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
    EOF
    ```
 
-3. Install Home Manager CLI:
-
-   ```bash
-   nix profile add nixpkgs#home-manager
-   ```
-
-   If activation later reports a `home-manager` binary conflict, remove the profile-installed one once:
-
-   ```bash
-   nix profile remove home-manager
-   ```
+3. No global Home Manager install is required (the Make target runs it via `nix run`).
 
 ### Apply
 
@@ -57,7 +47,7 @@ cd my-nixos-configurations
 make jasonkwh-6267u
 ```
 
-Note: the `jasonkwh-6267u` make target uses `home-manager switch -b backup`, so if a managed file already exists (for example `~/.config/kwalletrc`), Home Manager will keep a `*.backup` copy instead of failing.
+Note: the `jasonkwh-6267u` make target uses `nix run nixpkgs#home-manager -- switch -b backup --flake .#jasonkwh-6267u`, so if a managed file already exists (for example `~/.config/kwalletrc`), Home Manager will keep a `*.backup` copy instead of failing.
 
 ## GitHub Actions (Self-hosted Runner)
 

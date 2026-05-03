@@ -17,4 +17,4 @@ jasonkwh-7300u:
 	sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
 
 jasonkwh-6267u:
-	home-manager switch -b backup --flake .#jasonkwh-6267u
+	nix run nixpkgs#home-manager -- switch -b backup --flake .#jasonkwh-6267u
