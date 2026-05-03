@@ -43,6 +43,12 @@ sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
    nix profile add nixpkgs#home-manager
    ```
 
+   If activation later reports a `home-manager` binary conflict, remove the profile-installed one once:
+
+   ```bash
+   nix profile remove home-manager
+   ```
+
 ### Apply
 
 ```bash
