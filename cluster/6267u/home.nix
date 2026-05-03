@@ -10,7 +10,6 @@
 
   programs.zsh.shellAliases = {
     brave = "nixGLMesa brave";
-    cursor = "nixGLMesa cursor";
     code = "nixGLMesa code";
   };
 

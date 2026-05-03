@@ -37,6 +37,10 @@ in
   home = {
     username = "jasonkwh";
     homeDirectory = "/home/jasonkwh";
+    sessionPath = [
+      "${config.home.homeDirectory}/go/bin"
+      "${config.home.homeDirectory}/.npm-global/bin"
+    ];
 
     file.".config/powermanagementprofilesrc" = {
       text = ''
@@ -126,8 +130,6 @@ in
         path = "${config.xdg.dataHome}/zsh/history";
       };
       initContent = ''
-        export PATH=$PATH:$(go env GOPATH)/bin:$HOME/.npm-global/bin
-
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
         # Load secrets from files if they exist
@@ -139,7 +141,11 @@ in
 
         # Wrapper function to run cursor silently
         cursor() {
-          command cursor "$@" &>/dev/null &
+          if command -v nixGLMesa >/dev/null 2>&1; then
+            command nixGLMesa cursor "$@" &>/dev/null &
+          else
+            command cursor "$@" &>/dev/null &
+          fi
           disown
         }
       '';
