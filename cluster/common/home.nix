@@ -239,8 +239,6 @@ in
     bc
     file
     nixVersions.latest
-    tcpdump
-    hw-probe
     ollama
     buildah
     skopeo
@@ -248,7 +246,6 @@ in
     wineWowPackages.full
     winetricks
     picotool
-    gparted
 
     # fonts
     nerd-fonts.noto
