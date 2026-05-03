@@ -62,11 +62,26 @@
           }
         ];
       };
+
+      mkHome = { name, ... }: home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          inherit system;
+        };
+        modules = [
+          plasma-manager.homeModules.plasma-manager
+          ./cluster/common/home.nix
+          ./cluster/${name}/home.nix
+        ];
+      };
     in
     {
       nixosConfigurations = {
         "jasonkwh-7300u" = mkHost { name = "7300u"; };
         "jasonkwh-7520u" = mkHost { name = "7520u"; };
+      };
+
+      homeConfigurations = {
+        "jasonkwh-6267u" = mkHome { name = "6267u"; };
       };
     };
 }
