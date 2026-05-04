@@ -52,16 +52,22 @@ let
     ];
   };
 in
-  # Wrap the binary to inject Wayland/Ozone flags at launch.
+  # Wrap the binary to inject rendering flags at launch.
   # --ozone-platform-hint=auto: use native Wayland when available, avoids
   # XWayland translation overhead (zygote was observed at ~40% CPU without).
   # --disable-features=RendererCodeIntegrity: reduces per-window sandbox cost.
+  # --use-gl=desktop/--enable-gpu-rasterization/--enable-zero-copy:
+  # conservative rendering hints that generally improve smoothness without
+  # forcing unsupported GPU paths.
   pkgs.symlinkJoin {
     name = "cursor-3.1.17";
     paths = [ base ];
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/cursor \
+        --add-flags "--use-gl=desktop" \
+        --add-flags "--enable-gpu-rasterization" \
+        --add-flags "--enable-zero-copy" \
         --add-flags "--ozone-platform-hint=auto" \
         --add-flags "--disable-features=RendererCodeIntegrity"
     '';

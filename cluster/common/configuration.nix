@@ -125,7 +125,7 @@
 
   # System tools that require root/polkit integration.
   environment.systemPackages = with pkgs; [
-    gparted
+    kdePackages.partitionmanager
     tcpdump
     hw-probe
   ];
@@ -198,6 +198,9 @@
   security.pam.services.sddm.enableKwallet = true;
 
   services = {
+    # Required for KDE Discover to manage system packages.
+    packagekit.enable = true;
+
     upower = {
       enable = true;
       # If the battery becomes critical, do a clean shutdown instead of

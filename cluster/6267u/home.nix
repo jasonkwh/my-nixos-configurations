@@ -9,8 +9,10 @@
   };
 
   programs.zsh.shellAliases = {
-    brave = "nixGLMesa brave";
-    code = "nixGLMesa code";
+    # Enable GPU compositing + VA-API decode path for smoother video playback.
+    brave = "nixGLMesa brave --use-gl=desktop --ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy --enable-features=VaapiVideoDecoder,VaapiIgnoreDriverChecks --disable-features=UseChromeOSDirectVideoDecoder";
+    # Force Electron apps to prefer hardware rendering on older iGPU laptops.
+    code = "nixGLMesa code --use-gl=desktop --ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy --ozone-platform-hint=auto";
   };
 
   # Add user-specific packages here.
