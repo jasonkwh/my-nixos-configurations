@@ -167,6 +167,7 @@
     azure-cli
     yamllint
     yq
+    img2pdf
 
     # programming
     neovim
