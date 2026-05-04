@@ -274,6 +274,12 @@
     };
   };
 
+  # Avahi can occasionally leave a stale PID file in /run after abrupt exits,
+  # which causes switch-to-configuration to fail on service restart.
+  systemd.services.avahi-daemon.serviceConfig.ExecStartPre = [
+    "${pkgs.coreutils}/bin/rm -f /run/avahi-daemon/pid"
+  ];
+
   hardware = {    
     graphics = {
       enable = true;
