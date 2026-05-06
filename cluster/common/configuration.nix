@@ -128,6 +128,8 @@
     kdePackages.partitionmanager
     tcpdump
     hw-probe
+    wineWowPackages.full
+    winetricks
   ];
 
   virtualisation = {
