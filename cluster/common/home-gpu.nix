@@ -37,7 +37,5 @@ in
     brave
     cursor
     ollama
-    wineWowPackages.full
-    winetricks
   ];
 }
