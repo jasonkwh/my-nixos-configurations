@@ -3,7 +3,6 @@
 {
   home.packages = with pkgs; [
     # kdePackages.yakuake
-    zoom-us
     discord
     slack
     ffmpeg
@@ -11,6 +10,12 @@
     flac
     calibre
     vlc
+    kdePackages.isoimagewriter
+    vscode
+    beekeeper-studio
+    postman
+    mongodb-compass
+    neo4j-desktop
 
     # games
     heroic
