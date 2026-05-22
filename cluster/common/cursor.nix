@@ -3,12 +3,12 @@
 let
   base = pkgs.appimageTools.wrapType2 {
     pname = "cursor";
-    version = "3.1.17";
+    version = "3.5.17";
 
     src = pkgs.fetchurl {
-      url = "https://downloads.cursor.com/production/fce1e9ab7844f9ea35793da01e634aa7e50bce90/linux/x64/Cursor-3.1.17-x86_64.AppImage";
+      url = "https://downloads.cursor.com/production/d5b2fc092e16007956c9e5047f76097b9e626cab/linux/x64/Cursor-3.5.17-x86_64.AppImage";
       # use pkgs.lib.fakeSha256 to avoid downloading the file
-      sha256 = "sha256-+Pk5MvQSjhoKJdtN+pWX/vcyWnHmbXvJ5wFDvgtHo20=";
+      sha256 = "sha256-hOo7SIITt8GnzChwPCmAXIyOJBhiSV+fQ3ovLFAT49c=";
     };
 
     extraPkgs = pkgs: with pkgs; [
@@ -60,7 +60,7 @@ in
   # conservative rendering hints that generally improve smoothness without
   # forcing unsupported GPU paths.
   pkgs.symlinkJoin {
-    name = "cursor-3.1.17";
+    name = "cursor-3.5.17";
     paths = [ base ];
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
