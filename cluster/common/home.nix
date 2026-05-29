@@ -148,7 +148,6 @@
     tmux
     pigz
     pixz
-    htop
     graphviz
     ngrok
     tilt
