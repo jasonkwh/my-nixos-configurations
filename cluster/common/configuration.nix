@@ -130,6 +130,9 @@
     hw-probe
     wineWowPackages.full
     winetricks
+    htop
+    perf
+    bpftrace
   ];
 
   virtualisation = {
