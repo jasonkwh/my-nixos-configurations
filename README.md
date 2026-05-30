@@ -16,39 +16,6 @@ sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure --upgrade-all
 sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
 ```
 
-## Apply Home Manager on Debian (6267u)
-
-### Prerequisites
-
-1. Install Nix (multi-user/daemon mode):
-
-   ```bash
-   curl -L https://nixos.org/nix/install | sh -s -- --daemon
-   ```
-
-   Then restart your shell (or log out/in) so `nix` is on `PATH`.
-
-2. Enable flakes:
-
-   ```bash
-   mkdir -p ~/.config/nix
-   cat > ~/.config/nix/nix.conf << 'EOF'
-   experimental-features = nix-command flakes
-   EOF
-   ```
-
-3. No global Home Manager install is required (the Make target runs it via `nix run`).
-
-### Apply
-
-```bash
-git clone https://github.com/jasonkwh/my-nixos-configurations.git
-cd my-nixos-configurations
-make jasonkwh-6267u
-```
-
-Note: the `jasonkwh-6267u` make target uses `nix run nixpkgs#home-manager -- switch -b backup --flake .#jasonkwh-6267u`, so if a managed file already exists (for example `~/.config/kwalletrc`), Home Manager will keep a `*.backup` copy instead of failing.
-
 ## GitHub Actions (Self-hosted Runner)
 
 You can trigger builds remotely via GitHub Actions using a self-hosted runner managed by NixOS.

@@ -18,10 +18,6 @@
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixgl = {
-      url = "github:nix-community/nixGL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -29,7 +25,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixgl, plasma-manager, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, plasma-manager, ... }@inputs:
     let
       system = "x86_64-linux";
 
@@ -67,35 +63,11 @@
         ];
       };
 
-      mkHome = { name, ... }: home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          inherit system;
-          config = {
-            allowUnfree = true;
-            permittedInsecurePackages = [
-              "electron-33.4.11"
-              "beekeeper-studio-5.3.4"
-            ];
-          };
-        };
-        extraSpecialArgs = {
-          inherit nixgl;
-        };
-        modules = [
-          plasma-manager.homeModules.plasma-manager
-          ./cluster/common/home.nix
-          ./cluster/${name}/home.nix
-        ];
-      };
     in
     {
       nixosConfigurations = {
         "jasonkwh-7300u" = mkHost { name = "7300u"; };
         "jasonkwh-7520u" = mkHost { name = "7520u"; };
-      };
-
-      homeConfigurations = {
-        "jasonkwh-6267u" = mkHome { name = "6267u"; };
       };
     };
 }
