@@ -100,6 +100,7 @@
       };
       initContent = ''
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+        command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 
         # Load secrets from files if they exist
         [[ -f ~/.secrets/github-pat ]] && export CR_PAT="$(< ~/.secrets/github-pat)"

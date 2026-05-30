@@ -133,6 +133,7 @@
     htop
     perf
     bpftrace
+    direnv
   ];
 
   virtualisation = {
