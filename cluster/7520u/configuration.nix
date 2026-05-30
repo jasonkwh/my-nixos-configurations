@@ -1,6 +1,9 @@
 
 { config, lib, pkgs, ... }:
-
+let
+  swapUuid = "97c60ea8-adcf-444b-a44d-e9eeac24138f";
+  wifiIface = "wlp2s0";
+in
 {
   imports = [
     ../common/configuration.nix
@@ -20,7 +23,7 @@
   boot = {
     kernelModules = [ "nft_expr_counter" ];
     # Resume hibernation image from the 7520u swap partition.
-    resumeDevice = "/dev/disk/by-uuid/97c60ea8-adcf-444b-a44d-e9eeac24138f";
+    resumeDevice = "/dev/disk/by-uuid/${swapUuid}";
 
     # Fix for Realtek RTL8821CE intermittent disconnections
     extraModprobeConfig = ''
@@ -53,7 +56,7 @@
   # On-disk swap for reliable hibernate/resume after battery loss.
   swapDevices = [
     {
-      device = "/dev/disk/by-uuid/97c60ea8-adcf-444b-a44d-e9eeac24138f";
+      device = "/dev/disk/by-uuid/${swapUuid}";
       discardPolicy = "both";
     }
   ];
@@ -112,6 +115,7 @@
       enable = true;
       interval = "weekly";
     };
+    fwupd.enable = true;
 
     # Distribute hardware IRQs across CPU cores
     irqbalance.enable = true;
@@ -125,7 +129,7 @@
       role = "server";
       extraFlags = toString [
         "--tls-san=${config.networking.hostName}"
-        "--flannel-iface=wlp2s0"
+        "--flannel-iface=${wifiIface}"
         "--disable-network-policy"
       ];
     };
@@ -143,11 +147,4 @@
       httpListenPort = 9000;
     };
   };
-
-  # users.users.jasonkwh = {
-  #   extraGroups = [ "rslsync" ];
-  #   homeMode = "0750";
-  # };
-
-  # users.users.rslsync.extraGroups = [ "users" ];
 }
