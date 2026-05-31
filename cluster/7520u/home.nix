@@ -14,9 +14,5 @@
     beekeeper-studio
     postman
     mongodb-compass
-
-    # games
-    heroic
-    protonup-qt
   ];
 }

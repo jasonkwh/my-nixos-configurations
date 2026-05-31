@@ -18,7 +18,16 @@ in
     ];
   };
 
-  hardware.enableRedistributableFirmware = true;
+  hardware = {
+    cpu.amd.updateMicrocode = true;
+
+    graphics.extraPackages = with pkgs; [
+      # VA-API and VDPAU for hardware video decode/encode (mpv, ffmpeg, browser video)
+      mesa
+      libva-utils
+      rocmPackages.clr.icd
+    ];
+  };
 
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
@@ -73,13 +82,6 @@ in
     algorithm = "zstd";
     memoryPercent = 50;
   };
-
-  hardware.graphics.extraPackages = with pkgs; [
-    # VA-API and VDPAU for hardware video decode/encode (mpv, ffmpeg, browser video)
-    mesa
-    libva-utils
-    rocmPackages.clr.icd
-  ];
 
   programs = {
     steam = {
