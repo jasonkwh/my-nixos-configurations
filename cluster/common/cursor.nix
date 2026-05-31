@@ -14,16 +14,16 @@ let
     extraPkgs = pkgs: with pkgs; [
       # Core libraries for Electron/native modules
       libxkbcommon
-      xorg.libX11
-      xorg.libXrandr
-      xorg.libXcursor
-      xorg.libXi
-      xorg.libXdamage
-      xorg.libXcomposite
-      xorg.libXfixes
-      xorg.libXtst
-      xorg.libxcb
-      xorg.libxshmfence
+      libx11
+      libxrandr
+      libxcursor
+      libxi
+      libxdamage
+      libxcomposite
+      libxfixes
+      libxtst
+      libxcb
+      libxshmfence
 
       # Audio/video
       alsa-lib

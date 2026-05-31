@@ -7,13 +7,13 @@ My personal NixOS configuration nix files
 ### 7520u laptop
 
 ```bash
-sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure --upgrade-all
+sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure
 ```
 
 ### 7300u laptop
 
 ```bash
-sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
+sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure
 ```
 
 ## GitHub Actions (Self-hosted Runner)
