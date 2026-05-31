@@ -10,8 +10,8 @@ update:
 	sudo nix flake update
 
 jasonkwh-7520u:
-	sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure --upgrade-all
+	sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure
 
 jasonkwh-7300u:
-	sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure --upgrade-all
+	sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure
 
