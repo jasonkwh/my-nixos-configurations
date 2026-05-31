@@ -203,6 +203,8 @@
   security.pam.services.sddm.enableKwallet = true;
 
   services = {
+    tailscale.enable = true;
+
     # Required for KDE Discover to manage system packages.
     packagekit.enable = true;
 
