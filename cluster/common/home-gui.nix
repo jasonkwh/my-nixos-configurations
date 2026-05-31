@@ -7,5 +7,6 @@
     libreoffice-qt
     warp
     zoom-us
+    protonup-qt
   ];
 }
