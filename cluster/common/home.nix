@@ -35,11 +35,9 @@
     };
 
     # Cursor startup flags (equivalent to launching with CLI args):
-    # - password-store=gnome-libsecret: use gnome-keyring instead of kwallet popup
     # - enable-crash-reporter=false: skip Sentry crash-reporter background process
     file.".config/Cursor/argv.json".text = builtins.toJSON {
       "enable-crash-reporter" = false;
-      "password-store" = "gnome-libsecret";
       "enable-proposed-api" = [];
     };
 
@@ -47,11 +45,10 @@
       prefix=${config.home.homeDirectory}/.npm-global
     '';
 
-    # Disable KWallet's Secret Service API so GNOME Keyring handles it
-    # (fixes NetworkManager not saving WiFi passwords)
+    # KWallet-only setup: keep Secret Service API enabled.
     file.".config/kwalletrc".text = ''
       [org.freedesktop.secrets]
-      apiEnabled=false
+      apiEnabled=true
     '';
   };
 
