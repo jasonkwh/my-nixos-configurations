@@ -47,6 +47,8 @@ in
       "iwlwifi.power_save=0"
       "rtw88_core.disable_lps_deep=Y"
       "rtw88_pci.disable_msi=Y"
+      # Work around amdgpu/KWin pageflip timeout hangs on this laptop.
+      "amdgpu.dcdebugmask=0x10"
       # Use the modern AMD P-State driver for better CPU frequency scaling
       "amd_pstate=active"
       # Reduce watchdog overhead
