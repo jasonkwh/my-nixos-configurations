@@ -31,7 +31,6 @@ in
 
   boot = {
     kernelPackages = pkgs.linuxPackages;
-    kernelModules = [ "nft_expr_counter" ];
     # Resume hibernation image from the 7520u swap partition.
     resumeDevice = "/dev/disk/by-uuid/${swapUuid}";
 
@@ -63,8 +62,9 @@ in
     };
   };
 
-  # On-disk swap for reliable hibernate/resume after battery loss.
-  swapDevices = [
+  # Keep a single authoritative swap definition and prevent duplicate entries
+  # from other imported modules from being merged into /etc/fstab.
+  swapDevices = lib.mkForce [
     {
       device = "/dev/disk/by-uuid/${swapUuid}";
       discardPolicy = "both";

@@ -17,7 +17,6 @@
 
   boot = {
     kernelPackages = pkgs.linuxPackages;
-    kernelModules = [ "nft_expr_counter" ];
     kernelParams = [
       "nowatchdog"
     ];
