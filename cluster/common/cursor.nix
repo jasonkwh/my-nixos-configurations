@@ -45,7 +45,6 @@ let
       libxkbfile
       systemd
       libsecret
-      gnome-keyring
 
       # For native modules
       stdenv.cc.cc.lib

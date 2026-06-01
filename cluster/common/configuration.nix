@@ -210,7 +210,8 @@
       criticalPowerAction = "PowerOff";
     };
 
-    gnome.gnome-keyring.enable = true;
+    # Use KWallet as the single secrets backend on KDE.
+    gnome.gnome-keyring.enable = false;
 
     displayManager = {
       sddm = {
