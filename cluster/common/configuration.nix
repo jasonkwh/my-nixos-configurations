@@ -11,11 +11,6 @@
 
   # Bootloader.
   boot = {
-    kernelParams = [
-      # Prefer S3/deep sleep over s2idle where supported to avoid flaky resume.
-      "mem_sleep_default=deep"
-    ];
-
     loader = {
       systemd-boot = {
         enable = true;
