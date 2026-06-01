@@ -30,7 +30,7 @@ in
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxPackages;
     kernelModules = [ "nft_expr_counter" ];
     # Resume hibernation image from the 7520u swap partition.
     resumeDevice = "/dev/disk/by-uuid/${swapUuid}";

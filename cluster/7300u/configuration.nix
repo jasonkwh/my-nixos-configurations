@@ -16,7 +16,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxPackages;
     kernelModules = [ "nft_expr_counter" ];
     kernelParams = [
       "nowatchdog"
