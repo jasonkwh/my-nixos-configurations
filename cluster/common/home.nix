@@ -200,18 +200,6 @@
     skopeo
     podman-compose
     picotool
-
-    # fonts
-    nerd-fonts.noto
-    nerd-fonts.jetbrains-mono
-    noto-fonts
-    noto-fonts-cjk-sans
-    noto-fonts-color-emoji
-    source-code-pro
-    source-han-mono
-    source-han-sans
-    source-han-serif
-    wqy_zenhei
   ];
 
   # Automatically run podman system migrate after home-manager activation

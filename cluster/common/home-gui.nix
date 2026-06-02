@@ -8,5 +8,6 @@
     warp
     zoom-us
     protonup-qt
+    brave
   ];
 }
