@@ -53,5 +53,14 @@ let
 in
   # Keep Cursor close to the upstream AppImage launch path. Forcing Chromium GPU
   # flags here has caused Electron utility processes to SIGTRAP on this AMD
-  # Wayland setup.
-  base
+  # Wayland setup. The PATH prefix lets Cursor find NixOS security wrappers such
+  # as bwrap when launched from a desktop file instead of an initialized shell.
+  pkgs.symlinkJoin {
+    name = "cursor-3.6.21";
+    paths = [ base ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/cursor \
+        --prefix PATH : "/run/wrappers/bin"
+    '';
+  }
