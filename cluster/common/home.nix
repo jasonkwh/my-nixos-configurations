@@ -36,7 +36,9 @@
 
     # Cursor startup flags (equivalent to launching with CLI args):
     # - enable-crash-reporter=false: skip Sentry crash-reporter background process
+    # - disable-hardware-acceleration=true: avoid Mesa/Gallium zygote SIGTRAPs
     file.".config/Cursor/argv.json".text = builtins.toJSON {
+      "disable-hardware-acceleration" = true;
       "enable-crash-reporter" = false;
       "enable-proposed-api" = [];
     };
@@ -108,11 +110,7 @@
 
         # Wrapper function to run cursor silently
         cursor() {
-          if command -v nixGLMesa >/dev/null 2>&1; then
-            command nixGLMesa cursor "$@" &>/dev/null &
-          else
-            command cursor "$@" &>/dev/null &
-          fi
+          command cursor "$@" &>/dev/null &
           disown
         }
       '';

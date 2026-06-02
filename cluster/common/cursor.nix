@@ -1,9 +1,11 @@
 { pkgs }:
 
 let
+  cursorVersion = "3.6.21";
+
   base = pkgs.appimageTools.wrapType2 {
     pname = "cursor";
-    version = "3.6.21";
+    version = cursorVersion;
 
     src = pkgs.fetchurl {
       url = "https://downloads.cursor.com/production/e7a7e93f4d75f8272503ecf33cedbaae10114a15/linux/x64/Cursor-3.6.21-x86_64.AppImage";
@@ -56,11 +58,21 @@ in
   # Wayland setup. The PATH prefix lets Cursor find NixOS security wrappers such
   # as bwrap when launched from a desktop file instead of an initialized shell.
   pkgs.symlinkJoin {
-    name = "cursor-3.6.21";
+    name = "cursor-${cursorVersion}";
     paths = [ base ];
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/cursor \
-        --prefix PATH : "/run/wrappers/bin"
+        --prefix PATH : "/run/wrappers/bin" \
+        --add-flags "--disable-gpu" \
+        --add-flags "--disable-gpu-compositing"
+
+      if [ -d "$out/share/applications" ]; then
+        for f in $out/share/applications/*.desktop; do
+          cp --remove-destination "$(readlink -f "$f")" "$f"
+          substituteInPlace "$f" \
+            --replace-warn "${base}/bin/cursor" "$out/bin/cursor"
+        done
+      fi
     '';
   }
