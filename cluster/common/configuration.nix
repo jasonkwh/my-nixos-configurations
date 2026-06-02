@@ -130,6 +130,13 @@
     direnv
   ];
 
+  security.wrappers.bwrap = {
+    owner = "root";
+    group = "root";
+    setuid = true;
+    source = "${pkgs.bubblewrap}/bin/bwrap";
+  };
+
   virtualisation = {
     podman = {
       enable = true;
