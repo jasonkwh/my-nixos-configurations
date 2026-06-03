@@ -11,20 +11,6 @@
       "${config.home.homeDirectory}/.npm-global/bin"
     ];
 
-    file.".config/powermanagementprofilesrc" = {
-      text = ''
-        [AC]
-        lidAction=0
-      
-        [Battery]
-        lidAction=0
-      
-        [LowBattery]
-        lidAction=0
-      '';
-      force = true;
-    };
-
     sessionVariables = {
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
@@ -36,9 +22,7 @@
 
     # Cursor startup flags (equivalent to launching with CLI args):
     # - enable-crash-reporter=false: skip Sentry crash-reporter background process
-    # - disable-hardware-acceleration=true: avoid Mesa/Gallium zygote SIGTRAPs
     file.".config/Cursor/argv.json".text = builtins.toJSON {
-      "disable-hardware-acceleration" = true;
       "enable-crash-reporter" = false;
       "enable-proposed-api" = [];
     };
@@ -107,12 +91,6 @@
         [[ -f ~/.secrets/anthropic-api-key ]] && export ANTHROPIC_API_KEY="$(< ~/.secrets/anthropic-api-key)"
         [[ -f ~/.secrets/gemini-api-key ]] && export GEMINI_API_KEY="$(< ~/.secrets/gemini-api-key)"
         [[ -f ~/.secrets/openai-api-key ]] && export OPENAI_API_KEY="$(< ~/.secrets/openai-api-key)"
-
-        # Wrapper function to run cursor silently
-        cursor() {
-          command cursor "$@" &>/dev/null &
-          disown
-        }
       '';
       zplug = {
         enable = true;

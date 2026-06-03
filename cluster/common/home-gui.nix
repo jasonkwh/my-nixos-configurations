@@ -1,8 +1,5 @@
 { pkgs, ... }:
 
-let
-  cursor = import ./cursor.nix { inherit pkgs; };
-in
 {
   # Desktop GUI apps shared by NixOS laptops only.
   home.packages = with pkgs; [
@@ -12,6 +9,6 @@ in
     zoom-us
     protonup-qt
     brave
-    cursor
+    code-cursor
   ];
 }
