@@ -13,7 +13,6 @@ in
     imports = [
       ../common/home.nix
       ../common/home-gui.nix
-      ../common/home-gpu.nix
       ./home.nix
     ];
   };

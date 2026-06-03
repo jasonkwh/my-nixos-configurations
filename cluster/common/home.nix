@@ -163,6 +163,7 @@
     yamllint
     yq
     img2pdf
+    ollama
 
     # programming
     neovim
