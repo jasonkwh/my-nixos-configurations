@@ -20,9 +20,11 @@
       ELECTRON_OZONE_PLATFORM_HINT = "auto";
     };
 
-    # Cursor startup flags (equivalent to launching with CLI args):
+    # Cursor startup flags (equivalent to "Preferences: Configure Runtime Arguments"):
     # - enable-crash-reporter=false: skip Sentry crash-reporter background process
+    # - disable-hardware-acceleration=true: avoid Electron GPU crashes while keeping sandboxing enabled
     file.".config/Cursor/argv.json".text = builtins.toJSON {
+      "disable-hardware-acceleration" = true;
       "enable-crash-reporter" = false;
       "enable-proposed-api" = [];
     };
