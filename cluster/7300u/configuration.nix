@@ -14,6 +14,8 @@
     ];
   };
 
+  time.timeZone = "Australia/Melbourne";
+
   boot = {
     kernelPackages = pkgs.linuxPackages;
     kernelParams = [

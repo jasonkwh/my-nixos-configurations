@@ -28,5 +28,6 @@
     beekeeper-studio
     postman
     mongodb-compass
+    sunshine
   ];
 }
