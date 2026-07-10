@@ -17,6 +17,8 @@ in
     ];
   };
 
+  time.timeZone = "Australia/Melbourne";
+
   hardware = {
     cpu.amd.updateMicrocode = true;
 

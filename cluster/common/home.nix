@@ -131,6 +131,7 @@
     kubectl
     kubectx
     k9s
+    kubelogin
     kustomize
     lazygit
     act
