@@ -24,7 +24,6 @@
     calibre
     vlc
     kdePackages.isoimagewriter
-    vscode
     beekeeper-studio
     postman
     mongodb-compass
