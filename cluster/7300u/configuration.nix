@@ -43,9 +43,6 @@
       videoDrivers = [ "intel" ];
     };
     thermald.enable = true;
-    fstrim.enable = true;
-    power-profiles-daemon.enable = true;
-    irqbalance.enable = true;
 
     libinput = {
       enable = true;

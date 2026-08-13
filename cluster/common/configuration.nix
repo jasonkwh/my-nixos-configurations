@@ -215,6 +215,20 @@
   services = {
     tailscale.enable = true;
 
+    # Periodic SSD TRIM to maintain write performance.
+    fstrim = {
+      enable = true;
+      interval = "weekly";
+    };
+
+    # Distribute hardware IRQs across CPU cores.
+    irqbalance.enable = true;
+
+    # Provides KDE balanced, performance, and power-saver profiles.
+    power-profiles-daemon.enable = true;
+
+    fwupd.enable = true;
+
     # Required for KDE Discover to manage system packages.
     packagekit.enable = true;
 
