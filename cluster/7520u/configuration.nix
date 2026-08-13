@@ -116,20 +116,6 @@ in
       videoDrivers = [ "amdgpu" ];
     };
 
-    # Periodic SSD TRIM to maintain write performance
-    fstrim = {
-      enable = true;
-      interval = "weekly";
-    };
-    fwupd.enable = true;
-
-    # Distribute hardware IRQs across CPU cores
-    irqbalance.enable = true;
-
-    # KDE Plasma integrates natively with power-profiles-daemon
-    # Provides balanced/performance/power-saver profiles via the system tray
-    power-profiles-daemon.enable = true;
-
     k3s = {
       enable = false;
       role = "server";
