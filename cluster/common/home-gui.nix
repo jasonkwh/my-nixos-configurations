@@ -7,7 +7,6 @@
     libreoffice-qt
     warp
     zoom-us
-    protonup-qt
     brave
     code-cursor
   ];
