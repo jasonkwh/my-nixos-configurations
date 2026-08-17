@@ -24,7 +24,7 @@
 
     kernelParams = [
       "nowatchdog"
-      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=512M,hpmemprefsize=0,noaer,nocrs"
+      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=512M,hpmemprefsize=0,noaer"
       "pcie_port_pm=off"
     ];
 
