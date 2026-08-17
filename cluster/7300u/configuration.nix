@@ -88,7 +88,7 @@
       modesetting.enable = false;
       nvidiaSettings = true;
       open = false;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
       
       # Prevent Thunderbolt D3cold PCIe bus sleep timeouts
       powerManagement.enable = false;
