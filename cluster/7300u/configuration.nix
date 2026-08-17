@@ -37,15 +37,16 @@
       "intel_iommu=off"
     ];
 
-    # NixOS always modprobes nvidia at boot (xserver.enable). That probe is
-    # what hangs for ~2 minutes in RmInitAdapter. Make those loads no-ops;
-    # nvidia-egpu-init then does an FLR and `modprobe -i nvidia`.
-    extraModprobeConfig = ''
-      install nvidia /bin/true
-      install nvidia_drm /bin/true
-      install nvidia_modeset /bin/true
-      install nvidia_uvm /bin/true
-    '';
+    # Stop systemd-modules-load and udev from probing NVIDIA at ~13s.
+    # `install ... /bin/true` is ignored by systemd's kmod helper, so the
+    # previous generation still loaded nvidia.ko and hung RmInitAdapter
+    # before nvidia-egpu-init ran. -f in that service bypasses this list.
+    blacklistedKernelModules = [
+      "nvidia"
+      "nvidia_drm"
+      "nvidia_modeset"
+      "nvidia_uvm"
+    ];
 
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -148,15 +149,22 @@
 
   systemd.services.nvidia-egpu-init = {
     description = "Reset Thunderbolt NVIDIA GPU, then load the driver";
-    after = [ "bolt.service" "systemd-udev-settle.service" ];
-    before = [ "display-manager.service" ];
+    # Do not wait for udev-settle: it blocks until the NVIDIA probe finishes,
+    # which is the hang we are trying to avoid.
+    after = [
+      "systemd-modules-load.service"
+      "systemd-udevd.service"
+      "bolt.service"
+    ];
+    before = [ "display-manager.service" "multi-user.target" ];
     wants = [ "bolt.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
+      DefaultDependencies = false;
     };
-    path = [ pkgs.kmod pkgs.coreutils ];
+    path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep ];
     script = ''
       gpu=""
       for d in /sys/bus/pci/devices/*; do
@@ -170,11 +178,22 @@
         echo "No NVIDIA VGA device found; skipping"
         exit 0
       fi
+      echo "Using GPU $gpu"
+
+      if lsmod | grep -q '^nvidia'; then
+        echo "Unloading leftover NVIDIA modules"
+        rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia || true
+      fi
+      if [ -e "$gpu/driver" ]; then
+        echo "$(basename "$gpu")" > "$gpu/driver/unbind" || true
+      fi
       if [ -f "$gpu/reset" ]; then
+        echo "Resetting $gpu"
         echo 1 > "$gpu/reset" || true
         sleep 1
       fi
-      modprobe -i nvidia
+      echo "Loading nvidia.ko"
+      modprobe -f nvidia
     '';
   };
 }
