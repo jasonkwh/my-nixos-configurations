@@ -172,7 +172,7 @@ in
       RemainAfterExit = false;
       DefaultDependencies = false;
     };
-    path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep ];
+    path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep pkgs.findutils ];
     script = ''
       booted=$(readlink -f /run/booted-system)
       current=$(readlink -f /run/current-system)
@@ -206,8 +206,15 @@ in
       # Let Thunderbolt finish BAR setup on hotplug before RM probe.
       sleep 3
 
-      echo "Loading nvidia.ko from booted generation"
-      modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} nvidia
+      kver=$(uname -r)
+      # kmod -d replaces /lib/modules, so pass the directory that contains $kver.
+      modroot=/run/booted-system/kernel-modules/lib/modules
+      echo "kver=$kver modroot=$modroot"
+      ls -la "$modroot/$kver" || true
+      find "$modroot/$kver" -name 'nvidia.ko*' -print || true
+
+      echo "Loading nvidia.ko"
+      modprobe -d "$modroot" -C ${nvidiaEgpuModprobeConf} -v nvidia
     '';
   };
 }
