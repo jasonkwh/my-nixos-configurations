@@ -40,6 +40,7 @@ in
       "pcie_aspm=off"
       "pcie_port_pm=off"
       "intel_iommu=off"
+      "modprobe.blacklist=nvidiafb,nouveau"
     ];
 
     # Stop systemd-modules-load and udev from probing NVIDIA at ~13s.
@@ -149,8 +150,21 @@ in
     ];
   };
 
-  # NVIDIA RM init can hang for ~2 minutes; don't let stop jobs block poweroff.
-  systemd.settings.Manager.DefaultTimeoutStopSec = "15s";
+  # NVIDIA RM init can hang for ~2 minutes; don't let stop jobs or device
+  # units block poweroff. JobTimeout* is the hammer if a kernel probe wedges.
+  systemd.settings.Manager = {
+    DefaultTimeoutStopSec = "15s";
+    DefaultDeviceTimeoutSec = "15s";
+  };
+  systemd.user.settings.Manager.DefaultTimeoutStopSec = "15s";
+  systemd.targets.poweroff.unitConfig = {
+    JobTimeoutSec = "25s";
+    JobTimeoutAction = "poweroff-force";
+  };
+  systemd.targets.reboot.unitConfig = {
+    JobTimeoutSec = "25s";
+    JobTimeoutAction = "reboot-force";
+  };
 
   environment.systemPackages = with pkgs; [
     kdePackages.plasma-thunderbolt
@@ -159,7 +173,7 @@ in
   # Cold-plug at boot and hot-plug after login both fire this.
   # RemainAfterExit must be false so a later dock connect can start the unit again.
   services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-egpu-init.service"
+    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000", TEST!="/run/systemd/shutdown/scheduled", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-egpu-init.service"
   '';
 
   systemd.services.nvidia-egpu-init = {
@@ -180,11 +194,16 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = false;
-      TimeoutStartSec = "30s";
+      TimeoutStartSec = "15s";
       TimeoutStopSec = "5s";
     };
     path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep pkgs.findutils ];
     script = ''
+      if [ -e /run/systemd/shutdown/scheduled ]; then
+        echo "Shutdown in progress; skipping NVIDIA bind"
+        exit 0
+      fi
+
       booted=$(readlink -f /run/booted-system)
       current=$(readlink -f /run/current-system)
       if [ "$booted" != "$current" ]; then
@@ -204,28 +223,30 @@ in
         echo "No NVIDIA VGA device found; skipping"
         exit 0
       fi
-      echo "Using GPU $gpu driver=$(readlink "$gpu/driver" 2>/dev/null || echo none) enable=$(cat "$gpu/enable")"
+      echo "Using GPU $gpu enable=$(cat "$gpu/enable")"
+      echo "driver=$(readlink "$gpu/driver" 2>/dev/null || echo none)"
+      echo "override=$(cat "$gpu/driver_override" 2>/dev/null || echo none)"
+      lsmod | grep -E 'nvidia|nouveau|nvidiafb' || echo "lsmod: no nvidia/nouveau/nvidiafb"
 
-      # Let Thunderbolt finish BAR setup, then claim the device before nouveau/udev.
+      # Let Thunderbolt finish BAR setup, then claim the device.
       sleep 3
 
-      if lsmod | grep -q '^nvidia'; then
-        echo "Unloading leftover NVIDIA modules"
-        rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia || true
-      fi
-      if lsmod | grep -q '^nouveau'; then
-        echo "Unloading nouveau"
-        rmmod nouveau || true
-      fi
+      rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia nvidiafb nouveau 2>/dev/null || true
       if [ -e "$gpu/driver" ]; then
         echo "Unbinding $(readlink "$gpu/driver")"
         echo "$(basename "$gpu")" > "$gpu/driver/unbind" || true
       fi
-      echo nvidia > "$gpu/driver_override"
+      # An override of "nvidia" prevents probe if the PCI driver name does not
+      # match exactly; clear it and let the id table match.
+      printf '\n' > "$gpu/driver_override" || true
       echo 1 > "$gpu/enable" || true
 
       echo "Loading nvidia.ko (kver=$(uname -r))"
-      modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} -v nvidia
+      if ! modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} -v nvidia; then
+        echo "modprobe nvidia failed"
+        dmesg | grep -iE 'NVRM|RmInit|probe of 0000:06|nvidiafb|nouveau' | tail -n 30 || true
+        exit 1
+      fi
     '';
   };
 }
