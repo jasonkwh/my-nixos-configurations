@@ -151,23 +151,25 @@ in
     kdePackages.plasma-thunderbolt
   ];
 
+  # Cold-plug at boot and hot-plug after login both fire this.
+  # RemainAfterExit must be false so a later dock connect can start the unit again.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-egpu-init.service"
+  '';
+
   systemd.services.nvidia-egpu-init = {
-    description = "Bind NVIDIA driver to Thunderbolt eGPU after boot";
-    # Do not wait for udev-settle: it blocks until the NVIDIA probe finishes,
-    # which is the hang we are trying to avoid.
+    description = "Bind NVIDIA driver to Thunderbolt eGPU";
     after = [
       "systemd-modules-load.service"
       "systemd-udevd.service"
       "bolt.service"
     ];
-    before = [ "display-manager.service" "multi-user.target" ];
     wants = [ "bolt.service" ];
-    wantedBy = [ "multi-user.target" ];
     restartIfChanged = false;
     stopIfChanged = false;
     serviceConfig = {
       Type = "oneshot";
-      RemainAfterExit = true;
+      RemainAfterExit = false;
       DefaultDependencies = false;
     };
     path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep ];
@@ -200,6 +202,9 @@ in
       if [ -e "$gpu/driver" ]; then
         echo "$(basename "$gpu")" > "$gpu/driver/unbind" || true
       fi
+
+      # Let Thunderbolt finish BAR setup on hotplug before RM probe.
+      sleep 3
 
       echo "Loading nvidia.ko from booted generation"
       modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} nvidia
