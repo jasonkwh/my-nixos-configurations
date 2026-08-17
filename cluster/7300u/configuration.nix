@@ -24,12 +24,12 @@
 
     kernelParams = [
       "nowatchdog"
-      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=256M,hpmemprefsize=2G,noaer"
+      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=512M,hpmemprefsize=0,noaer,nocrs"
       "pcie_port_pm=off"
     ];
 
     extraModprobeConfig = ''
-      options nvidia NVreg_EnableMSI=0 NVreg_EnableGsp=0 NVreg_RegistryDwords="RMSetGpuGen2=1"
+      options nvidia NVreg_EnableMSI=0 NVreg_EnableGsp=0
     '';
 
     kernel.sysctl = {
