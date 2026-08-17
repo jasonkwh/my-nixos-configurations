@@ -22,6 +22,7 @@
       "nowatchdog"
       "pcie_aspm=off"
       "pci=realloc"
+      "iommu=pt"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -78,6 +79,8 @@
       # GTX970 specific settings
       open = false;
       package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
     };
     graphics.extraPackages = with pkgs; [
       intel-media-driver
