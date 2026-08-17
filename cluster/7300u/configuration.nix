@@ -167,10 +167,12 @@ in
     wants = [ "bolt.service" ];
     restartIfChanged = false;
     stopIfChanged = false;
+    unitConfig = {
+      DefaultDependencies = false;
+    };
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = false;
-      DefaultDependencies = false;
     };
     path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep pkgs.findutils ];
     script = ''
@@ -206,15 +208,10 @@ in
       # Let Thunderbolt finish BAR setup on hotplug before RM probe.
       sleep 3
 
-      kver=$(uname -r)
-      # kmod -d replaces /lib/modules, so pass the directory that contains $kver.
-      modroot=/run/booted-system/kernel-modules/lib/modules
-      echo "kver=$kver modroot=$modroot"
-      ls -la "$modroot/$kver" || true
-      find "$modroot/$kver" -name 'nvidia.ko*' -print || true
-
-      echo "Loading nvidia.ko"
-      modprobe -d "$modroot" -C ${nvidiaEgpuModprobeConf} -v nvidia
+      # -C skips /etc/modprobe.d (the blacklist). Do not pass -d: kmod treats
+      # it as a chroot and appends /lib/modules/$kver on top.
+      echo "Loading nvidia.ko (kver=$(uname -r))"
+      modprobe -C ${nvidiaEgpuModprobeConf} -v nvidia
     '';
   };
 }
