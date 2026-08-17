@@ -125,6 +125,8 @@
     perf
     bpftrace
     direnv
+    pciutils
+    ripgrep
   ];
 
   security.wrappers.bwrap = {
