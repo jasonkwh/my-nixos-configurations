@@ -30,9 +30,6 @@
       "pcie_ports=native"
       # Thunderbolt bridges dropping to D3cold leave the GPU unable to return to D0.
       "pcie_port_pm=off"
-      # Alpine Ridge hosts lose Thunderbolt devices to the boot-firmware
-      # topology reset introduced in 6.11.
-      "thunderbolt.host_reset=false"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
