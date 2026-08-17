@@ -208,10 +208,11 @@ in
       # Let Thunderbolt finish BAR setup on hotplug before RM probe.
       sleep 3
 
-      # -C skips /etc/modprobe.d (the blacklist). Do not pass -d: kmod treats
-      # it as a chroot and appends /lib/modules/$kver on top.
+      # NixOS has no /lib/modules. kmod -d is a chroot prefix and then
+      # appends /lib/modules/$kver, so pass kernel-modules not .../lib/modules.
+      # -C skips /etc/modprobe.d (the blacklist).
       echo "Loading nvidia.ko (kver=$(uname -r))"
-      modprobe -C ${nvidiaEgpuModprobeConf} -v nvidia
+      modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} -v nvidia
     '';
   };
 }
