@@ -33,6 +33,8 @@
       # Alpine Ridge hosts lose Thunderbolt devices to the boot-firmware
       # topology reset introduced in 6.11.
       "thunderbolt.host_reset=false"
+      # Identity-map DMA for the eGPU instead of translating it through VT-d.
+      "iommu.passthrough=1"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
