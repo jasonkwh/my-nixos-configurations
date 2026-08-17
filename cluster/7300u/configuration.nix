@@ -28,7 +28,7 @@
       "pcie_port_pm=off"
     ];
 
-    boot.extraModprobeConfig = ''
+    extraModprobeConfig = ''
       options nvidia NVreg_EnableMSI=0 NVreg_EnableGsp=0 NVreg_RegistryDwords="RMSetGpuGen2=1"
     '';
 
