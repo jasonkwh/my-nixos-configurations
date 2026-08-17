@@ -50,6 +50,8 @@ in
       "nvidia_drm"
       "nvidia_modeset"
       "nvidia_uvm"
+      "nouveau"
+      "nvidiafb"
     ];
 
     kernel.sysctl = {
@@ -202,22 +204,26 @@ in
         echo "No NVIDIA VGA device found; skipping"
         exit 0
       fi
-      echo "Using GPU $gpu"
+      echo "Using GPU $gpu driver=$(readlink "$gpu/driver" 2>/dev/null || echo none) enable=$(cat "$gpu/enable")"
+
+      # Let Thunderbolt finish BAR setup, then claim the device before nouveau/udev.
+      sleep 3
 
       if lsmod | grep -q '^nvidia'; then
         echo "Unloading leftover NVIDIA modules"
         rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia || true
       fi
+      if lsmod | grep -q '^nouveau'; then
+        echo "Unloading nouveau"
+        rmmod nouveau || true
+      fi
       if [ -e "$gpu/driver" ]; then
+        echo "Unbinding $(readlink "$gpu/driver")"
         echo "$(basename "$gpu")" > "$gpu/driver/unbind" || true
       fi
+      echo nvidia > "$gpu/driver_override"
+      echo 1 > "$gpu/enable" || true
 
-      # Let Thunderbolt finish BAR setup on hotplug before RM probe.
-      sleep 3
-
-      # NixOS has no /lib/modules. kmod -d is a chroot prefix and then
-      # appends /lib/modules/$kver, so pass kernel-modules not .../lib/modules.
-      # -C skips /etc/modprobe.d (the blacklist).
       echo "Loading nvidia.ko (kver=$(uname -r))"
       modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} -v nvidia
     '';
