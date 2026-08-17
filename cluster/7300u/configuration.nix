@@ -21,6 +21,7 @@
     kernelParams = [
       "nowatchdog"
       "pcie_aspm=off"
+      "pci=realloc"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
