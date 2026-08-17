@@ -24,10 +24,15 @@
 
     kernelParams = [
       "nowatchdog"
-      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=128M,hpmemprefsize=1G,noaer"
+      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=256M,hpmemprefsize=2G,noaer"
       "pcie_port_pm=off"
     ];
-    
+
+    # Fix Maxwell eGPU initialization timeouts over nested Thunderbolt bridges
+    extraModprobeConfig = ''
+      options nvidia NVreg_EnableMSI=0 NVreg_EnableGsp=0
+    '';
+
     kernel.sysctl = {
       "vm.swappiness" = 10;
       "vm.dirty_ratio" = 15;
