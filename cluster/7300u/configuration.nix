@@ -20,6 +20,7 @@
     kernelPackages = pkgs.linuxPackages;
     kernelParams = [
       "nowatchdog"
+      "pcie_aspm=off"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -72,10 +73,9 @@
   hardware = {
     cpu.intel.updateMicrocode = true;
     nvidia = {
-      # The GTX 970 (Maxwell) requires NVIDIA's proprietary kernel module.
-      open = false;
       modesetting.enable = true;
-      # Current drivers (595+) no longer support Maxwell; use NVIDIA 580.
+      # GTX970 specific settings
+      open = false;
       package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
     };
     graphics.extraPackages = with pkgs; [
