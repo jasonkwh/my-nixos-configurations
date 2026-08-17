@@ -26,10 +26,11 @@
       "nowatchdog"
       "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=512M,hpmemprefsize=0,noaer"
       "pcie_port_pm=off"
+      "intel_iommu=off"
     ];
 
     extraModprobeConfig = ''
-      options nvidia NVreg_EnableMSI=0 NVreg_EnableGsp=0
+      options nvidia NVreg_DynamicPowerManagement=0x00
     '';
 
     kernel.sysctl = {
@@ -71,24 +72,29 @@
 
     k3s = {
       enable = false;
-      role = "agent"; # or agent
+      role = "agent";
       serverAddr = "https://jasonkwh-7520u.local:6443";
       token = "K107554bc617e907cf70466a0af218deb9c9ae15f18a29b3033da9583b51be61f6e::server:f9a22d3080e522af42b6e380c413b17d";
-        extraFlags = [
-          "--flannel-iface=wlp58s0"
-        ];
+      extraFlags = [
+        "--flannel-iface=wlp58s0"
+      ];
     };
   };
 
   hardware = {
     cpu.intel.updateMicrocode = true;
     nvidia = {
-      modesetting.enable = true;
+      # Disable DRM modesetting to fix NVKMS eGPU timeout
+      modesetting.enable = false;
       nvidiaSettings = true;
-      # GTX970 specific settings
       open = false;
-      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
-      # Without this the X driver refuses to use a GPU on a hot-pluggable bus.
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      
+      # Prevent Thunderbolt D3cold PCIe bus sleep timeouts
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
+      
+      nvidiaPersistenced = true;
       prime.allowExternalGpu = true;
     };
     graphics.extraPackages = with pkgs; [
