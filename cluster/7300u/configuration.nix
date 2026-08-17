@@ -1,5 +1,10 @@
 { config, lib, pkgs, ... }:
 
+let
+  nvidiaEgpuModprobeConf = pkgs.writeText "nvidia-egpu-modprobe.conf" ''
+    options nvidia NVreg_EnableMSI=0 NVreg_DynamicPowerManagement=0x00 NVreg_EnableResizableBar=0
+  '';
+in
 {
   imports =
     [
@@ -38,9 +43,8 @@
     ];
 
     # Stop systemd-modules-load and udev from probing NVIDIA at ~13s.
-    # `install ... /bin/true` is ignored by systemd's kmod helper, so the
-    # previous generation still loaded nvidia.ko and hung RmInitAdapter
-    # before nvidia-egpu-init ran. -f in that service bypasses this list.
+    # nvidia-egpu-init loads the module at boot with a config that omits this
+    # blacklist (`modprobe -C`), so it does not need --force.
     blacklistedKernelModules = [
       "nvidia"
       "nvidia_drm"
@@ -148,7 +152,7 @@
   ];
 
   systemd.services.nvidia-egpu-init = {
-    description = "Reset Thunderbolt NVIDIA GPU, then load the driver";
+    description = "Bind NVIDIA driver to Thunderbolt eGPU after boot";
     # Do not wait for udev-settle: it blocks until the NVIDIA probe finishes,
     # which is the hang we are trying to avoid.
     after = [
@@ -159,6 +163,8 @@
     before = [ "display-manager.service" "multi-user.target" ];
     wants = [ "bolt.service" ];
     wantedBy = [ "multi-user.target" ];
+    restartIfChanged = false;
+    stopIfChanged = false;
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -166,6 +172,13 @@
     };
     path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep ];
     script = ''
+      booted=$(readlink -f /run/booted-system)
+      current=$(readlink -f /run/current-system)
+      if [ "$booted" != "$current" ]; then
+        echo "Generation changed without reboot; skipping NVIDIA bind"
+        exit 0
+      fi
+
       gpu=""
       for d in /sys/bus/pci/devices/*; do
         if [ -f "$d/vendor" ] && [ "$(cat "$d/vendor")" = "0x10de" ] \
@@ -187,13 +200,9 @@
       if [ -e "$gpu/driver" ]; then
         echo "$(basename "$gpu")" > "$gpu/driver/unbind" || true
       fi
-      if [ -f "$gpu/reset" ]; then
-        echo "Resetting $gpu"
-        echo 1 > "$gpu/reset" || true
-        sleep 1
-      fi
-      echo "Loading nvidia.ko"
-      modprobe -f nvidia
+
+      echo "Loading nvidia.ko from booted generation"
+      modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} nvidia
     '';
   };
 }
