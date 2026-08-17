@@ -24,14 +24,17 @@
 
     kernelParams = [
       "nowatchdog"
-      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=1G,hpmemprefsize=1G,noaer"
+      # Kernel-managed PCIe hotplug; needed so realloc can size Thunderbolt windows.
+      "pcie_ports=native"
+      # hpmemprefsize is not a valid pci= option (use hpmmioprefsize).
+      # hpmemsize=1G is larger than this machine's 32-bit MMIO window
+      # (0xb6800000-0xefffffff, ~920MB) and starves I/O + MMIO assignment.
+      # GTX 970 still has an I/O BAR; nested TB3/TB5 bridges need 4K I/O windows.
+      "pci=assign-busses,hpbussize=0x33,realloc,hpiosize=4K,hpmmiosize=32M,hpmmioprefsize=512M,noaer"
+      "pcie_aspm=off"
       "pcie_port_pm=off"
       "intel_iommu=off"
     ];
-
-    extraModprobeConfig = ''
-      options nvidia NVreg_DynamicPowerManagement=0x00
-    '';
 
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -84,7 +87,9 @@
   hardware = {
     cpu.intel.updateMicrocode = true;
     nvidia = {
-      # Disable DRM modesetting to fix NVKMS eGPU timeout
+      # Intended to avoid NVKMS eGPU timeouts. Not sufficient on its own:
+      # PRIME offload forces nvidia-drm.modeset=1 and fbdev=1 in nixpkgs, so
+      # those are mkForce'd off below.
       modesetting.enable = false;
       nvidiaSettings = true;
       open = false;
@@ -95,8 +100,13 @@
       powerManagement.finegrained = false;
 
       moduleParams = {
+        nvidia-drm = {
+          modeset = lib.mkForce 0;
+          fbdev = lib.mkForce 0;
+        };
         nvidia = {
           NVreg_EnableResizableBar = 0;
+          NVreg_DynamicPowerManagement = "0x00";
         };
       };
       
