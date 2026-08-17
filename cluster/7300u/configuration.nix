@@ -2,7 +2,7 @@
 
 let
   nvidiaEgpuModprobeConf = pkgs.writeText "nvidia-egpu-modprobe.conf" ''
-    options nvidia NVreg_EnableMSI=0 NVreg_DynamicPowerManagement=0x00 NVreg_EnableResizableBar=0
+    options nvidia NVreg_EnableMSI=0 NVreg_DynamicPowerManagement=0x00 NVreg_EnableResizableBar=0 NVreg_RegistryDwords=RmForceExternalGpu=1
   '';
 in
 {
@@ -129,6 +129,7 @@ in
           # MSI through Alpine Ridge + a nested TB5 dock often never arrives,
           # so RM waits on interrupts and hits 0x31:0xffff.
           NVreg_EnableMSI = 0;
+          NVreg_RegistryDwords = "RmForceExternalGpu=1";
         };
       };
       
@@ -170,12 +171,9 @@ in
     kdePackages.plasma-thunderbolt
   ];
 
-  # Cold-plug at boot and hot-plug after login both fire this.
-  # RemainAfterExit must be false so a later dock connect can start the unit again.
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000", TEST!="/run/systemd/shutdown/scheduled", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-egpu-init.service"
-  '';
-
+  # Manual only: `systemctl start nvidia-egpu-init`. Auto-bind wedges shutdown
+  # because this TB5 dock enumerates the GTX 970 in sysfs but neither nvidia nor
+  # nouveau can probe it (drivers_probe is a no-op; PCI remove/rescan hangs).
   systemd.services.nvidia-egpu-init = {
     description = "Bind NVIDIA driver to Thunderbolt eGPU";
     after = [
