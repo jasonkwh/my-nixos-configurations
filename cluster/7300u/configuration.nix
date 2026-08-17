@@ -88,14 +88,22 @@
       modesetting.enable = false;
       nvidiaSettings = true;
       open = false;
-      package = config.boot.kernelPackages.nvidiaPackages.legacy_535;
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
       
       # Prevent Thunderbolt D3cold PCIe bus sleep timeouts
       powerManagement.enable = false;
       powerManagement.finegrained = false;
       
       nvidiaPersistenced = false;
-      prime.allowExternalGpu = true;
+      prime = {
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
+        allowExternalGpu = true;
+        intelBusId = "PCI:0:2:0";
+        nvidiaBusId = "PCI:6:0:0";
+      };
     };
     graphics.extraPackages = with pkgs; [
       intel-media-driver
