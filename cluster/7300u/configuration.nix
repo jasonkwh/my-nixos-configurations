@@ -75,7 +75,8 @@
       # The GTX 970 (Maxwell) requires NVIDIA's proprietary kernel module.
       open = false;
       modesetting.enable = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      # Current drivers (595+) no longer support Maxwell; use NVIDIA 580.
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
     };
     graphics.extraPackages = with pkgs; [
       intel-media-driver
