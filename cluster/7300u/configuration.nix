@@ -1,10 +1,5 @@
-{ config, lib, pkgs, ... }:
+{ lib, pkgs, ... }:
 
-let
-  nvidiaEgpuModprobeConf = pkgs.writeText "nvidia-egpu-modprobe.conf" ''
-    options nvidia NVreg_EnableMSI=0 NVreg_DynamicPowerManagement=0x00 NVreg_EnableResizableBar=0 NVreg_RegistryDwords=RmForceExternalGpu=1
-  '';
-in
 {
   imports =
     [
@@ -23,38 +18,9 @@ in
 
   boot = {
     kernelPackages = pkgs.linuxPackages;
-
-    # Detect the Thunderbolt dock early enough for the eGPU to be present at boot.
-    initrd.kernelModules = [ "thunderbolt" ];
-
     kernelParams = [
       "nowatchdog"
-      # Kernel-managed PCIe hotplug; needed so realloc can size Thunderbolt windows.
-      "pcie_ports=native"
-      # hpmemprefsize is not a valid pci= option (use hpmmioprefsize).
-      # hpmemsize=1G is larger than this machine's 32-bit MMIO window
-      # (0xb6800000-0xefffffff, ~920MB) and starves I/O + MMIO assignment.
-      # GTX 970 still has an I/O BAR; nested TB3/TB5 bridges need 4K I/O windows.
-      # pcie_bus_peer2peer forces 128B MPS; TB3 tunnels often drop larger TLPs.
-      "pci=assign-busses,hpbussize=0x33,realloc,hpiosize=4K,hpmmiosize=32M,hpmmioprefsize=512M,noaer,pcie_bus_peer2peer"
-      "pcie_aspm=off"
-      "pcie_port_pm=off"
-      "intel_iommu=off"
-      "modprobe.blacklist=nvidiafb,nouveau"
     ];
-
-    # Stop systemd-modules-load and udev from probing NVIDIA at ~13s.
-    # nvidia-egpu-init loads the module at boot with a config that omits this
-    # blacklist (`modprobe -C`), so it does not need --force.
-    blacklistedKernelModules = [
-      "nvidia"
-      "nvidia_drm"
-      "nvidia_modeset"
-      "nvidia_uvm"
-      "nouveau"
-      "nvidiafb"
-    ];
-
     kernel.sysctl = {
       "vm.swappiness" = 10;
       "vm.dirty_ratio" = 15;
@@ -74,9 +40,8 @@ in
 
   services = {
     xserver = {
-      videoDrivers = [ "modesetting" "nvidia" ];
+      videoDrivers = [ "modesetting" ];
     };
-    hardware.bolt.enable = true;
     thermald.enable = true;
 
     libinput = {
@@ -105,148 +70,10 @@ in
 
   hardware = {
     cpu.intel.updateMicrocode = true;
-    nvidia = {
-      # Intended to avoid NVKMS eGPU timeouts. Not sufficient on its own:
-      # PRIME offload forces nvidia-drm.modeset=1 and fbdev=1 in nixpkgs, so
-      # those are mkForce'd off below.
-      modesetting.enable = false;
-      nvidiaSettings = true;
-      open = false;
-      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
-      
-      # Prevent Thunderbolt D3cold PCIe bus sleep timeouts
-      powerManagement.enable = false;
-      powerManagement.finegrained = false;
-
-      moduleParams = {
-        nvidia-drm = {
-          modeset = lib.mkForce 0;
-          fbdev = lib.mkForce 0;
-        };
-        nvidia = {
-          NVreg_EnableResizableBar = 0;
-          NVreg_DynamicPowerManagement = "0x00";
-          # MSI through Alpine Ridge + a nested TB5 dock often never arrives,
-          # so RM waits on interrupts and hits 0x31:0xffff.
-          NVreg_EnableMSI = 0;
-          NVreg_RegistryDwords = "RmForceExternalGpu=1";
-        };
-      };
-      
-      nvidiaPersistenced = false;
-      prime = {
-        offload = {
-          enable = true;
-          enableOffloadCmd = true;
-        };
-        allowExternalGpu = true;
-        intelBusId = "PCI:0:2:0";
-        nvidiaBusId = "PCI:6:0:0";
-      };
-    };
     graphics.extraPackages = with pkgs; [
       intel-media-driver
       libva-vdpau-driver
       libvdpau-va-gl
     ];
-  };
-
-  # NVIDIA RM init can hang for ~2 minutes; don't let stop jobs or device
-  # units block poweroff. JobTimeout* is the hammer if a kernel probe wedges.
-  systemd.settings.Manager = {
-    DefaultTimeoutStopSec = "15s";
-    DefaultDeviceTimeoutSec = "15s";
-  };
-  systemd.user.extraConfig = ''
-    DefaultTimeoutStopSec=15s
-  '';
-  systemd.targets.poweroff.unitConfig = {
-    JobTimeoutSec = "25s";
-    JobTimeoutAction = "poweroff-force";
-  };
-  systemd.targets.reboot.unitConfig = {
-    JobTimeoutSec = "25s";
-    JobTimeoutAction = "reboot-force";
-  };
-
-  environment.systemPackages = with pkgs; [
-    kdePackages.plasma-thunderbolt
-  ];
-
-  # Manual only: `systemctl start nvidia-egpu-init`. Auto-bind wedges shutdown
-  # because this TB5 dock enumerates the GTX 970 in sysfs but neither nvidia nor
-  # nouveau can probe it (drivers_probe is a no-op; PCI remove/rescan hangs).
-  systemd.services.nvidia-egpu-init = {
-    description = "Bind NVIDIA driver to Thunderbolt eGPU";
-    after = [
-      "systemd-modules-load.service"
-      "systemd-udevd.service"
-      "bolt.service"
-    ];
-    wants = [ "bolt.service" ];
-    conflicts = [ "shutdown.target" ];
-    before = [ "shutdown.target" ];
-    restartIfChanged = false;
-    stopIfChanged = false;
-    unitConfig = {
-      DefaultDependencies = false;
-    };
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = false;
-      TimeoutStartSec = "15s";
-      TimeoutStopSec = "5s";
-    };
-    path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep pkgs.findutils ];
-    script = ''
-      if [ -e /run/systemd/shutdown/scheduled ]; then
-        echo "Shutdown in progress; skipping NVIDIA bind"
-        exit 0
-      fi
-
-      booted=$(readlink -f /run/booted-system)
-      current=$(readlink -f /run/current-system)
-      if [ "$booted" != "$current" ]; then
-        echo "Generation changed without reboot; skipping NVIDIA bind"
-        exit 0
-      fi
-
-      gpu=""
-      for d in /sys/bus/pci/devices/*; do
-        if [ -f "$d/vendor" ] && [ "$(cat "$d/vendor")" = "0x10de" ] \
-           && [ "$(cat "$d/class")" = "0x030000" ]; then
-          gpu="$d"
-          break
-        fi
-      done
-      if [ -z "$gpu" ]; then
-        echo "No NVIDIA VGA device found; skipping"
-        exit 0
-      fi
-      echo "Using GPU $gpu enable=$(cat "$gpu/enable")"
-      echo "driver=$(readlink "$gpu/driver" 2>/dev/null || echo none)"
-      echo "override=$(cat "$gpu/driver_override" 2>/dev/null || echo none)"
-      lsmod | grep -E 'nvidia|nouveau|nvidiafb' || echo "lsmod: no nvidia/nouveau/nvidiafb"
-
-      # Let Thunderbolt finish BAR setup, then claim the device.
-      sleep 3
-
-      rmmod nvidia_drm nvidia_modeset nvidia_uvm nvidia nvidiafb nouveau 2>/dev/null || true
-      if [ -e "$gpu/driver" ]; then
-        echo "Unbinding $(readlink "$gpu/driver")"
-        echo "$(basename "$gpu")" > "$gpu/driver/unbind" || true
-      fi
-      # An override of "nvidia" prevents probe if the PCI driver name does not
-      # match exactly; clear it and let the id table match.
-      printf '\n' > "$gpu/driver_override" || true
-      echo 1 > "$gpu/enable" || true
-
-      echo "Loading nvidia.ko (kver=$(uname -r))"
-      if ! modprobe -d /run/booted-system/kernel-modules -C ${nvidiaEgpuModprobeConf} -v nvidia; then
-        echo "modprobe nvidia failed"
-        dmesg | grep -iE 'NVRM|RmInit|probe of 0000:06|nvidiafb|nouveau' | tail -n 30 || true
-        exit 1
-      fi
-    '';
   };
 }
