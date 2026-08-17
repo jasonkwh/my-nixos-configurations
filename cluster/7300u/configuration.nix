@@ -157,7 +157,9 @@ in
     DefaultTimeoutStopSec = "15s";
     DefaultDeviceTimeoutSec = "15s";
   };
-  systemd.user.settings.Manager.DefaultTimeoutStopSec = "15s";
+  systemd.user.extraConfig = ''
+    DefaultTimeoutStopSec=15s
+  '';
   systemd.targets.poweroff.unitConfig = {
     JobTimeoutSec = "25s";
     JobTimeoutAction = "poweroff-force";
