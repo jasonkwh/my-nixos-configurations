@@ -24,13 +24,10 @@
 
     kernelParams = [
       "nowatchdog"
-      # This laptop's firmware does not reserve enough bus numbers or MMIO
-      # windows for a GPU hot-added behind the Thunderbolt bridge.
-      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=128M,hpmemprefsize=1G"
-      "pcie_ports=native"
-      # Thunderbolt bridges dropping to D3cold leave the GPU unable to return to D0.
+      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=128M,hpmemprefsize=1G,noaer"
       "pcie_port_pm=off"
     ];
+    
     kernel.sysctl = {
       "vm.swappiness" = 10;
       "vm.dirty_ratio" = 15;
