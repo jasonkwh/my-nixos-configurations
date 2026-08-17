@@ -30,11 +30,22 @@
       # hpmemsize=1G is larger than this machine's 32-bit MMIO window
       # (0xb6800000-0xefffffff, ~920MB) and starves I/O + MMIO assignment.
       # GTX 970 still has an I/O BAR; nested TB3/TB5 bridges need 4K I/O windows.
-      "pci=assign-busses,hpbussize=0x33,realloc,hpiosize=4K,hpmmiosize=32M,hpmmioprefsize=512M,noaer"
+      # pcie_bus_peer2peer forces 128B MPS; TB3 tunnels often drop larger TLPs.
+      "pci=assign-busses,hpbussize=0x33,realloc,hpiosize=4K,hpmmiosize=32M,hpmmioprefsize=512M,noaer,pcie_bus_peer2peer"
       "pcie_aspm=off"
       "pcie_port_pm=off"
       "intel_iommu=off"
     ];
+
+    # NixOS always modprobes nvidia at boot (xserver.enable). That probe is
+    # what hangs for ~2 minutes in RmInitAdapter. Make those loads no-ops;
+    # nvidia-egpu-init then does an FLR and `modprobe -i nvidia`.
+    extraModprobeConfig = ''
+      install nvidia /bin/true
+      install nvidia_drm /bin/true
+      install nvidia_modeset /bin/true
+      install nvidia_uvm /bin/true
+    '';
 
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -107,6 +118,9 @@
         nvidia = {
           NVreg_EnableResizableBar = 0;
           NVreg_DynamicPowerManagement = "0x00";
+          # MSI through Alpine Ridge + a nested TB5 dock often never arrives,
+          # so RM waits on interrupts and hits 0x31:0xffff.
+          NVreg_EnableMSI = 0;
         };
       };
       
@@ -131,4 +145,36 @@
   environment.systemPackages = with pkgs; [
     kdePackages.plasma-thunderbolt
   ];
+
+  systemd.services.nvidia-egpu-init = {
+    description = "Reset Thunderbolt NVIDIA GPU, then load the driver";
+    after = [ "bolt.service" "systemd-udev-settle.service" ];
+    before = [ "display-manager.service" ];
+    wants = [ "bolt.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    path = [ pkgs.kmod pkgs.coreutils ];
+    script = ''
+      gpu=""
+      for d in /sys/bus/pci/devices/*; do
+        if [ -f "$d/vendor" ] && [ "$(cat "$d/vendor")" = "0x10de" ] \
+           && [ "$(cat "$d/class")" = "0x030000" ]; then
+          gpu="$d"
+          break
+        fi
+      done
+      if [ -z "$gpu" ]; then
+        echo "No NVIDIA VGA device found; skipping"
+        exit 0
+      fi
+      if [ -f "$gpu/reset" ]; then
+        echo 1 > "$gpu/reset" || true
+        sleep 1
+      fi
+      modprobe -i nvidia
+    '';
+  };
 }
