@@ -18,11 +18,21 @@
 
   boot = {
     kernelPackages = pkgs.linuxPackages;
+
+    # Detect the Thunderbolt dock early enough for the eGPU to be present at boot.
+    initrd.kernelModules = [ "thunderbolt" ];
+
     kernelParams = [
       "nowatchdog"
-      "pcie_aspm=off"
-      "pci=realloc"
-      "iommu=pt"
+      # This laptop's firmware does not reserve enough bus numbers or MMIO
+      # windows for a GPU hot-added behind the Thunderbolt bridge.
+      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=128M,hpmemprefsize=1G"
+      "pcie_ports=native"
+      # Thunderbolt bridges dropping to D3cold leave the GPU unable to return to D0.
+      "pcie_port_pm=off"
+      # Alpine Ridge hosts lose Thunderbolt devices to the boot-firmware
+      # topology reset introduced in 6.11.
+      "thunderbolt.host_reset=false"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -43,7 +53,7 @@
 
   services = {
     xserver = {
-      videoDrivers = [ "intel" "nvidia" ];
+      videoDrivers = [ "modesetting" "nvidia" ];
     };
     hardware.bolt.enable = true;
     thermald.enable = true;
@@ -76,11 +86,12 @@
     cpu.intel.updateMicrocode = true;
     nvidia = {
       modesetting.enable = true;
+      nvidiaSettings = true;
       # GTX970 specific settings
       open = false;
       package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
-      powerManagement.enable = false;
-      powerManagement.finegrained = false;
+      # Without this the X driver refuses to use a GPU on a hot-pluggable bus.
+      prime.allowExternalGpu = true;
     };
     graphics.extraPackages = with pkgs; [
       intel-media-driver
@@ -88,4 +99,8 @@
       libvdpau-va-gl
     ];
   };
+
+  environment.systemPackages = with pkgs; [
+    kdePackages.plasma-thunderbolt
+  ];
 }
