@@ -147,6 +147,9 @@ in
     ];
   };
 
+  # NVIDIA RM init can hang for ~2 minutes; don't let stop jobs block poweroff.
+  systemd.settings.Manager.DefaultTimeoutStopSec = "15s";
+
   environment.systemPackages = with pkgs; [
     kdePackages.plasma-thunderbolt
   ];
@@ -165,6 +168,8 @@ in
       "bolt.service"
     ];
     wants = [ "bolt.service" ];
+    conflicts = [ "shutdown.target" ];
+    before = [ "shutdown.target" ];
     restartIfChanged = false;
     stopIfChanged = false;
     unitConfig = {
@@ -173,6 +178,8 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = false;
+      TimeoutStartSec = "30s";
+      TimeoutStopSec = "5s";
     };
     path = [ pkgs.kmod pkgs.coreutils pkgs.gnugrep pkgs.findutils ];
     script = ''
