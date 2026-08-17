@@ -28,9 +28,8 @@
       "pcie_port_pm=off"
     ];
 
-    # Fix Maxwell eGPU initialization timeouts over nested Thunderbolt bridges
-    extraModprobeConfig = ''
-      options nvidia NVreg_EnableMSI=0 NVreg_EnableGsp=0
+    boot.extraModprobeConfig = ''
+      options nvidia NVreg_EnableMSI=0 NVreg_EnableGsp=0 NVreg_RegistryDwords="RMSetGpuGen2=1"
     '';
 
     kernel.sysctl = {
