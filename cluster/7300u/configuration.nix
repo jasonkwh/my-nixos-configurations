@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   imports =
@@ -40,8 +40,9 @@
 
   services = {
     xserver = {
-      videoDrivers = [ "intel" ];
+      videoDrivers = [ "intel" "nvidia" ];
     };
+    hardware.bolt.enable = true;
     thermald.enable = true;
 
     libinput = {
@@ -70,6 +71,12 @@
 
   hardware = {
     cpu.intel.updateMicrocode = true;
+    nvidia = {
+      # The GTX 970 (Maxwell) requires NVIDIA's proprietary kernel module.
+      open = false;
+      modesetting.enable = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+    };
     graphics.extraPackages = with pkgs; [
       intel-media-driver
       libva-vdpau-driver
