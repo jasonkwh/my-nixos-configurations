@@ -24,7 +24,7 @@
 
     kernelParams = [
       "nowatchdog"
-      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=512M,hpmemprefsize=512M,noaer"
+      "pci=assign-busses,hpbussize=0x33,realloc,hpmemsize=1G,hpmemprefsize=1G,noaer"
       "pcie_port_pm=off"
       "intel_iommu=off"
     ];
@@ -93,6 +93,12 @@
       # Prevent Thunderbolt D3cold PCIe bus sleep timeouts
       powerManagement.enable = false;
       powerManagement.finegrained = false;
+
+      moduleParams = {
+        nvidia = {
+          NVreg_EnableResizableBar = 0;
+        };
+      };
       
       nvidiaPersistenced = false;
       prime = {
