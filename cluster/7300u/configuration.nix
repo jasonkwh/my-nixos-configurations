@@ -94,7 +94,7 @@
       powerManagement.enable = false;
       powerManagement.finegrained = false;
       
-      nvidiaPersistenced = true;
+      nvidiaPersistenced = false;
       prime.allowExternalGpu = true;
     };
     graphics.extraPackages = with pkgs; [
