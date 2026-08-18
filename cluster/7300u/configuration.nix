@@ -78,7 +78,7 @@
     nvidia = {
       modesetting.enable = false;
       nvidiaSettings = true;
-      open = false;
+      open = true;
       package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
       
       powerManagement.enable = false;
