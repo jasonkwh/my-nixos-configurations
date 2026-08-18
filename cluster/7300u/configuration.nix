@@ -16,8 +16,13 @@
 
   time.timeZone = "Australia/Melbourne";
 
+  environment.systemPackages = with pkgs; [
+    kdePackages.plasma-thunderbolt
+  ];
+
   boot = {
     kernelPackages = pkgs.linuxPackages;
+    initrd.kernelModules = [ "thunderbolt" ];
     kernelParams = [
       "nowatchdog"
     ];
@@ -40,8 +45,9 @@
 
   services = {
     xserver = {
-      videoDrivers = [ "modesetting" ];
+      videoDrivers = [ "modesetting" "nvidia" ];
     };
+    hardware.bolt.enable = true;
     thermald.enable = true;
 
     libinput = {
@@ -69,6 +75,33 @@
   };
 
   hardware = {
+    nvidia = {
+      modesetting.enable = false;
+      nvidiaSettings = true;
+      open = false;
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
+      
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
+
+      moduleParams = {
+        nvidia = {
+          NVreg_EnableResizableBar = 0;
+        };
+      };
+      
+      nvidiaPersistenced = false;
+      prime = {
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
+        allowExternalGpu = true;
+        intelBusId = "PCI:0:2:0";
+        nvidiaBusId = "PCI:6:0:0";
+      };
+    };
+
     cpu.intel.updateMicrocode = true;
     graphics.extraPackages = with pkgs; [
       intel-media-driver
