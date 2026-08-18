@@ -25,13 +25,7 @@
     initrd.kernelModules = [ "thunderbolt" ];
     kernelParams = [
       "nowatchdog"
-      "pci=assign-busses,hpbussize=0x33,realloc,nocrs,hpmemsize=1G,hpmemprefsize=1G,noaer"
-      "pcie_port_pm=off"
-      "intel_iommu=off"
     ];
-    extraModprobeConfig = ''
-      options nvidia NVreg_DynamicPowerManagement=0x00 NVreg_EnableResizableBar=0
-    '';
     kernel.sysctl = {
       "vm.swappiness" = 10;
       "vm.dirty_ratio" = 15;
