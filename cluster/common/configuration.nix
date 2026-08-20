@@ -137,15 +137,13 @@
     source = "${pkgs.bubblewrap}/bin/bwrap";
   };
 
-  # Uncomment for passwordless container-aware Hermes CLI access.
-  # This grants effectively root-level access through Podman.
-  # security.sudo.extraRules = [{
-  #   users = [ username ];
-  #   commands = [{
-  #     command = "/run/current-system/sw/bin/podman";
-  #     options = [ "NOPASSWD" ];
-  #   }];
-  # }];
+  security.sudo.extraRules = [{
+    users = [ username ];
+    commands = [{
+      command = "/run/current-system/sw/bin/podman";
+      options = [ "NOPASSWD" ];
+    }];
+  }];
 
   virtualisation = {
     podman = {
