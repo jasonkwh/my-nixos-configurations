@@ -92,6 +92,7 @@
         [[ -f ~/.secrets/anthropic-api-key ]] && export ANTHROPIC_API_KEY="$(< ~/.secrets/anthropic-api-key)"
         [[ -f ~/.secrets/gemini-api-key ]] && export GEMINI_API_KEY="$(< ~/.secrets/gemini-api-key)"
         [[ -f ~/.secrets/openai-api-key ]] && export OPENAI_API_KEY="$(< ~/.secrets/openai-api-key)"
+        [[ -f ~/.secrets/grok-api-key ]] && export GROK_API_KEY="$(< ~/.secrets/grok-api-key)"
         [[ -f ~/.secrets/openrouter-api-key ]] && export OPENROUTER_API_KEY="$(< ~/.secrets/openrouter-api-key)"
       '';
       zplug = {
