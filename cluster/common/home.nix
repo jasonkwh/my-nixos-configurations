@@ -89,10 +89,10 @@
 
         # Load secrets from files if they exist
         [[ -f ~/.secrets/github-pat ]] && export CR_PAT="$(< ~/.secrets/github-pat)"
-        [[ -f ~/.secrets/discord-bot-token ]] && export DISCORD_BOT_TOKEN="$(< ~/.secrets/discord-bot-token)"
         [[ -f ~/.secrets/anthropic-api-key ]] && export ANTHROPIC_API_KEY="$(< ~/.secrets/anthropic-api-key)"
         [[ -f ~/.secrets/gemini-api-key ]] && export GEMINI_API_KEY="$(< ~/.secrets/gemini-api-key)"
         [[ -f ~/.secrets/openai-api-key ]] && export OPENAI_API_KEY="$(< ~/.secrets/openai-api-key)"
+        [[ -f ~/.secrets/openrouter-api-key ]] && export OPENROUTER_API_KEY="$(< ~/.secrets/openrouter-api-key)"
       '';
       zplug = {
         enable = true;
