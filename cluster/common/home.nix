@@ -51,6 +51,16 @@
     
     configFile."kdeglobals"."KDE"."TabletMode" = "Never";
 
+    # Have KWin launch Fcitx5 as the Plasma Wayland virtual keyboard.
+    # This is required for Fcitx5's native Wayland input-method frontend.
+    configFile."kwinrc"."Wayland" = {
+      InputMethod = {
+        shellExpand = true;
+        value = "/run/current-system/sw/share/applications/fcitx5-wayland-launcher.desktop";
+      };
+      VirtualKeyboardEnabled = true;
+    };
+
     # Disable Baloo file indexer — it spins at ~40% CPU while indexing
     # dev workspaces. KDE search (Dolphin, KRunner) still works for filenames
     # via locate/fd; only full-text content search is disabled.

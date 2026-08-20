@@ -82,6 +82,20 @@
       LC_TELEPHONE = "en_AU.UTF-8";
       LC_TIME = "en_AU.UTF-8";
     };
+
+    # Chinese Pinyin input through Fcitx5, shared by both laptops.
+    inputMethod = {
+      enable = true;
+      type = "fcitx5";
+      fcitx5 = {
+        waylandFrontend = true;
+        addons = with pkgs; [
+          fcitx5-gtk
+          qt6Packages.fcitx5-qt
+          qt6Packages.fcitx5-chinese-addons
+        ];
+      };
+    };
   };
 
   # Use this for the kssshaskpass
