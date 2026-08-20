@@ -89,10 +89,13 @@
 
         # Load secrets from files if they exist
         [[ -f ~/.secrets/github-pat ]] && export CR_PAT="$(< ~/.secrets/github-pat)"
+
+        # AI API Keys for Hermes Agent
         [[ -f ~/.secrets/anthropic-api-key ]] && export ANTHROPIC_API_KEY="$(< ~/.secrets/anthropic-api-key)"
         [[ -f ~/.secrets/gemini-api-key ]] && export GEMINI_API_KEY="$(< ~/.secrets/gemini-api-key)"
         [[ -f ~/.secrets/openai-api-key ]] && export OPENAI_API_KEY="$(< ~/.secrets/openai-api-key)"
-        [[ -f ~/.secrets/grok-api-key ]] && export GROK_API_KEY="$(< ~/.secrets/grok-api-key)"
+        [[ -f ~/.secrets/grok-api-key ]] && export XAI_API_KEY="$(< ~/.secrets/grok-api-key)"
+        [[ -f ~/.secrets/deepseek-api-key ]] && export DEEPSEEK_API_KEY="$(< ~/.secrets/deepseek-api-key)"
         [[ -f ~/.secrets/openrouter-api-key ]] && export OPENROUTER_API_KEY="$(< ~/.secrets/openrouter-api-key)"
       '';
       zplug = {
