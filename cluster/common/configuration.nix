@@ -232,8 +232,13 @@
       enable = true;
       container = {
         enable = true;
+        image = "ubuntu:26.04";
         backend = "podman";
         hostUsers = [ username ];
+        extraOptions = [ "--gpus" "all" ];
+        extraVolumes = [
+          "${config.users.users.${username}.home}/Documents/my-nixos-configurations:/projects/my-nixos-configurations:rw"
+        ];
       };
       settings = {
         model = {
