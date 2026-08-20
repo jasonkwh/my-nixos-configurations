@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, username, homeDirectory, ... }:
 
 {
   imports = [
@@ -91,9 +91,10 @@
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users = {
-    jasonkwh = {
+    ${username} = {
       isNormalUser = true;
       description = "Jason Huang";
+      home = homeDirectory;
       extraGroups = [ "networkmanager" "wheel" "podman" "rslsync" ];
       shell = pkgs.zsh;
       subUidRanges = [{ startUid = 100000; count = 65536; }];
@@ -135,6 +136,16 @@
     setuid = true;
     source = "${pkgs.bubblewrap}/bin/bwrap";
   };
+
+  # Uncomment for passwordless container-aware Hermes CLI access.
+  # This grants effectively root-level access through Podman.
+  # security.sudo.extraRules = [{
+  #   users = [ username ];
+  #   commands = [{
+  #     command = "/run/current-system/sw/bin/podman";
+  #     options = [ "NOPASSWD" ];
+  #   }];
+  # }];
 
   virtualisation = {
     podman = {
@@ -216,6 +227,31 @@
 
   services = {
     tailscale.enable = true;
+
+    hermes-agent = {
+      enable = true;
+      container = {
+        enable = true;
+        backend = "podman";
+        hostUsers = [ username ];
+      };
+      settings = {
+        model = {
+          provider = "openai-api";
+          default = "gpt-5.6-luna";
+          base_url = "https://api.openai.com/v1";
+        };
+        memory = {
+          memory_enabled = true;
+          user_profile_enabled = true;
+          write_approval = true;
+        };
+      };
+      environmentFiles = [
+        "${config.users.users.${username}.home}/.secrets/hermes-env"
+      ];
+      addToSystemPackages = true;
+    };
 
     # Periodic SSD TRIM to maintain write performance.
     fstrim = {

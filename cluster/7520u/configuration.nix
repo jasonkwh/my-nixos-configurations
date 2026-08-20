@@ -1,5 +1,5 @@
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, username, ... }:
 let
   swapUuid = "97c60ea8-adcf-444b-a44d-e9eeac24138f";
   wifiIface = "wlp2s0";
@@ -9,7 +9,7 @@ in
     ../common/configuration.nix
   ];
 
-  home-manager.users.jasonkwh = {
+  home-manager.users.${username} = {
     imports = [
       ../common/home.nix
       ../common/home-gui.nix
@@ -116,15 +116,15 @@ in
       videoDrivers = [ "amdgpu" ];
     };
 
-    k3s = {
-      enable = false;
-      role = "server";
-      extraFlags = toString [
-        "--tls-san=${config.networking.hostName}"
-        "--flannel-iface=${wifiIface}"
-        "--disable-network-policy"
-      ];
-    };
+    # k3s = {
+    #   enable = false;
+    #   role = "server";
+    #   extraFlags = toString [
+    #     "--tls-san=${config.networking.hostName}"
+    #     "--flannel-iface=${wifiIface}"
+    #     "--disable-network-policy"
+    #   ];
+    # };
 
     # use evtest to find out the device id & key num
     udev.extraHwdb = ''
