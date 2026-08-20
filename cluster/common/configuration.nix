@@ -235,7 +235,6 @@
         image = "ubuntu:24.04";
         backend = "podman";
         hostUsers = [ username ];
-        extraOptions = [ "--gpus" "all" ];
         extraVolumes = [
           "${config.users.users.${username}.home}/Documents/my-nixos-configurations:/projects/my-nixos-configurations:rw"
         ];
