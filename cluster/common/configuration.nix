@@ -232,7 +232,7 @@
       enable = true;
       container = {
         enable = true;
-        image = "ubuntu:26.04";
+        image = "ubuntu:24.04";
         backend = "podman";
         hostUsers = [ username ];
         extraOptions = [ "--gpus" "all" ];
