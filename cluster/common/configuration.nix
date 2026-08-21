@@ -262,6 +262,9 @@
           user_profile_enabled = true;
           write_approval = true;
         };
+        display = {
+          show_reasoning = false;
+        };
       };
       environmentFiles = [
         "${config.users.users.${username}.home}/.secrets/hermes-env"
