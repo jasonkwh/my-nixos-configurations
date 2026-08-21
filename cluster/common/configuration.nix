@@ -182,6 +182,13 @@ in
     }];
   }];
 
+  # The fixed Himalaya sudo wrapper above is intentionally part of the
+  # Hermes/Gmail access design. NoNewPrivileges prevents that narrowly scoped
+  # sudo rule from working, so disable it for this service only. Keep the
+  # remaining systemd sandboxing (ProtectSystem, PrivateTmp, User=hermes,
+  # and ReadWritePaths) supplied by the Hermes module.
+  systemd.services.hermes-agent.serviceConfig.NoNewPrivileges = lib.mkForce false;
+
   security.wrappers.bwrap = {
     owner = "root";
     group = "root";
