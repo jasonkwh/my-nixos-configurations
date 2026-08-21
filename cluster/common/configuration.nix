@@ -407,7 +407,7 @@
   services.github-runners.${config.networking.hostName} = {
     enable = true;
     url = "https://github.com/jasonkwh/my-nixos-configurations";
-    tokenFile = "/etc/github-runner-token";
+    tokenFile = "${config.users.users.${username}.home}/.secrets/github-runner-token";
     user = "root";
     replace = true;
     extraLabels = [ "nixos" config.networking.hostName ];
@@ -427,7 +427,7 @@
       Type = "oneshot";
       WorkingDirectory = "/var/lib/nixos-config";
       ExecStartPre = [
-        "${pkgs.bash}/bin/bash -c 'TOKEN=$(cat /etc/github-runner-token); if [ ! -d /var/lib/nixos-config/.git ]; then git clone https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git /var/lib/nixos-config; else cd /var/lib/nixos-config && git remote set-url origin https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git && git pull; fi'"
+        "${pkgs.bash}/bin/bash -c 'TOKEN=$(cat ${config.users.users.${username}.home}/.secrets/github-runner-token); if [ ! -d /var/lib/nixos-config/.git ]; then git clone https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git /var/lib/nixos-config; else cd /var/lib/nixos-config && git remote set-url origin https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git && git pull; fi'"
         "${pkgs.nix}/bin/nix flake update --flake /var/lib/nixos-config"
       ];
       ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /var/lib/nixos-config#${config.networking.hostName} --impure --accept-flake-config";

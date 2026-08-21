@@ -33,8 +33,9 @@ You can trigger builds remotely via GitHub Actions using a self-hosted runner ma
 2. Save the token on your NixOS machine:
 
    ```bash
-   echo "github_pat_xxx" | sudo tee /etc/github-runner-token
-   sudo chmod 600 /etc/github-runner-token
+   mkdir -p ~/.secrets
+   echo "github_pat_xxx" | tee ~/.secrets/github-runner-token >/dev/null
+   chmod 600 ~/.secrets/github-runner-token
    ```
 
 3. Rebuild NixOS:
