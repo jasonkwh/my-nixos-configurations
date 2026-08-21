@@ -252,6 +252,10 @@
         ];
       };
       settings = {
+        # Keep the generated config stamped with the schema version expected by
+        # the pinned Hermes Agent input, avoiding a perpetual migration warning.
+        _config_version = 38;
+
         model = {
           provider = "openai-api";
           default = "gpt-5.6-luna";
