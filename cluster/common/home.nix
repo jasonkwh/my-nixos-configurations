@@ -39,6 +39,24 @@
     '';
   };
 
+  accounts.email.accounts.gmail = {
+    primary = true;
+    address = "jasonkwh@gmail.com";
+    realName = "Jason Huang";
+    flavor = "gmail.com";
+    passwordCommand = [
+      "${pkgs.coreutils}/bin/cat"
+      "${homeDirectory}/.secrets/gmail-app-password"
+    ];
+    folders = {
+      inbox = "INBOX";
+      sent = "[Gmail]/Sent Mail";
+      drafts = "[Gmail]/Drafts";
+      trash = "[Gmail]/Trash";
+    };
+    himalaya.enable = true;
+  };
+
   # KDE Plasma configuration (using plasma-manager)
   programs.plasma = {
     enable = true;
@@ -68,6 +86,8 @@
   };
 
   programs = {
+    himalaya.enable = true;
+
     # basic configuration of git, please change to your own
     git = {
       enable = true;
@@ -187,7 +207,6 @@
     skopeo
     podman-compose
     picotool
-    himalaya
   ];
 
   # Automatically run podman system migrate after home-manager activation
