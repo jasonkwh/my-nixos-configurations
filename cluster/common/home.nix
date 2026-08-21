@@ -187,6 +187,7 @@
     skopeo
     podman-compose
     picotool
+    himalaya
   ];
 
   # Automatically run podman system migrate after home-manager activation
