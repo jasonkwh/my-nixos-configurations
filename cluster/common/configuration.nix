@@ -298,6 +298,11 @@ in
           user_profile_enabled = true;
           write_approval = true;
         };
+        compression = {
+          enabled = true;
+          threshold = 0.35;
+          target_ratio = 0.15;
+        };
         display = {
           show_reasoning = false;
         };
