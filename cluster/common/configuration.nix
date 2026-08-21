@@ -283,6 +283,12 @@ in
         fd
         file
       ];
+      # Personal WhatsApp account: self-chat mode, restricted to Jason's number.
+      environment = {
+        WHATSAPP_ENABLED = "true";
+        WHATSAPP_MODE = "self-chat";
+        WHATSAPP_ALLOWED_USERS = "61424495256";
+      };
       settings = {
         # Keep the generated config stamped with the schema version expected by
         # the pinned Hermes Agent input, avoiding a perpetual migration warning.
