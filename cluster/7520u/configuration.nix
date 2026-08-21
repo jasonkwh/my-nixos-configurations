@@ -79,6 +79,12 @@ in
     networkmanager.wifi.powersave = false;
   };
 
+  # This laptop's WhatsApp self-chat is the home channel for cron/notifications.
+  services.hermes-agent.environment = {
+    WHATSAPP_HOME_CHANNEL = "272056247689232@lid";
+    WHATSAPP_HOME_CHANNEL_NAME = "jasonkwh-7520u";
+  };
+
   # Compressed RAM swap — reduces memory pressure and avoids slow disk swap
   zramSwap = {
     enable = true;
