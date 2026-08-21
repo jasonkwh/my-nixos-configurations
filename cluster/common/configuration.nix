@@ -4,6 +4,28 @@
 
 { config, pkgs, lib, username, homeDirectory, ... }:
 
+let
+  hermesHimalaya = pkgs.writeShellScriptBin "hermes-himalaya" ''
+    set -eu
+
+    # Keep Hermes from selecting another config or using an inherited config
+    # path. The fixed config invokes the password command as jasonkwh.
+    for arg in "$@"; do
+      case "$arg" in
+        -c|--config|-c=*|--config=*)
+          printf '%s\n' 'custom Himalaya config paths are not allowed' >&2
+          exit 64
+          ;;
+      esac
+    done
+    unset HIMALAYA_CONFIG
+    export HOME=${lib.escapeShellArg homeDirectory}
+    export XDG_CONFIG_HOME=${lib.escapeShellArg "${homeDirectory}/.config"}
+    exec ${pkgs.himalaya}/bin/himalaya \
+      --config ${lib.escapeShellArg "${homeDirectory}/.config/himalaya/config.toml"} \
+      "$@"
+  '';
+in
 {
   imports = [
     /etc/nixos/hardware-configuration.nix
@@ -149,6 +171,17 @@
   environment.shellAliases.hermes =
     "sudo -u hermes ${pkgs.coreutils}/bin/env HERMES_HOME=/var/lib/hermes/.hermes hermes";
 
+  # Let Hermes invoke the fixed Himalaya wrapper as the login user. The
+  # wrapper can use the app password through jasonkwh's normal permissions,
+  # while the hermes service user never receives read access to that file.
+  security.sudo.extraRules = [{
+    users = [ "hermes" ];
+    commands = [{
+      command = "${hermesHimalaya}/bin/hermes-himalaya";
+      options = [ "NOPASSWD" ];
+    }];
+  }];
+
   security.wrappers.bwrap = {
     owner = "root";
     group = "root";
@@ -249,9 +282,6 @@
         fd
         file
       ];
-      # Browser dashboard on 127.0.0.1:9119. Same process also exposes
-      # /api/ws and /api/pty, so Hermes Desktop can attach later if wanted.
-      backend.mode = "dashboard";
       settings = {
         # Keep the generated config stamped with the schema version expected by
         # the pinned Hermes Agent input, avoiding a perpetual migration warning.
@@ -405,6 +435,22 @@
   system.activationScripts.flathub-remote = ''
     ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >&2
   '';
+
+  system.activationScripts.hermes-config-access = {
+    deps = [ "users" ];
+    text = ''
+      config_dir=${lib.escapeShellArg "${homeDirectory}/Documents/my-nixos-configurations"}
+
+      if [ -d "$config_dir" ]; then
+        ${pkgs.acl}/bin/setfacl -m u:hermes:--x \
+          ${lib.escapeShellArg homeDirectory} \
+          ${lib.escapeShellArg "${homeDirectory}/Documents"}
+        ${pkgs.acl}/bin/setfacl -R -m u:hermes:rwX "$config_dir"
+        ${pkgs.findutils}/bin/find "$config_dir" -type d \
+          -exec ${pkgs.acl}/bin/setfacl -m d:u:hermes:rwX {} +
+      fi
+    '';
+  };
 
   # GitHub Actions self-hosted runner (see README for setup)
   services.github-runners.${config.networking.hostName} = {
