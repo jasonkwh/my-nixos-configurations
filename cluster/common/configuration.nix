@@ -109,7 +109,7 @@
       isNormalUser = true;
       description = "Jason Huang";
       home = homeDirectory;
-      extraGroups = [ "networkmanager" "wheel" "podman" "rslsync" "hermes" ];
+      extraGroups = [ "networkmanager" "wheel" "podman" "rslsync" ];
       shell = pkgs.zsh;
       subUidRanges = [{ startUid = 100000; count = 65536; }];
       subGidRanges = [{ startGid = 100000; count = 65536; }];
@@ -143,6 +143,11 @@
     pciutils
     ripgrep
   ];
+
+  # Run the interactive CLI as the service account so its state remains private
+  # and all files under HERMES_HOME have consistent ownership.
+  environment.shellAliases.hermes =
+    "sudo -u hermes ${pkgs.coreutils}/bin/env HERMES_HOME=/var/lib/hermes/.hermes hermes";
 
   security.wrappers.bwrap = {
     owner = "root";
@@ -370,13 +375,6 @@
   systemd.services.avahi-daemon.serviceConfig.ExecStartPre = [
     "${pkgs.coreutils}/bin/rm -f /run/avahi-daemon/pid"
   ];
-
-  # Hermes currently chmod's HERMES_HOME to 0700 when it writes auth.json,
-  # which undoes the module's 2770 and blocks hermes-group CLI access.
-  systemd.services.hermes-agent.serviceConfig.ExecStartPost =
-    "${pkgs.coreutils}/bin/chmod 2770 /var/lib/hermes/.hermes";
-  systemd.services.hermes-backend.serviceConfig.ExecStartPost =
-    "${pkgs.coreutils}/bin/chmod 2770 /var/lib/hermes/.hermes";
 
   hardware = {    
     enableRedistributableFirmware = true;
