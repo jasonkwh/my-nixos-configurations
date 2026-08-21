@@ -274,6 +274,7 @@ in
       enable = true;
       container.enable = false;
       addToSystemPackages = true;
+      extraDependencyGroups = [ "messaging" ];
       # Native mode cannot apt/pip install at runtime; these land on the
       # hermes user's PATH for terminal tools, skills, and cron.
       extraPackages = with pkgs; [
