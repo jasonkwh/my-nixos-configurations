@@ -109,7 +109,7 @@
       isNormalUser = true;
       description = "Jason Huang";
       home = homeDirectory;
-      extraGroups = [ "networkmanager" "wheel" "podman" "rslsync" ];
+      extraGroups = [ "networkmanager" "wheel" "podman" "rslsync" "hermes" ];
       shell = pkgs.zsh;
       subUidRanges = [{ startUid = 100000; count = 65536; }];
       subGidRanges = [{ startGid = 100000; count = 65536; }];
@@ -150,14 +150,6 @@
     setuid = true;
     source = "${pkgs.bubblewrap}/bin/bwrap";
   };
-
-  security.sudo.extraRules = [{
-    users = [ username ];
-    commands = [{
-      command = "/run/current-system/sw/bin/podman";
-      options = [ "NOPASSWD" ];
-    }];
-  }];
 
   virtualisation = {
     podman = {
@@ -242,15 +234,19 @@
 
     hermes-agent = {
       enable = true;
-      container = {
-        enable = true;
-        image = "ubuntu:24.04";
-        backend = "podman";
-        hostUsers = [ username ];
-        extraVolumes = [
-          "${config.users.users.${username}.home}/Documents/my-nixos-configurations:/projects/my-nixos-configurations:rw"
-        ];
-      };
+      container.enable = false;
+      addToSystemPackages = true;
+      # Native mode cannot apt/pip install at runtime; these land on the
+      # hermes user's PATH for terminal tools, skills, and cron.
+      extraPackages = with pkgs; [
+        git
+        ripgrep
+        fd
+        file
+      ];
+      # Browser dashboard on 127.0.0.1:9119. Same process also exposes
+      # /api/ws and /api/pty, so Hermes Desktop can attach later if wanted.
+      backend.mode = "dashboard";
       settings = {
         # Keep the generated config stamped with the schema version expected by
         # the pinned Hermes Agent input, avoiding a perpetual migration warning.
@@ -269,11 +265,13 @@
         display = {
           show_reasoning = false;
         };
+        terminal = {
+          backend = "local";
+        };
       };
       environmentFiles = [
         "${config.users.users.${username}.home}/.secrets/hermes-env"
       ];
-      addToSystemPackages = true;
     };
 
     # Periodic SSD TRIM to maintain write performance.
@@ -372,6 +370,13 @@
   systemd.services.avahi-daemon.serviceConfig.ExecStartPre = [
     "${pkgs.coreutils}/bin/rm -f /run/avahi-daemon/pid"
   ];
+
+  # Hermes currently chmod's HERMES_HOME to 0700 when it writes auth.json,
+  # which undoes the module's 2770 and blocks hermes-group CLI access.
+  systemd.services.hermes-agent.serviceConfig.ExecStartPost =
+    "${pkgs.coreutils}/bin/chmod 2770 /var/lib/hermes/.hermes";
+  systemd.services.hermes-backend.serviceConfig.ExecStartPost =
+    "${pkgs.coreutils}/bin/chmod 2770 /var/lib/hermes/.hermes";
 
   hardware = {    
     enableRedistributableFirmware = true;
