@@ -6,12 +6,14 @@
 #   make build jasonkwh-7520u   # same (build is a no-op when a host is named)
 #   make update                 # update flake inputs
 #   make gc                     # delete old generations + refresh bootloader
+#   make live                   # build the graphical Live USB ISO
+#   make jasonkwh-live          # alias for make live
 
 HOSTS := jasonkwh-7520u jasonkwh-7300u
 HOST  ?= $(shell hostname)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
-.PHONY: help upgrade boot build update gc $(HOSTS)
+.PHONY: help upgrade boot build update gc live jasonkwh-live $(HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -22,6 +24,8 @@ help:
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
+		'make live                build the graphical Live USB ISO' \
+		'make jasonkwh-live       alias for make live' \
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
@@ -49,6 +53,11 @@ update:
 gc:
 	sudo nix-collect-garbage -d
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
+
+live:
+	nix build --impure --accept-flake-config .#shengos-live-iso
+
+jasonkwh-live: live
 
 $(HOSTS):
 	$(call nixos-rebuild,switch,$@)
