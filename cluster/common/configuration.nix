@@ -12,7 +12,10 @@
     # Keep the machine identifiable as NixOS to third-party software while
     # presenting ShengOS as the human-facing distribution name.
     distroName = "ShengOS";
-    extraOSReleaseArgs.LOGO = "shengos";
+    extraOSReleaseArgs = {
+      LOGO = "shengos";
+      HOME_URL = "https://github.com/jasonkwh";
+    };
   };
 
   imports = [
