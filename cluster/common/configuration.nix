@@ -61,6 +61,14 @@
         ];
       };
   };
+
+  # Permit direct Resilio peers only over the private Tailscale interface;
+  # do not expose the sync port on public/Wi-Fi interfaces.
+  networking.firewall.interfaces.tailscale0 = {
+    allowedTCPPorts = [ 55555 ];
+    allowedUDPPorts = [ 55555 ];
+  };
+
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -109,7 +117,7 @@
       isNormalUser = true;
       description = "Jason Huang";
       home = homeDirectory;
-      extraGroups = [ "networkmanager" "wheel" "podman" "rslsync" ];
+      extraGroups = [ "networkmanager" "wheel" "podman" ];
       shell = pkgs.zsh;
       subUidRanges = [{ startUid = 100000; count = 65536; }];
       subGidRanges = [{ startGid = 100000; count = 65536; }];
@@ -237,6 +245,28 @@
 
   services = {
     tailscale.enable = true;
+
+    # Share only Hermes' curated long-term memory files.  The secret lives
+    # outside this repository and must be copied to every participating host.
+    resilio = {
+      enable = true;
+      enableWebUI = false;
+      listeningPort = 55555;
+      httpListenAddr = "127.0.0.1";
+      httpListenPort = 9000;
+      sharedFolders = [
+        {
+          directory = "/var/lib/hermes/.hermes/memories";
+          secretFile = "${homeDirectory}/.secrets/resilio-memories-secret";
+          useRelayServer = true;
+          useTracker = true;
+          useDHT = true;
+          searchLAN = true;
+          useSyncTrash = true;
+          knownHosts = [ ];
+        }
+      ];
+    };
 
     hermes-agent = {
       enable = true;
@@ -442,10 +472,44 @@
           ${lib.escapeShellArg homeDirectory} "$secrets_dir" \
           ${lib.escapeShellArg "${homeDirectory}/.config"}
         ${pkgs.acl}/bin/setfacl -m u:hermes:rx "$himalaya_dir"
-        [ ! -f "$himalaya_dir/config.toml" ] || \
-          ${pkgs.acl}/bin/setfacl -m u:hermes:r "$himalaya_dir/config.toml"
+        # config.toml is a Home Manager symlink into /nix/store, which is
+        # already readable and must not be modified by setfacl.
         [ ! -f "$secrets_dir/gmail-app-password" ] || \
           ${pkgs.acl}/bin/setfacl -m u:hermes:r "$secrets_dir/gmail-app-password"
+      fi
+
+      # Resilio reads its shared-folder secret from Jason's private secrets
+      # directory.  Grant rslsync only traversal plus read access to this one
+      # file; keep the secret itself outside the repository.
+      if [ -d "$secrets_dir" ]; then
+        ${pkgs.acl}/bin/setfacl -m u:rslsync:--x \
+          ${lib.escapeShellArg homeDirectory} "$secrets_dir"
+        [ ! -f "$secrets_dir/resilio-memories-secret" ] || \
+          ${pkgs.acl}/bin/setfacl -m u:rslsync:r "$secrets_dir/resilio-memories-secret"
+      fi
+    '';
+  };
+
+  # Resilio runs as rslsync while Hermes runs as hermes.  Keep the shared
+  # memory directory writable by both without broadening access to HERMES_HOME.
+  system.activationScripts.resilio-hermes-memory-access = {
+    deps = [ "users" ];
+    text = ''
+      memory_dir=/var/lib/hermes/.hermes/memories
+      if [ -d "$memory_dir" ]; then
+        ${pkgs.coreutils}/bin/chgrp -R rslsync "$memory_dir"
+        ${pkgs.findutils}/bin/find "$memory_dir" -type d \
+          -exec ${pkgs.coreutils}/bin/chmod 2770 {} +
+        ${pkgs.findutils}/bin/find "$memory_dir" -type f \
+          -exec ${pkgs.coreutils}/bin/chmod 0660 {} +
+
+        # Both services must retain access regardless of which one creates a
+        # new file.  Default ACLs cover files created after activation.
+        ${pkgs.acl}/bin/setfacl -m u:hermes:rwx,u:rslsync:rwx,m:rwx "$memory_dir"
+        ${pkgs.findutils}/bin/find "$memory_dir" -type d \
+          -exec ${pkgs.acl}/bin/setfacl -m u:hermes:rwx,u:rslsync:rwx,m:rwx,d:u:hermes:rwx,d:u:rslsync:rwx,d:m:rwx {} +
+        ${pkgs.findutils}/bin/find "$memory_dir" -type f \
+          -exec ${pkgs.acl}/bin/setfacl -m u:hermes:rw,u:rslsync:rw,m:rw {} +
       fi
     '';
   };
