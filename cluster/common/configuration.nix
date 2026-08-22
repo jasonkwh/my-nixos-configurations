@@ -5,6 +5,17 @@
 { config, pkgs, lib, username, homeDirectory, ... }:
 
 {
+  # User-facing operating-system branding.  ShengOS remains NixOS underneath;
+  # this controls the identity exposed through /etc/os-release and desktop
+  # system-information pages such as KDE's About System.
+  system.nixos = {
+    distroName = "ShengOS";
+    distroId = "shengos";
+    vendorName = "ShengOS";
+    vendorId = "shengos";
+    extraOSReleaseArgs.LOGO = "shengos";
+  };
+
   imports = [
     /etc/nixos/hardware-configuration.nix
   ];
@@ -136,6 +147,10 @@
 
   # System tools that require root/polkit integration.
   environment.systemPackages = with pkgs; [
+    (runCommand "shengos-branding" { } ''
+      mkdir -p $out/share/pixmaps
+      cp ${../../assets/logos/logo.png} $out/share/pixmaps/shengos.png
+    '')
     kdePackages.partitionmanager
     tcpdump
     hw-probe

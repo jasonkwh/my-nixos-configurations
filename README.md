@@ -1,6 +1,12 @@
-# ShengOS
+<p align="center">
+  <img src="assets/logos/logo.png" alt="ShengOS logo" width="180">
+</p>
 
-**ShengOS** is my personal, reproducible Linux environment built on top of NixOS.
+<h1 align="center">ShengOS</h1>
+
+<p align="center">
+  My personal, reproducible Linux environment built on top of NixOS.
+</p>
 
 It is not a separate Linux distribution in the traditional sense—with its own installer and package repositories—but a carefully assembled personal operating system. The configuration defines the system, desktop, applications, development tools, services, security settings, and user environment as code. Rebuilding the flake turns that definition into a complete NixOS system generation that can be upgraded, reproduced, or rolled back safely.
 

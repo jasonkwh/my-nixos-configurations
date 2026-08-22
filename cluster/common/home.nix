@@ -63,6 +63,7 @@
     
     # Use Breeze Dark theme
     workspace = {
+      wallpaper = ../../assets/wallpapers/DSCF4098.JPG;
       lookAndFeel = "org.kde.breezedark.desktop";
       colorScheme = "BreezeDark";
     };
