@@ -30,6 +30,8 @@
     let
       system = "x86_64-linux";
       username = "jasonkwh";
+      fullName = "Jason Huang";
+      email = "jasonkwh@users.noreply.github.com";
       homeDirectory = "/home/${username}";
 
       kernelOverlay = final: prev: {
@@ -47,7 +49,7 @@
       mkHost = { name, ... }: nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
-          inherit username homeDirectory;
+          inherit username fullName email homeDirectory;
           isLive = false;
         };
         modules = [
@@ -65,7 +67,7 @@
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "backup";
             home-manager.extraSpecialArgs = {
-              inherit username homeDirectory;
+              inherit username fullName email homeDirectory;
             };
             home-manager.sharedModules = [
               plasma-manager.homeModules.plasma-manager
@@ -77,7 +79,7 @@
       liveUsb = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
-          inherit username homeDirectory;
+          inherit username fullName email homeDirectory;
           isLive = true;
         };
         modules = [
@@ -92,7 +94,7 @@
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "backup";
             home-manager.extraSpecialArgs = {
-              inherit username homeDirectory;
+              inherit username fullName email homeDirectory;
             };
             home-manager.sharedModules = [
               plasma-manager.homeModules.plasma-manager

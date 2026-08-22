@@ -1,4 +1,4 @@
-{ config, pkgs, username, homeDirectory, ... }:
+{ config, pkgs, username, fullName, email, homeDirectory, ... }:
 
 {
   targets.genericLinux.enable = true;
@@ -41,8 +41,8 @@
 
   accounts.email.accounts.gmail = {
     primary = true;
-    address = "jasonkwh@users.noreply.github.com";
-    realName = "Jason Huang";
+    address = email;
+    realName = fullName;
     flavor = "gmail.com";
     passwordCommand = [
       "${pkgs.coreutils}/bin/cat"
@@ -132,8 +132,8 @@
       enable = true;
       settings = {
         user = {
-          email = "jasonkwh@users.noreply.github.com";
-          name = "Jason Huang";
+          email = email;
+          name = fullName;
         };
       };
     };

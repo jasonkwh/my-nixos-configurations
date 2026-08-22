@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, homeDirectory, isLive ? false, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLive ? false, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -123,7 +123,7 @@
   users.users = {
     ${username} = {
       isNormalUser = true;
-      description = "Jason Huang";
+      description = fullName;
       home = homeDirectory;
       extraGroups = [ "networkmanager" "wheel" "podman" ];
       shell = pkgs.zsh;
