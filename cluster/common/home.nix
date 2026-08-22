@@ -119,9 +119,8 @@
         logo = {
           source = "${../../assets/logos/logo.png}";
           type = "auto";
-          # Keep the portrait logo compact beside the information columns.
-          width = 16;
-          height = 12;
+          width = 20;
+          height = 15;
         };
       };
     };
