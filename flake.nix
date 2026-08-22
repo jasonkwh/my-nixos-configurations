@@ -14,7 +14,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    hermes-agent.url = "github:NousResearch/hermes-agent/v2026.8.18";
+    hermes-agent.url = "github:NousResearch/hermes-agent/v2026.8.19";
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -48,6 +48,7 @@
         inherit system;
         specialArgs = {
           inherit username homeDirectory;
+          isLive = false;
         };
         modules = [
           inputs.hermes-agent.nixosModules.default
@@ -73,11 +74,45 @@
         ];
       };
 
+      liveUsb = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {
+          inherit username homeDirectory;
+          isLive = true;
+        };
+        modules = [
+          "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"
+          inputs.hermes-agent.nixosModules.default
+          ({
+            nixpkgs.overlays = [ kernelOverlay ];
+          })
+          ./cluster/live/configuration.nix
+          {
+            nix.settings.trusted-users = [ username ];
+          }
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "backup";
+            home-manager.extraSpecialArgs = {
+              inherit username homeDirectory;
+            };
+            home-manager.sharedModules = [
+              plasma-manager.homeModules.plasma-manager
+            ];
+          }
+        ];
+      };
+
     in
     {
       nixosConfigurations = {
         "jasonkwh-7300u" = mkHost { name = "7300u"; };
         "jasonkwh-7520u" = mkHost { name = "7520u"; };
+        "jasonkwh-live" = liveUsb;
       };
+
+      packages.${system}.shengos-live-iso = liveUsb.config.system.build.isoImage;
     };
 }
