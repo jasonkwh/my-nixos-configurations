@@ -138,11 +138,5 @@ in
         KEYBOARD_KEY_56=leftshift
     '';
 
-    resilio = {
-      enable = false;
-      enableWebUI = false;
-      httpListenAddr = "127.0.0.1";
-      httpListenPort = 9000;
-    };
   };
 }
