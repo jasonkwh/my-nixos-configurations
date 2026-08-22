@@ -90,6 +90,32 @@
     fastfetch = {
       enable = true;
       settings = {
+        # Defining settings replaces Fastfetch's built-in default configuration,
+        # so declare the information modules explicitly as well as the logo.
+        modules = [
+          "title"
+          "separator"
+          "os"
+          "host"
+          "kernel"
+          "uptime"
+          "packages"
+          "shell"
+          "display"
+          "de"
+          "wm"
+          "theme"
+          "icons"
+          "terminal"
+          "cpu"
+          "gpu"
+          "memory"
+          "disk"
+          "battery"
+          "locale"
+          "break"
+          "colors"
+        ];
         logo = {
           source = "${../../assets/logos/logo.png}";
           type = "auto";
