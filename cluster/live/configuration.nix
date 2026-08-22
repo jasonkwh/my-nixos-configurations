@@ -1,4 +1,4 @@
-{ config, lib, pkgs, username, homeDirectory, ... }:
+{ config, lib, pkgs, username, fullName, email, homeDirectory, ... }:
 
 let
   repoBundle = pkgs.runCommand "my-nixos-configurations-bundle" { } ''
@@ -36,7 +36,7 @@ let
 
   calamaresUsers = builtins.replaceStrings
     [ "hostname:\n" ]
-    [ "presets:\n    fullName:\n        value: \"Jason Huang\"\n        editable: true\n    loginName:\n        value: \"${username}\"\n        editable: true\n\nhostname:\n" ]
+    [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: true\n    loginName:\n        value: \"${username}\"\n        editable: true\n\nhostname:\n" ]
     (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
 
   liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
@@ -65,8 +65,8 @@ in
     programs.git = {
       enable = true;
       settings.user = {
-        name = username;
-        email = "jasonkwh@gmail.com";
+        name = fullName;
+        email = email;
       };
     };
 
@@ -90,7 +90,7 @@ in
 
   users.users.${username} = {
     isNormalUser = true;
-    description = "Jason Huang";
+    description = fullName;
     home = homeDirectory;
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.bashInteractive;
