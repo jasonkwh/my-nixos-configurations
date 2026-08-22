@@ -17,19 +17,16 @@ ShengOS currently supports two laptop profiles:
 
 Both machines share a common foundation while retaining hardware-specific configuration where necessary. The environment includes KDE Plasma, Home Manager, Chinese Pinyin input, developer tooling, containers, cloud and Kubernetes utilities, Hermes Agent, Tailscale, and other services I use every day.
 
-## Apply the config on NixOS
+## Update the OS
 
-### 7520u laptop
-
-```bash
-sudo nixos-rebuild switch --flake .#jasonkwh-7520u --impure
-```
-
-### 7300u laptop
+To update the flake inputs and rebuild the system, run these commands from anywhere:
 
 ```bash
-sudo nixos-rebuild switch --flake .#jasonkwh-7300u --impure
+meow update
+meow upgrade
 ```
+
+`meow update` updates the NixOS flake inputs, while `meow upgrade` rebuilds and activates the configuration for the current hostname.
 
 ## GitHub Actions (Self-hosted Runner)
 

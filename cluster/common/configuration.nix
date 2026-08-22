@@ -168,6 +168,9 @@ in
       mkdir -p $out/share/pixmaps
       cp ${../../assets/logos/logo.png} $out/share/pixmaps/shengos.png
     '')
+    (writeShellScriptBin "meow" ''
+      exec ${gnumake}/bin/make -C ${homeDirectory}/Documents/my-nixos-configurations "$@"
+    '')
     kdePackages.partitionmanager
     tcpdump
     hw-probe
