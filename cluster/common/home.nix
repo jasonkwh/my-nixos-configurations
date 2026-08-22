@@ -119,8 +119,8 @@
         logo = {
           source = "${../../assets/logos/logo.png}";
           type = "auto";
-          width = 20;
-          height = 15;
+          width = 16;
+          height = 12;
         };
       };
     };
