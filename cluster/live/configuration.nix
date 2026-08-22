@@ -9,12 +9,12 @@ let
 
   copyRepo = pkgs.writeShellScriptBin "copy-shengos-config" ''
     set -eu
-    target=/home/jasonkwh/Documents/my-nixos-configurations
+    target=${homeDirectory}/Documents/my-nixos-configurations
     mkdir -p "$(dirname "$target")"
     rm -rf "$target"
     cp -R --no-preserve=ownership \
       ${repoBundle}/share/my-nixos-configurations "$target"
-    chown -R jasonkwh:users "$target"
+    chown -R ${username}:users "$target"
     chmod -R u+rwX,go+rX "$target"
   '';
 
@@ -36,7 +36,7 @@ let
 
   calamaresUsers = builtins.replaceStrings
     [ "hostname:\n" ]
-    [ "presets:\n    fullName:\n        value: \"Jason Huang\"\n        editable: true\n    loginName:\n        value: \"jasonkwh\"\n        editable: true\n\nhostname:\n" ]
+    [ "presets:\n    fullName:\n        value: \"Jason Huang\"\n        editable: true\n    loginName:\n        value: \"${username}\"\n        editable: true\n\nhostname:\n" ]
     (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
 
   liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
@@ -65,7 +65,7 @@ in
     programs.git = {
       enable = true;
       settings.user = {
-        name = "jasonkwh";
+        name = username;
         email = "jasonkwh@gmail.com";
       };
     };
