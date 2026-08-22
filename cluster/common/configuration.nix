@@ -9,10 +9,9 @@
   # this controls the identity exposed through /etc/os-release and desktop
   # system-information pages such as KDE's About System.
   system.nixos = {
+    # Keep the machine identifiable as NixOS to third-party software while
+    # presenting ShengOS as the human-facing distribution name.
     distroName = "ShengOS";
-    distroId = "shengos";
-    vendorName = "ShengOS";
-    vendorId = "shengos";
     extraOSReleaseArgs.LOGO = "shengos";
   };
 

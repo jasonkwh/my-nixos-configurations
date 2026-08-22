@@ -87,6 +87,16 @@
   };
 
   programs = {
+    fastfetch = {
+      enable = true;
+      settings = {
+        logo = {
+          source = "${../../assets/logos/logo.png}";
+          type = "auto";
+        };
+      };
+    };
+
     himalaya.enable = true;
 
     # basic configuration of git, please change to your own
@@ -146,7 +156,6 @@
     gcc-arm-embedded
 
     # utilities
-    fastfetch
     tmux
     pigz
     pixz
