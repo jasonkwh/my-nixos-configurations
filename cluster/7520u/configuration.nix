@@ -118,6 +118,16 @@ in
   };
 
   services = {
+    # Provides KDE balanced, performance, and power-saver profiles.
+    power-profiles-daemon.enable = true;
+
+    upower = {
+      enable = true;
+      # If the battery becomes critical, do a clean shutdown instead of
+      # entering a potentially unrecoverable low-power suspend state.
+      criticalPowerAction = "PowerOff";
+    };
+
     xserver = {
       videoDrivers = [ "amdgpu" ];
     };
@@ -137,6 +147,16 @@ in
       evdev:atkbd:*
         KEYBOARD_KEY_56=leftshift
     '';
+
+    logind = {
+      settings = {
+        Login = {
+          HandleLidSwitch = "ignore";
+          HandleLidSwitchDocked = "ignore";
+          HandleLidSwitchExternalPower = "ignore";
+        };
+      };
+    };
 
   };
 }

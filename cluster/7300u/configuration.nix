@@ -36,6 +36,7 @@
 
   networking = {
     hostName = "jasonkwh-7300u"; # Define your hostname.
+    networkmanager.wifi.powersave = false;
   };
 
   services = {
@@ -43,6 +44,15 @@
       videoDrivers = [ "modesetting" ];
     };
     thermald.enable = true;
+    # Provides KDE balanced, performance, and power-saver profiles.
+    power-profiles-daemon.enable = true;
+
+    upower = {
+      enable = true;
+      # If the battery becomes critical, do a clean shutdown instead of
+      # entering a potentially unrecoverable low-power suspend state.
+      criticalPowerAction = "PowerOff";
+    };
 
     libinput = {
       enable = true;
@@ -66,6 +76,16 @@
     #     "--flannel-iface=wlp58s0"
     #   ];
     # };
+
+    logind = {
+      settings = {
+        Login = {
+          HandleLidSwitch = "ignore";
+          HandleLidSwitchDocked = "ignore";
+          HandleLidSwitchExternalPower = "ignore";
+        };
+      };
+    };
   };
 
   hardware = {
