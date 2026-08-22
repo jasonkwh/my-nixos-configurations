@@ -45,9 +45,6 @@
       enable = true; # Enable networking
       dns = "none";
 
-      wifi = {
-        powersave = false;
-      };
     };
 
       # Kubernetes firewall rules (enable only when running k8s)
@@ -329,20 +326,11 @@
     # Distribute hardware IRQs across CPU cores.
     irqbalance.enable = true;
 
-    # Provides KDE balanced, performance, and power-saver profiles.
-    power-profiles-daemon.enable = true;
-
     fwupd.enable = true;
 
     # Required for KDE Discover to manage system packages.
     packagekit.enable = true;
 
-    upower = {
-      enable = true;
-      # If the battery becomes critical, do a clean shutdown instead of
-      # entering a potentially unrecoverable low-power suspend state.
-      criticalPowerAction = "PowerOff";
-    };
 
     # Use KWallet as the single secrets backend on KDE.
     gnome.gnome-keyring.enable = false;
@@ -400,15 +388,6 @@
       openFirewall = true;
     };
 
-    logind = {
-      settings = {
-        Login = {
-          HandleLidSwitch = "ignore";
-          HandleLidSwitchDocked = "ignore";
-          HandleLidSwitchExternalPower = "ignore";
-        };
-      };
-    };
   };
 
   # Avahi can occasionally leave a stale PID file in /run after abrupt exits,
