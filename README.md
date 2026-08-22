@@ -1,6 +1,15 @@
-# my-nixos-configurations
+# ShengOS
 
-My personal NixOS configuration nix files
+**ShengOS** is my personal, reproducible Linux environment built on top of NixOS.
+
+It is not a separate Linux distribution in the traditional sense—with its own installer and package repositories—but a carefully assembled personal operating system. The configuration defines the system, desktop, applications, development tools, services, security settings, and user environment as code. Rebuilding the flake turns that definition into a complete NixOS system generation that can be upgraded, reproduced, or rolled back safely.
+
+ShengOS currently supports two laptop profiles:
+
+- **jasonkwh-7520u** — AMD Ryzen-based laptop with AMD graphics, Steam, gaming optimisations, and hibernation support.
+- **jasonkwh-7300u** — Intel-based laptop with its own graphics, thermal, and power-management settings.
+
+Both machines share a common foundation while retaining hardware-specific configuration where necessary. The environment includes KDE Plasma, Home Manager, Chinese Pinyin input, developer tooling, containers, cloud and Kubernetes utilities, Hermes Agent, Tailscale, and other services I use every day.
 
 ## Apply the config on NixOS
 
