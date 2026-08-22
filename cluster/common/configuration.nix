@@ -511,6 +511,17 @@
     '';
   };
 
+  # Deploy ShengOS's personality (SOUL.md) into Hermes' HERMES_HOME so the
+  # agent comes up as 小升升 on every host.  Owned by hermes, read-only it is
+  # not overwritten by Hermes' own seed logic on rebuild.
+  system.activationScripts.hermes-soul-md = {
+    deps = [ "users" ];
+    text = ''
+      install -o hermes -g hermes -m 0640 \
+        ${./SOUL.md} /var/lib/hermes/.hermes/SOUL.md
+    '';
+  };
+
   # GitHub Actions self-hosted runner (see README for setup)
   services.github-runners.${config.networking.hostName} = {
     enable = true;
