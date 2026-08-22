@@ -22,7 +22,7 @@ help:
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
-		'make $(HOSTS)  switch that host'
+		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
 	sudo nixos-rebuild $(1) --flake .#$(2) --impure
