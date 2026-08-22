@@ -309,9 +309,9 @@
         _config_version = 38;
 
         model = {
-          provider = "openai-api";
-          default = "gpt-5.6-luna";
-          base_url = "https://api.openai.com/v1";
+          provider = "openrouter";
+          default = "deepseek/deepseek-v4-flash-0731";
+          base_url = "https://openrouter.ai/api/v1";
         };
         memory = {
           memory_enabled = true;
