@@ -4,6 +4,20 @@
 
 { config, pkgs, lib, username, homeDirectory, ... }:
 
+let
+  versionYaml = builtins.readFile ../../version.yaml;
+  versionLine = lib.findFirst
+    (line: lib.hasPrefix "version:" line)
+    null
+    (lib.splitString "\n" versionYaml);
+  shengosVersion =
+    if versionLine == null then
+      throw "version.yaml must contain a version: field"
+    else
+      builtins.elemAt
+        (builtins.match "version:[[:space:]]*([0-9]+\\.[0-9]+\\.[0-9]+)" versionLine)
+        0;
+in
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
   # this controls the identity exposed through /etc/os-release and desktop
@@ -15,6 +29,7 @@
     extraOSReleaseArgs = {
       LOGO = "shengos";
       HOME_URL = "https://github.com/jasonkwh";
+      BUILD_ID = shengosVersion;
     };
   };
 
