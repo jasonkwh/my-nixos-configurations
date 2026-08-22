@@ -4,28 +4,6 @@
 
 { config, pkgs, lib, username, homeDirectory, ... }:
 
-let
-  hermesHimalaya = pkgs.writeShellScriptBin "hermes-himalaya" ''
-    set -eu
-
-    # Keep Hermes from selecting another config or using an inherited config
-    # path. The fixed config invokes the password command as jasonkwh.
-    for arg in "$@"; do
-      case "$arg" in
-        -c|--config|-c=*|--config=*)
-          printf '%s\n' 'custom Himalaya config paths are not allowed' >&2
-          exit 64
-          ;;
-      esac
-    done
-    unset HIMALAYA_CONFIG
-    export HOME=${lib.escapeShellArg homeDirectory}
-    export XDG_CONFIG_HOME=${lib.escapeShellArg "${homeDirectory}/.config"}
-    exec ${pkgs.himalaya}/bin/himalaya \
-      --config ${lib.escapeShellArg "${homeDirectory}/.config/himalaya/config.toml"} \
-      "$@"
-  '';
-in
 {
   imports = [
     /etc/nixos/hardware-configuration.nix
@@ -72,16 +50,16 @@ in
       };
     };
 
-    # Kubernetes firewall rules (uncomment if running k8s)
-    firewall = {
-      allowedTCPPorts = [
-        6443   # Kubernetes API server (required)
-        10250  # Kubelet API (optional but recommended for metrics/logs/debugging)
-      ];
-      allowedUDPPorts = [
-        8472   # Flannel VXLAN (required for inter-node pod networking)
-      ];
-    };
+      # Kubernetes firewall rules (enable only when running k8s)
+      firewall = {
+        allowedTCPPorts = [
+          # 6443   # Kubernetes API server (required)
+          # 10250  # Kubelet API (optional but recommended for metrics/debugging)
+        ];
+        allowedUDPPorts = [
+          # 8472   # Flannel VXLAN (required for inter-node pod networking)
+        ];
+      };
   };
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -171,23 +149,6 @@ in
   environment.shellAliases.hermes =
     "sudo -u hermes ${pkgs.coreutils}/bin/env HERMES_HOME=/var/lib/hermes/.hermes hermes";
 
-  # Let Hermes invoke the fixed Himalaya wrapper as the login user. The
-  # wrapper can use the app password through jasonkwh's normal permissions,
-  # while the hermes service user never receives read access to that file.
-  security.sudo.extraRules = [{
-    users = [ "hermes" ];
-    commands = [{
-      command = "${hermesHimalaya}/bin/hermes-himalaya";
-      options = [ "NOPASSWD" ];
-    }];
-  }];
-
-  # The fixed Himalaya sudo wrapper above is intentionally part of the
-  # Hermes/Gmail access design. NoNewPrivileges prevents that narrowly scoped
-  # sudo rule from working, so disable it for this service only. Keep the
-  # remaining systemd sandboxing (ProtectSystem, PrivateTmp, User=hermes,
-  # and ReadWritePaths) supplied by the Hermes module.
-  systemd.services.hermes-agent.serviceConfig.NoNewPrivileges = lib.mkForce false;
 
   security.wrappers.bwrap = {
     owner = "root";
@@ -295,6 +256,7 @@ in
         WHATSAPP_ENABLED = "true";
         WHATSAPP_MODE = "self-chat";
         WHATSAPP_ALLOWED_USERS = "61424495256";
+        HIMALAYA_CONFIG = "${homeDirectory}/.config/himalaya/config.toml";
       };
       settings = {
         # Keep the generated config stamped with the schema version expected by
@@ -459,6 +421,8 @@ in
     deps = [ "users" ];
     text = ''
       config_dir=${lib.escapeShellArg "${homeDirectory}/Documents/my-nixos-configurations"}
+      secrets_dir=${lib.escapeShellArg "${homeDirectory}/.secrets"}
+      himalaya_dir=${lib.escapeShellArg "${homeDirectory}/.config/himalaya"}
 
       if [ -d "$config_dir" ]; then
         ${pkgs.acl}/bin/setfacl -m u:hermes:--x \
@@ -467,6 +431,21 @@ in
         ${pkgs.acl}/bin/setfacl -R -m u:hermes:rwX "$config_dir"
         ${pkgs.findutils}/bin/find "$config_dir" -type d \
           -exec ${pkgs.acl}/bin/setfacl -m d:u:hermes:rwX {} +
+      fi
+
+      # Allow the Hermes service user to use the declarative Himalaya setup.
+      # The Gmail app password remains in Jason's secrets directory; this
+      # grants Hermes only the minimum traversal/read access required by the
+      # Himalaya passwordCommand and configured file.
+      if [ -d "$secrets_dir" ] && [ -d "$himalaya_dir" ]; then
+        ${pkgs.acl}/bin/setfacl -m u:hermes:--x \
+          ${lib.escapeShellArg homeDirectory} "$secrets_dir" \
+          ${lib.escapeShellArg "${homeDirectory}/.config"}
+        ${pkgs.acl}/bin/setfacl -m u:hermes:rx "$himalaya_dir"
+        [ ! -f "$himalaya_dir/config.toml" ] || \
+          ${pkgs.acl}/bin/setfacl -m u:hermes:r "$himalaya_dir/config.toml"
+        [ ! -f "$secrets_dir/gmail-app-password" ] || \
+          ${pkgs.acl}/bin/setfacl -m u:hermes:r "$secrets_dir/gmail-app-password"
       fi
     '';
   };
