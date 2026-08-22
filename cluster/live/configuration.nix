@@ -1,4 +1,4 @@
-{ config, lib, pkgs, username, ... }:
+{ config, lib, pkgs, username, homeDirectory, ... }:
 
 let
   repoBundle = pkgs.runCommand "my-nixos-configurations-bundle" { } ''
@@ -20,6 +20,7 @@ let
 
   shengosBranding = pkgs.runCommand "shengos-calamares-branding" { } ''
     cp -R ${pkgs.calamares-nixos-extensions}/share/calamares/branding/nixos "$out"
+    chmod -R u+w "$out"
     substituteInPlace "$out/branding.desc" \
       --replace-fail 'componentName:  nixos' 'componentName:  shengos' \
       --replace-fail 'shortProductName:    NixOS' 'shortProductName:    ShengOS' \
@@ -38,6 +39,12 @@ let
     [ "presets:\n    fullName:\n        value: \"Jason Huang\"\n        editable: true\n    loginName:\n        value: \"jasonkwh\"\n        editable: true\n\nhostname:\n" ]
     (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
 
+  liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
+    mkdir -p "$out/share/backgrounds/shengos"
+    cp ${../../assets/wallpapers/DSCF4098.JPG} \
+      "$out/share/backgrounds/shengos/DSCF4098.JPG"
+  '';
+
   calamaresSettings = builtins.replaceStrings
     [ "- module: nixos\n  weight:   48\n" "  - nixos\n  - users\n  - umount\n" "branding: nixos" ]
     [ "- module: nixos\n  weight:   48\n- id:       copy-shengos-config\n  module:   shellprocess\n  config:   copy-shengos-config.conf\n"
@@ -47,22 +54,72 @@ let
 in
 {
   imports = [
-    ../common/configuration.nix
   ];
 
-  # Reuse the shared Home Manager environment, but do not apply either
-  # laptop's hardware-specific home configuration.
   home-manager.users.${username} = {
-    imports = [
-      ../common/home.nix
-      ../common/home-gui.nix
-    ];
+    home = {
+      inherit username homeDirectory;
+      stateVersion = "24.11";
+    };
+
+    programs.git = {
+      enable = true;
+      settings.user = {
+        name = "jasonkwh";
+        email = "jasonkwh@users.noreply.github.com";
+      };
+    };
+
+    programs.plasma = {
+      enable = true;
+      workspace = {
+        wallpaper = "${liveWallpaper}/share/backgrounds/shengos/DSCF4098.JPG";
+        lookAndFeel = "org.kde.breezedark.desktop";
+        colorScheme = "BreezeDark";
+      };
+    };
   };
+
+  system.nixos = {
+    distroName = "ShengOS";
+    extraOSReleaseArgs = {
+      LOGO = "shengos";
+      HOME_URL = "https://github.com/jasonkwh";
+    };
+  };
+
+  users.users.${username} = {
+    isNormalUser = true;
+    description = "Jason Huang";
+    home = homeDirectory;
+    extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.bashInteractive;
+  };
+
+  nixpkgs.config.allowUnfree = true;
+  networking.networkmanager.enable = true;
+  i18n.defaultLocale = "en_AU.UTF-8";
 
   # The Calamares shellprocess runs this after nixos-install and before the
   # target filesystem is unmounted.  The repository is therefore guaranteed
   # to be present in the installed user's Documents directory.
-  environment.systemPackages = [ copyRepo ];
+  environment.systemPackages = with pkgs; [
+    copyRepo
+    btrfs-progs
+    curl
+    efibootmgr
+    git
+    hw-probe
+    kdePackages.partitionmanager
+    nvme-cli
+    pciutils
+    rsync
+    smartmontools
+    usbutils
+    vim
+    wget
+    liveWallpaper
+  ];
   environment.etc."calamares/settings.conf".text = calamaresSettings;
   environment.etc."calamares/modules/users.conf".text = calamaresUsers;
   environment.etc."calamares/branding/shengos".source = shengosBranding;
@@ -76,6 +133,10 @@ in
   networking.hostName = "jasonkwh-live";
   time.timeZone = "Australia/Melbourne";
 
+  # Include proprietary firmware so the portable image works across more
+  # laptops and desktops (Wi-Fi, Bluetooth, and other device firmware).
+  hardware.enableAllFirmware = true;
+
   # A Live image must be hardware-neutral and must not resume or configure
   # the installed laptops' swap devices.
   boot.resumeDevice = lib.mkForce "";
@@ -87,18 +148,6 @@ in
   # the AMD-only or Intel-only laptop driver settings.
   services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
   services.desktopManager.plasma6.enableQt5Integration = lib.mkForce true;
-
-  # These services depend on persistent host secrets/state and are deliberately
-  # omitted from a portable USB session.
-  services.hermes-agent.enable = lib.mkForce false;
-  services.resilio.enable = lib.mkForce false;
-  services.github-runners.jasonkwh-live.enable = lib.mkForce false;
-  services.openssh.enable = lib.mkForce false;
-  services.tailscale.enable = lib.mkForce false;
-  services.fstrim.enable = lib.mkForce false;
-  services.irqbalance.enable = lib.mkForce false;
-  services.fwupd.enable = lib.mkForce false;
-  services.packagekit.enable = lib.mkForce false;
 
   # Do not install a bootloader to the USB user's firmware variables.
   boot.loader.efi.canTouchEfiVariables = lib.mkForce false;

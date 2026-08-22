@@ -82,10 +82,6 @@
         };
         modules = [
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"
-          inputs.hermes-agent.nixosModules.default
-          ({
-            nixpkgs.overlays = [ kernelOverlay ];
-          })
           ./cluster/live/configuration.nix
           {
             nix.settings.trusted-users = [ username ];
