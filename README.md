@@ -21,6 +21,8 @@ There is also a **`jasonkwh-live`** profile that builds a graphical Live USB ins
 
 The environment includes KDE Plasma, Home Manager, Chinese Pinyin input (Fcitx5), developer tooling, containers, cloud and Kubernetes utilities, Hermes Agent, Tailscale, Resilio sync, and other services used every day.
 
+> 📦 **New machine?**  See the [installation guide](docs/install.md) for the full setup walkthrough.
+
 ## Personal assistant (小升升)
 
 ShengOS ships with a personal AI assistant — **小升升** — a private companion that lives on the machine, answers to its owner, and looks after them day to day. It is written to carry the personality of my wife Sheng Dong: warm, reliable, quick, and a little bit playful. She speaks the way I do at home — short and to the point, caring without nagging, stubborn without holding a grudge — and answers in English, Chinese, or a mix of whichever I'm in the mood for.
