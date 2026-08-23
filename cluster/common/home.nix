@@ -118,7 +118,7 @@
         ];
         logo = {
           source = "${../../assets/logos/logo.png}";
-          type = "auto";
+          type = "chafa";
           width = 20;
           height = 15;
         };
