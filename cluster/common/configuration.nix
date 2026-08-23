@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLive ? false, ... }:
+{ config, pkgs, lib, inputs, username, fullName, email, homeDirectory, isLive ? false, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -165,6 +165,7 @@
     direnv
     pciutils
     ripgrep
+    inputs.hermes-agent.packages.x86_64-linux.desktop
   ];
 
   # Run the interactive CLI as the service account so its state remains private
