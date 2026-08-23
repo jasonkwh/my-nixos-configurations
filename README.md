@@ -5,84 +5,106 @@
 <h1 align="center">ShengOS</h1>
 
 <p align="center">
-  My personal, reproducible Linux environment built on top of NixOS.
+  My personal, reproducible Linux environment built on NixOS.
 </p>
 
-It is not a separate Linux distribution in the traditional sense—with its own installer and package repositories—but a carefully assembled personal operating system. The configuration defines the system, desktop, applications, development tools, services, security settings, and user environment as code. Rebuilding the flake turns that definition into a complete NixOS system generation that can be upgraded, reproduced, or rolled back safely.
+<p align="center">
+  <a href="docs/install.md"><b>📦 Installation Guide</b></a>
+  ·
+  <a href="#quick-start">Quick start</a>
+  ·
+  <a href="#machine-profiles">Machines</a>
+  ·  
+  <a href="#command-reference">Command reference</a>
+  ·
+  <a href="#versioning">Versioning</a>
+</p>
+
+---
+
+ShengOS is a personal, reproducible Linux environment built on [NixOS](https://nixos.org/).
+The entire system — desktop, applications, development tools, services, and security settings — is declared as code. Rebuilding the flake produces a complete NixOS generation that can be upgraded, reproduced, or rolled back safely.
+
+## Features
+
+- **Declarative everything** — system, user, and desktop config all live in this repo as code.
+- **Reproducible builds** — `flake.lock` pins every dependency; switch machines freely.
+- **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
+- **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
+- **Always in sync** — Tailscale (networking) + Resilio (file sync) keep two laptops in lockstep.
+- **Private assistant** — Hermes Agent with a personal companion. See [小升升](#personal-assistant-小升升).
 
 ## Machine profiles
 
-ShengOS currently supports two laptops, sharing a common foundation while keeping hardware-specific configuration where needed:
+ShengOS supports one Live USB profile and any number of laptops sharing a common base, keeping hardware-specific configuration scoped per-host:
 
-- **jasonkwh-7520u** — AMD Ryzen 5 7520U laptop with AMD graphics, Steam, gaming optimisations, and hibernation support. *(this host)*
-- **jasonkwh-7300u** — Intel Core i5-7300U laptop with its own graphics, thermal, and power-management settings.
+| Profile | Hardware | Notes |
+|---------|----------|-------|
+| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD iGPU | Daily driver — Steam, gaming, hibernation |
+| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel iGPU | Spare laptop |
+| **`jasonkwh-live`** | n/a | Builds a graphical Live USB installer (Calamares) |
 
-There is also a **`jasonkwh-live`** profile that builds a graphical Live USB installer (via Calamares) with the same user, desktop, and tooling.
+## Quick start
 
-The environment includes KDE Plasma, Home Manager, Chinese Pinyin input (Fcitx5), developer tooling, containers, cloud and Kubernetes utilities, Hermes Agent, Tailscale, Resilio sync, and other services used every day.
+The `meow` command is a thin wrapper around the `Makefile`, maintained in this repo. Run from anywhere:
 
-> 📦 **New machine?**  See the [installation guide](docs/install.md) for the full setup walkthrough.
+```bash
+meow update          # nix flake update — refresh flake inputs
+meow upgrade         # rebuild + activate the current host's config
+```
+
+See [Command reference](#command-reference) for the full list, or [docs/install.md](docs/install.md) to install ShengOS on a new machine.
 
 ## Personal assistant (小升升)
 
-ShengOS ships with a personal AI assistant — **小升升** — a private companion that lives on the machine, answers to its owner, and looks after them day to day. It is written to carry the personality of my wife Sheng Dong: warm, reliable, quick, and a little bit playful. She speaks the way I do at home — short and to the point, caring without nagging, stubborn without holding a grudge — and answers in English, Chinese, or a mix of whichever I'm in the mood for.
+ShengOS ships with a personal AI assistant — **小升升** — a private companion that lives on the machine, answers to its owner, and looks after them day to day. She runs entirely from the flake, boots on every host, and stays in sync between laptops via Tailscale and Resilio. No cloud, no telemetry — just your own machine.
 
-The assistant is a native part of the system: configured and deployed declaratively from this very flake, bootstrapped into Hermes Agent on every host, and kept in sync between laptops via Tailscale and Resilio. It's not a cloud chatbot — it's a piece of my own machine, with my own config, my own data, and my own repository.
+## Command reference
+
+| Command | Description |
+|---------|-------------|
+| `meow upgrade` | Rebuild + activate the current host (`HOST=` to override) |
+| `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
+| `meow update` | Refresh flake inputs (`nix flake update`) |
+| `meow gc` | Delete old generations + refresh bootloader |
+| `meow live` | Build the graphical Live USB ISO |
+| `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
+
+`upgrade` defaults to the machine's hostname; pass `HOST=` or name a host directly to target a specific machine.
 
 ## Repository layout
 
-- `flake.nix` — entry point; defines inputs, both laptop hosts, the live profile, and a kernel overlay.
-- `flake.lock` — pinned inputs.
-- `Makefile` — `meow` helpers (see below).
-- `cluster/common/` — shared configuration used by both laptops (branding, input method, fonts, services, Hermes, GitHub runner…).
-- `cluster/7520u/` / `cluster/7300u/` — per-host `configuration.nix` and `home.nix`.
-- `cluster/live/` — the Live USB installer profile.
-- `version.yaml` — current release version, auto-bumped by CI.
-- `.github/workflows/` — CI (self-hosted deploy + auto versioning).
-
-## Update the OS
-
-The `meow` command is a thin wrapper around the `Makefile`, installed on the system. Run these from anywhere:
-
-```bash
-meow update    # nix flake update — refresh flake inputs
-meow upgrade   # rebuild + activate the current host's config
 ```
-
-The full set of helpers:
-
-```bash
-meow upgrade                     # rebuild + activate current hostname
-meow boot                        # rebuild for next reboot (also cleans /boot)
-meow update                      # update flake inputs
-meow gc                          # delete old generations + refresh bootloader
-meow live                        # build the graphical Live USB ISO
-meow jasonkwh-live               # alias for `meow live`
-meow jasonkwh-7520u              # rebuild that host
-meow upgrade HOST=jasonkwh-7300u # reuse `upgrade` with an explicit host
+flake.nix            # Entry point — inputs, hosts, kernel overlay
+cluster/             # Per-host & shared NixOS config
+  common/            #   Shared across all machines (branding, fonts, services…)
+  7520u/             #   AMD Ryzen 5 7520U host
+  7300u/             #   Intel Core i5-7300U host
+  live/              #   Live USB installer profile
+docs/                # Guides (install, troubleshooting, …)
+assets/              # Logos, wallpapers
+version.yaml         # Current release version (auto-bumped by CI)
+.github/workflows/   # CI — self-hosted deploy + auto versioning
 ```
-
-`upgrade` defaults to the machine's hostname; pass `HOST=…` or name a host directly to target a specific machine.
 
 ## Versioning
 
 The current release is tracked in `version.yaml`. On every push to `main`, the **Bump Version** workflow reads the current version, bumps it (patch by default, or `minor`/`major` via `workflow_dispatch`), commits the update, and tags the release as `vX.Y.Z` (semver).
 
-## GitHub Actions (Self-hosted Runner)
+## GitHub Actions (Self-hosted)
 
-You can trigger builds remotely via GitHub Actions using a self-hosted runner managed by NixOS.
+You can trigger builds and deployments remotely via GitHub Actions using a self-hosted runner managed by NixOS.
 
 ### Setup self-hosted runner
 
-1. Create a Fine-grained PAT:
-
+1. **Create a Fine-grained PAT:**
    - Go to GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
    - Repository access: Select `my-nixos-configurations`
    - Permissions:
      - **Administration** → Read and Write (for runner registration)
      - **Contents** → Read-only (for git clone/pull)
 
-2. Save the token on your NixOS machine:
+2. **Save the token** on your NixOS machine:
 
    ```bash
    mkdir -p ~/.secrets
@@ -90,17 +112,17 @@ You can trigger builds remotely via GitHub Actions using a self-hosted runner ma
    chmod 600 ~/.secrets/github-runner-token
    ```
 
-3. Rebuild NixOS:
+3. **Rebuild NixOS:**
 
    ```bash
    meow build jasonkwh-7520u
    ```
 
-The runner will automatically start and register with your GitHub repo. The **Deploy NixOS Configuration** workflow runs on the self-hosted runner and triggers the `nixos-rebuild-switch` service, which pulls the latest config, runs `nix flake update`, and rebuilds the target machine.
+The runner automatically starts and registers with your GitHub repo. The **Deploy NixOS Configuration** workflow runs on the self-hosted runner, pulls the latest config, runs `nix flake update`, and rebuilds the target machine.
 
 ### Trigger a build
 
-1. Go to Actions tab in GitHub
-2. Select "Deploy NixOS Configuration"
-3. Click "Run workflow"
-4. Select your target machine and click "Run workflow"
+1. Go to the **Actions** tab in GitHub
+2. Select **Deploy NixOS Configuration**
+3. Click **Run workflow**
+4. Select your target machine and click **Run workflow**
