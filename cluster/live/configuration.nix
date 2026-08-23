@@ -120,6 +120,33 @@ in
     wget
     liveWallpaper
   ];
+
+  # CJK fonts so Chinese, Japanese and Korean render correctly in the Live
+  # environment (file managers, terminals, LibreOffice preview) and in the
+  # freshly installed Calamares target.  Mirrors the font set in
+  # common/configuration.nix.
+  fonts = {
+    fontDir.enable = true;
+    packages = with pkgs; [
+      noto-fonts
+      noto-fonts-cjk-sans
+      noto-fonts-color-emoji
+      source-han-mono
+      source-han-sans
+      source-han-serif
+      wqy_zenhei
+      nerd-fonts.noto
+      nerd-fonts.jetbrains-mono
+    ];
+
+    fontconfig = {
+      enable = true;
+      antialias = true;
+      hinting = {
+        enable = true;
+      };
+    };
+  };
   environment.etc."calamares/settings.conf".text = calamaresSettings;
   environment.etc."calamares/modules/users.conf".text = calamaresUsers;
   environment.etc."calamares/branding/shengos".source = shengosBranding;

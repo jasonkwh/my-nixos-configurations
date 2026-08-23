@@ -46,6 +46,20 @@
         });
       };
 
+      # Home Manager module shared verbatim by every host.  Keeping it in one
+      # place means a change here applies to all machines (and the Live image).
+      homeManagerModule = {
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
+        home-manager.backupFileExtension = "backup";
+        home-manager.extraSpecialArgs = {
+          inherit username fullName email homeDirectory;
+        };
+        home-manager.sharedModules = [
+          plasma-manager.homeModules.plasma-manager
+        ];
+      };
+
       mkHost = { name, ... }: nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
@@ -62,17 +76,7 @@
             nix.settings.trusted-users = [ username ];
           }
           home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "backup";
-            home-manager.extraSpecialArgs = {
-              inherit username fullName email homeDirectory;
-            };
-            home-manager.sharedModules = [
-              plasma-manager.homeModules.plasma-manager
-            ];
-          }
+          homeManagerModule
         ];
       };
 
@@ -89,17 +93,7 @@
             nix.settings.trusted-users = [ username ];
           }
           home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "backup";
-            home-manager.extraSpecialArgs = {
-              inherit username fullName email homeDirectory;
-            };
-            home-manager.sharedModules = [
-              plasma-manager.homeModules.plasma-manager
-            ];
-          }
+          homeManagerModule
         ];
       };
 
