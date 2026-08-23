@@ -48,7 +48,7 @@ boot:
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
 update:
-	sudo nix flake update
+	nix flake update
 
 gc:
 	sudo nix-collect-garbage -d
