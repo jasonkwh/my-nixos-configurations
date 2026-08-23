@@ -107,20 +107,34 @@
           "theme"
           "icons"
           "terminal"
+          "terminalfont"
           "cpu"
           "gpu"
           "memory"
+          "swap"
           "disk"
           "battery"
           "locale"
           "break"
           "colors"
         ];
+        display = {
+          separator = " | ";
+        };
         logo = {
           source = "${../../assets/logos/logo.png}";
           type = "chafa";
-          width = 20;
-          height = 15;
+          chafa = {
+            symbols = "block+space";
+          };
+          width = 38;
+          height = 29;
+          padding = {
+            top = 0;
+            left = 10;
+            right = 10;
+            bottom = 0;
+          };
         };
       };
     };
