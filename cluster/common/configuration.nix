@@ -310,7 +310,7 @@
 
         model = {
           provider = "openrouter";
-          default = "deepseek/deepseek-v4-flash-0731";
+          default = "stealth/ox-alpha";
           base_url = "https://openrouter.ai/api/v1";
         };
         memory = {
