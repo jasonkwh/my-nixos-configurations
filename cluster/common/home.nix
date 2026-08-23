@@ -127,8 +127,8 @@
           chafa = {
             symbols = "block+space";
           };
-          width = 38;
-          height = 29;
+          width = 30;
+          height = 22;
           padding = {
             top = 0;
             left = 10;
