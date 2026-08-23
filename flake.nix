@@ -64,6 +64,7 @@
         inherit system;
         specialArgs = {
           inherit username fullName email homeDirectory;
+          inherit inputs;
           isLive = false;
         };
         modules = [
