@@ -14,7 +14,7 @@ This document explains how to install ShengOS on a brand-new machine from a Live
 
 1. Boot from the Live USB to reach the graphical Calamares installer.
 2. **The username must be `jasonkwh`** (pre-filled in the Calamares UI). The entire configuration repository hard-codes `/home/jasonkwh` and the username — a custom username is **not** supported.
-3. After installation, Calamares runs a copy script that places this repository in the user's `~/Documents/`.
+3. After installation, Calamares runs a copy script that places this repository in the user's `~/Documents/`. The script also enables the `nix-command` and `flakes` experimental features in the installed system, so the first rebuild works out of the box.
 
 ## Step 2: First boot — update the repository
 
@@ -53,6 +53,9 @@ fastfetch         # check system info and that the branding reads "ShengOS"
 ```
 
 ## FAQ
+
+### Q: The final installation step (copying the repository) fails with an error
+The copy script now fails loudly instead of silently leaving a broken state. In almost all cases this means the username is not `jasonkwh` — the script verifies the target user exists before copying. Re-run the installer and make sure the username field is `jasonkwh` (it should be pre-filled).
 
 ### Q: Does the username have to be `jasonkwh`?
 **Yes.** The username and `/home/jasonkwh` path are hard-coded throughout the repository. Custom usernames are not currently supported.

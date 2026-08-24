@@ -9,6 +9,7 @@ let
 
   copyRepo = pkgs.writeShellScriptBin "copy-shengos-config" ''
     set -eu
+    id "${username}" >/dev/null
     target=${homeDirectory}/Documents/my-nixos-configurations
     mkdir -p "$(dirname "$target")"
     rm -rf "$target"
@@ -16,28 +17,52 @@ let
       ${repoBundle}/share/my-nixos-configurations "$target"
     chown -R ${username}:users "$target"
     chmod -R u+rwX,go+rX "$target"
+    grep -q experimental-features /mnt/etc/nix/nix.conf 2>/dev/null || \
+      echo "experimental-features = nix-command flakes" >> /mnt/etc/nix/nix.conf
   '';
+
+  # Branding substitutions for Calamares' branding.desc.  Each entry matches
+  # by leading key (whitespace-tolerant) so upstream formatting drift does not
+  # silently skip a replacement; every substitution is asserted afterwards.
+  brandingSubstitutions = [
+    { key = "componentName"; value = "shengos"; }
+    { key = "shortProductName"; value = "ShengOS"; }
+    { key = "versionedName"; value = "ShengOS"; }
+    { key = "shortVersionedName"; value = "ShengOS"; }
+    { key = "bootloaderEntryName"; value = "ShengOS"; }
+    { key = "productUrl"; value = "https://github.com/jasonkwh"; }
+    { key = "productIcon"; value = "\"shengos.png\""; }
+    { key = "productLogo"; value = "\"shengos.png\""; }
+    { key = "productWelcome"; value = "\"shengos.png\""; }
+  ];
+
+  sedExpr = lib.concatMapStringsSep "\n"
+    ({ key, value }: ''
+      sed -i -E 's|^[[:space:]]*(${key}):[[:space:]]*.*$|\1: ${value}|' "$out/branding.desc"
+      grep -qF '${key}: ${value}' "$out/branding.desc" || {
+        echo "branding substitution failed for ${key}" >&2
+        exit 1
+      }
+    '')
+    brandingSubstitutions;
 
   shengosBranding = pkgs.runCommand "shengos-calamares-branding" { } ''
     cp -R ${pkgs.calamares-nixos-extensions}/share/calamares/branding/nixos "$out"
     chmod -R u+w "$out"
-    substituteInPlace "$out/branding.desc" \
-      --replace-fail 'componentName:  nixos' 'componentName:  shengos' \
-      --replace-fail 'shortProductName:    NixOS' 'shortProductName:    ShengOS' \
-      --replace-fail 'versionedName:       NixOS' 'versionedName:       ShengOS' \
-      --replace-fail 'shortVersionedName:  NixOS' 'shortVersionedName:  ShengOS' \
-      --replace-fail 'bootloaderEntryName: NixOS' 'bootloaderEntryName: ShengOS' \
-      --replace-fail 'productUrl:          https://nixos.org/' 'productUrl:          https://github.com/jasonkwh' \
-      --replace-fail 'productIcon:         "nix-snowflake.svg"' 'productIcon:         "shengos.png"' \
-      --replace-fail 'productLogo:         "white.png"' 'productLogo:         "shengos.png"' \
-      --replace-fail 'productWelcome:      "nix-snowflake.svg"' 'productWelcome:      "shengos.png"'
+    ${sedExpr}
     cp ${../../assets/logos/logo.png} "$out/shengos.png"
   '';
 
-  calamaresUsers = builtins.replaceStrings
-    [ "hostname:\n" ]
-    [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: true\n    loginName:\n        value: \"${username}\"\n        editable: true\n\nhostname:\n" ]
-    (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
+  calamaresUsers =
+    let
+      result = builtins.replaceStrings
+        [ "hostname:\n" ]
+        [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: true\n    loginName:\n        value: \"${username}\"\n        editable: true\n\nhostname:\n" ]
+        (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
+    in
+    assert lib.hasInfix "loginName:" result
+      && lib.hasInfix "presets:" result;
+    result;
 
   liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
     mkdir -p "$out/share/backgrounds/shengos"
@@ -45,12 +70,19 @@ let
       "$out/share/backgrounds/shengos/DSCF4098.JPG"
   '';
 
-  calamaresSettings = builtins.replaceStrings
-    [ "- module: nixos\n  weight:   48\n" "  - nixos\n  - users\n  - umount\n" "branding: nixos" ]
-    [ "- module: nixos\n  weight:   48\n- id:       copy-shengos-config\n  module:   shellprocess\n  config:   copy-shengos-config.conf\n"
-      "  - nixos\n  - users\n  - copy-shengos-config\n  - umount\n"
-      "branding: shengos" ]
-    (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/settings.conf");
+  calamaresSettings =
+    let
+      result = builtins.replaceStrings
+        [ "- module:   nixos\n  weight:   48\n" "  - nixos\n  - users\n  - umount\n" "branding: nixos" ]
+        [ "- module:   nixos\n  weight:   48\n- id:       copy-shengos-config\n  module:   shellprocess\n  config:   copy-shengos-config.conf\n"
+          "  - nixos\n  - users\n  - copy-shengos-config\n  - umount\n"
+          "branding: shengos" ]
+        (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/settings.conf");
+    in
+    assert lib.hasInfix "copy-shengos-config.conf" result
+      && lib.hasInfix "branding: shengos" result
+      && ! lib.hasInfix "branding: nixos" result;
+    result;
 in
 {
   imports = [
@@ -94,9 +126,18 @@ in
     home = homeDirectory;
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.bashInteractive;
+    # Upstream installer module hard-codes autoLogin.user = "nixos";
+    # override for the ShengOS live user and allow passwordless login.
+    initialPassword = "";
+  };
+
+  services.displayManager.autoLogin = {
+    enable = lib.mkForce true;
+    user = lib.mkForce username;
   };
 
   nixpkgs.config.allowUnfree = true;
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
   networking.networkmanager.enable = true;
   i18n.defaultLocale = "en_AU.UTF-8";
 
@@ -132,9 +173,6 @@ in
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
       source-han-mono
-      source-han-sans
-      source-han-serif
-      wqy_zenhei
       nerd-fonts.noto
       nerd-fonts.jetbrains-mono
     ];
@@ -181,6 +219,8 @@ in
 
   # Keep the image identifiable as a Live USB rather than as either laptop.
   image.fileName = "shengos-live-${config.system.nixos.release}-x86_64.iso";
+  isoImage.volumeID = "SHENGOS_LIVE";
+  image.baseName = lib.mkForce "shengos";
 
   # A portable troubleshooting/install USB should not prompt for a sudo
   # password.  The normal installed systems keep their existing policy.

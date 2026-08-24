@@ -32,6 +32,7 @@ The entire system — desktop, applications, development tools, services, and se
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
 - **Always in sync** — Tailscale (networking) + Resilio (file sync) keep two laptops in lockstep.
+- **One-USB install** — boot the Live USB, click through Calamares, and land on a full ShengOS machine: the config repo is copied over automatically and flakes work from the first rebuild.
 - **Private assistant** — Hermes Agent with a personal companion. See [小升升](#personal-assistant-小升升).
 
 ## Machine profiles
@@ -40,9 +41,9 @@ ShengOS supports one Live USB profile and any number of laptops sharing a common
 
 | Profile | Hardware | Notes |
 |---------|----------|-------|
-| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD iGPU | Daily driver — Steam, gaming, hibernation |
-| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel iGPU | Spare laptop |
-| **`jasonkwh-live`** | n/a | Builds a graphical Live USB installer (Calamares) |
+| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M | Daily driver — Steam, gaming, hibernation |
+| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 | Spare laptop |
+| **`jasonkwh-live`** | n/a | Graphical Calamares installer — auto-copies this repo to the target, flakes ready out of the box, autologin |
 
 ## Quick start
 
