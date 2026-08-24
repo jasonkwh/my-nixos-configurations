@@ -146,10 +146,21 @@
   };
 
   # System tools that require root/polkit integration.
+  # System-level Brave wrapper with a CDP debugging port for the Hermes
+  # browser tools (on-demand, headless-capable). Lives in the system PATH so
+  # the `hermes` service user can run it without sudo. A separate
+  # --user-data-dir is mandatory: Chromium 136+ silently refuses
+  # --remote-debugging-port on the default profile.
   environment.systemPackages = with pkgs; [
     (runCommand "shengos-branding" { } ''
       mkdir -p $out/share/pixmaps
       cp ${../../assets/logos/logo.png} $out/share/pixmaps/shengos.png
+    '')
+    (writeShellScriptBin "brave-debug" ''
+      exec ${brave}/bin/brave \
+        --remote-debugging-port=9222 \
+        --user-data-dir=''${BRAVE_DEBUG_DIR:-$HOME/.hermes/brave-debug} \
+        ''${BRAVE_DEBUG_EXTRA_ARGS:-} "$@"
     '')
     (writeShellScriptBin "meow" ''
       exec ${gnumake}/bin/make -C ${homeDirectory}/Documents/my-nixos-configurations "$@"
