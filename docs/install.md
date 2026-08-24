@@ -68,7 +68,14 @@ scp -r jasonkwh@<7520U-IP>:~/.secrets/ ~/
 ```
 
 ### Q: Where is the Resilio token?
-`~/.secrets/resilio-memories-secret`. It is copied over together with the rest of `~/.secrets/` in the command above.
+`~/.secrets/resilio-memories-secret` (memories) and
+`~/.secrets/resilio-skills-secret` (user-created skills). Both are copied over
+together with the rest of `~/.secrets/` in the command above.
+
+Note: each Resilio shared folder has its own unique secret. When adding a new
+shared folder to the fleet, generate it once on a single host, then copy the
+file to every other host — never regenerate per host, or the folders will not
+pair.
 
 ### Q: The new machine has no memories/token yet — can it overwrite the old machine's data?
 No. Resilio identifies nodes by a key under `/var/lib/resilio`, which is unrelated to `~/.secrets`. The Resilio service is enabled by default, but it only starts syncing once the secrets are in place and it can reach the tracker. A fresh node will not write to existing data before its first sync.
