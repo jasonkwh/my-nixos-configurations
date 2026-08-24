@@ -22,6 +22,7 @@
 
   # Bootloader.
   boot = {
+    zfs.forceImportRoot = false; # silence evaluation warning; safer default (26.11+)
     loader = {
       systemd-boot = {
         enable = true;
