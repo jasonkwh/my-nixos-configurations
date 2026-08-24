@@ -85,6 +85,7 @@
         specialArgs = {
           inherit username fullName email homeDirectory;
           isLive = true;
+          inherit system;
         };
         modules = [
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"

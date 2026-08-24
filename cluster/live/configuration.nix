@@ -1,4 +1,4 @@
-{ config, lib, pkgs, username, fullName, email, homeDirectory, ... }:
+{ config, lib, pkgs, system, username, fullName, email, homeDirectory, ... }:
 
 let
   repoBundle = pkgs.runCommand "my-nixos-configurations-bundle" { } ''
@@ -218,9 +218,9 @@ in
   boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
 
   # Keep the image identifiable as a Live USB rather than as either laptop.
-  image.fileName = "shengos-live-${config.system.nixos.release}-x86_64.iso";
+  image.fileName = lib.mkForce "shengos-live-${config.system.nixos.release}-${system}.iso";
   isoImage.volumeID = "SHENGOS_LIVE";
-  image.baseName = lib.mkForce "shengos";
+  image.baseName = lib.mkForce "shengos-live-${config.system.nixos.release}-${system}";
 
   # A portable troubleshooting/install USB should not prompt for a sudo
   # password.  The normal installed systems keep their existing policy.
