@@ -288,6 +288,18 @@
           useSyncTrash = true;
           knownHosts = [ ];
         }
+        {
+          # User-created Hermes skills: mostly read-only, low conflict risk.
+          # Secret must be copied to every participating host, same as memories.
+          directory = "/var/lib/hermes/.hermes/skills";
+          secretFile = "${homeDirectory}/.secrets/resilio-skills-secret";
+          useRelayServer = true;
+          useTracker = true;
+          useDHT = true;
+          searchLAN = true;
+          useSyncTrash = true;
+          knownHosts = [ ];
+        }
       ];
     };
 
@@ -494,31 +506,34 @@
           ${lib.escapeShellArg homeDirectory} "$secrets_dir"
         [ ! -f "$secrets_dir/resilio-memories-secret" ] || \
           ${pkgs.acl}/bin/setfacl -m u:rslsync:r "$secrets_dir/resilio-memories-secret"
+        [ ! -f "$secrets_dir/resilio-skills-secret" ] || \
+          ${pkgs.acl}/bin/setfacl -m u:rslsync:r "$secrets_dir/resilio-skills-secret"
       fi
     '';
   };
 
   # Resilio runs as rslsync while Hermes runs as hermes.  Keep the shared
-  # memory directory writable by both without broadening access to HERMES_HOME.
+  # memory and skills directories writable by both without broadening access
+  # to HERMES_HOME.
   system.activationScripts.resilio-hermes-memory-access = {
     deps = [ "users" ];
     text = ''
-      memory_dir=/var/lib/hermes/.hermes/memories
-      if [ -d "$memory_dir" ]; then
-        ${pkgs.coreutils}/bin/chgrp -R rslsync "$memory_dir"
-        ${pkgs.findutils}/bin/find "$memory_dir" -type d \
+      for dir in /var/lib/hermes/.hermes/memories /var/lib/hermes/.hermes/skills; do
+        [ -d "$dir" ] || continue
+        ${pkgs.coreutils}/bin/chgrp -R rslsync "$dir"
+        ${pkgs.findutils}/bin/find "$dir" -type d \
           -exec ${pkgs.coreutils}/bin/chmod 2770 {} +
-        ${pkgs.findutils}/bin/find "$memory_dir" -type f \
+        ${pkgs.findutils}/bin/find "$dir" -type f \
           -exec ${pkgs.coreutils}/bin/chmod 0660 {} +
 
         # Both services must retain access regardless of which one creates a
         # new file.  Default ACLs cover files created after activation.
-        ${pkgs.acl}/bin/setfacl -m u:hermes:rwx,u:rslsync:rwx,m:rwx "$memory_dir"
-        ${pkgs.findutils}/bin/find "$memory_dir" -type d \
+        ${pkgs.acl}/bin/setfacl -m u:hermes:rwx,u:rslsync:rwx,m:rwx "$dir"
+        ${pkgs.findutils}/bin/find "$dir" -type d \
           -exec ${pkgs.acl}/bin/setfacl -m u:hermes:rwx,u:rslsync:rwx,m:rwx,d:u:hermes:rwx,d:u:rslsync:rwx,d:m:rwx {} +
-        ${pkgs.findutils}/bin/find "$memory_dir" -type f \
+        ${pkgs.findutils}/bin/find "$dir" -type f \
           -exec ${pkgs.acl}/bin/setfacl -m u:hermes:rw,u:rslsync:rw,m:rw {} +
-      fi
+      done
     '';
   };
 
