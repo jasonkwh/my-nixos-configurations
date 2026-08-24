@@ -326,6 +326,9 @@
         terminal = {
           backend = "local";
         };
+        browser = {
+          cdp_url = "http://127.0.0.1:9222";
+        };
       };
       environmentFiles = [
         "${config.users.users.${username}.home}/.secrets/hermes-env"
