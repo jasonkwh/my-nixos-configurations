@@ -28,3 +28,6 @@ etc-nixos-backup/
 # nix build symlinks (live ISO etc.)
 result
 result-*
+
+# resilio scratch dirs
+.sync/
