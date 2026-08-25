@@ -52,4 +52,9 @@
       libvdpau-va-gl
     ];
   };
+
+  # Note: gamemode's GPU optimisations only support NVIDIA and AMD
+  # (amd_performance_level / nvidia_powermizer). On this Intel iGPU,
+  # gamemode still provides CPU governor boost and renice from common;
+  # there is no Intel-specific GPU knob to set here.
 }
