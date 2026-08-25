@@ -581,40 +581,4 @@
     '';
   };
 
-  # GitHub Actions self-hosted runner (see README for setup)
-  services.github-runners.${config.networking.hostName} = {
-    enable = true;
-    url = "https://github.com/jasonkwh/my-nixos-configurations";
-    tokenFile = "${config.users.users.${username}.home}/.secrets/github-runner-token";
-    user = "root";
-    replace = true;
-    extraLabels = [ "nixos" config.networking.hostName ];
-    extraPackages = with pkgs; [
-      nixVersions.latest
-      git
-      gnumake
-      systemd
-    ];
-  };
-
-  # NixOS rebuild service - runs outside GitHub runner's restricted context
-  systemd.services.nixos-rebuild-switch = {
-    description = "NixOS Rebuild Switch";
-    path = [ pkgs.git pkgs.nix pkgs.nixos-rebuild ];
-    serviceConfig = {
-      Type = "oneshot";
-      WorkingDirectory = "/var/lib/nixos-config";
-      ExecStartPre = [
-        "${pkgs.bash}/bin/bash -c 'TOKEN=$(cat ${config.users.users.${username}.home}/.secrets/github-runner-token); if [ ! -d /var/lib/nixos-config/.git ]; then git clone https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git /var/lib/nixos-config; else cd /var/lib/nixos-config && git remote set-url origin https://x-access-token:$TOKEN@github.com/jasonkwh/my-nixos-configurations.git && git pull; fi'"
-        "${pkgs.nix}/bin/nix flake update --flake /var/lib/nixos-config"
-      ];
-      ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /var/lib/nixos-config#${config.networking.hostName} --impure --accept-flake-config";
-      RemainAfterExit = false;
-    };
-  };
-
-  # Create the config directory
-  systemd.tmpfiles.rules = [
-    "d /var/lib/nixos-config 0755 root root -"
-  ];
 }
