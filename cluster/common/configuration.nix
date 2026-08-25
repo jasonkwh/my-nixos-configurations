@@ -572,11 +572,20 @@
 
       if [ ! -f "$ident" ]; then
         rm -f /var/lib/resilio-sync/.SyncUser*/identity.dat
-        # Activation runs before resilio.service, so spawn the daemon briefly
-        # to let it generate identity.dat.
+        # Activation runs before resilio.service (and before its
+        # /run/rslsync/config.json exists), so spawn the daemon briefly with
+        # a minimal inline config to let it generate identity.dat.
+        tmpcfg=$(mktemp)
+        cat > "$tmpcfg" <<EOF
+{
+  "device_name": "${config.networking.hostName}",
+  "listening_port": 0,
+  "storage_path": "/var/lib/resilio-sync/",
+  "use_gui": false
+}
+EOF
         rm -f /var/lib/resilio-sync/sync.pid
-        ${pkgs.resilio-sync}/bin/rslsync --nodaemon \
-          --config /run/rslsync/config.json &
+        ${pkgs.resilio-sync}/bin/rslsync --nodaemon --config "$tmpcfg" &
         daemon_pid=$!
         generated=
         for _ in $(seq 1 30); do
@@ -587,7 +596,7 @@
         done
         kill "$daemon_pid" 2>/dev/null || true
         wait "$daemon_pid" 2>/dev/null || true
-        rm -f /var/lib/resilio-sync/sync.pid
+        rm -f /var/lib/resilio-sync/sync.pid "$tmpcfg"
 
         if [ -z "$generated" ]; then
           echo "resilio-identity: WARNING daemon did not generate identity.dat"
@@ -596,10 +605,13 @@
         fi
       fi
 
-      for d in /var/lib/resilio-sync/.SyncUser*/; do
-        [ -d "$d" ] || continue
-        install -o hermes -g hermes -m 0640 "$ident" "$d/identity.dat"
-      done
+      # Deploy the archived identity (if any) into every .SyncUser* profile.
+      if [ -f "$ident" ]; then
+        for d in /var/lib/resilio-sync/.SyncUser*/; do
+          [ -d "$d" ] || continue
+          install -o hermes -g hermes -m 0640 "$ident" "$d/identity.dat"
+        done
+      fi
 
       # Forget the legacy pre-.hermes memories path (same secret, two jobs).
       legacy=/var/lib/hermes/'Resilio Sync'/memories
