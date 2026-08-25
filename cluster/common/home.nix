@@ -255,7 +255,7 @@
     vim
     wget
 
-    # utilities
+    gcc
     cmake
     gnumake
     binutils
