@@ -168,6 +168,7 @@
     '')
     kdePackages.partitionmanager
     tcpdump
+    pciutils
     wineWow64Packages.full
     winetricks
     htop
