@@ -341,8 +341,13 @@
         file
       ];
       # Personal WhatsApp account: self-chat mode, restricted to Jason's number.
+      # The gateway itself is host-specific (only one machine may hold the
+      # WhatsApp session at a time) — see cluster/<host>/configuration.nix.
+      # The home channel, however, is fleet-wide: cron/notifications should
+      # resolve to the same chat no matter which host fires them.
       environment = {
-        WHATSAPP_ENABLED = "true";
+        WHATSAPP_HOME_CHANNEL = "272056247689232@lid";
+        WHATSAPP_HOME_CHANNEL_NAME = "Jason's ShengOS";
         WHATSAPP_MODE = "self-chat";
         WHATSAPP_ALLOWED_USERS = "61424495256";
         HIMALAYA_CONFIG = "${homeDirectory}/.config/himalaya/config.toml";
