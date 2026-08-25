@@ -31,7 +31,7 @@
       system = "x86_64-linux";
       username = "jasonkwh";
       fullName = "Jason Huang";
-      email = "jasonkwh@users.noreply.github.com";
+      email = "jasonkwh@gmail.com";
       homeDirectory = "/home/${username}";
 
       kernelOverlay = final: prev: {
