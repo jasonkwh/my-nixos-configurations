@@ -1,4 +1,4 @@
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, osConfig ? {}, ... }:
 
 {
   imports = lib.optionals isLaptop [ ./home-laptop.nix ];
@@ -15,6 +15,7 @@
     sessionVariables = {
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
+      HERMES_MACHINE_IDENTITY = "xiaoshengsheng @ ${osConfig.networking.hostName or "unknown"}";
       # ELECTRON_OZONE_PLATFORM_HINT (Wayland for Electron apps) is
       # laptop-only: see home-laptop.nix.
     };
