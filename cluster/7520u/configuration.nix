@@ -70,7 +70,6 @@ in
   };
 
   programs = {
-    steam.enable = true;
     wireshark.enable = true;
   };
 

@@ -283,6 +283,9 @@
       enable = true;
       settings.general.renice = 10;
     };
+
+    # Steam client, available on every machine in the fleet.
+    steam.enable = true;
   };
 
   # List services that you want to enable:
