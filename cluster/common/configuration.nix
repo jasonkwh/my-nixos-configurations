@@ -339,6 +339,7 @@
         ripgrep
         fd
         file
+        himalaya
       ];
       # Personal WhatsApp account: self-chat mode, restricted to Jason's number.
       # The gateway itself is host-specific (only one machine may hold the
