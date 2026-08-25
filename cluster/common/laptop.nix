@@ -9,8 +9,7 @@
   };
 
   environment.systemPackages = with pkgs; [
-    # Hardware probing / diagnostics tools useful on portable machines.
-    hw-probe
+    # Hardware probing tools.
     pciutils
   ];
 
