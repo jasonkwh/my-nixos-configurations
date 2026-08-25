@@ -185,34 +185,19 @@
     "sudo -u hermes ${pkgs.coreutils}/bin/env HERMES_HOME=/var/lib/hermes/.hermes hermes";
 
 
-  # Passwordless sudo for the hermes service user, scoped to the exact
-  # binaries it needs. Wrappers pin stable /run/current-system paths so the
-  # sudoers entries survive nixpkgs updates (store paths would drift).
+  # Passwordless sudo for the hermes service user, scoped to exact binaries.
+  # Wrappers are installed into the system PATH under fixed names; the
+  # sudoers entries reference their stable /run/current-system/sw/bin paths,
+  # so nixpkgs updates never break the match (store paths would drift).
   security.sudo.extraRules = let
-    mkSudoWrapper = name: target:
-      pkgs.runCommand "sudo-wrap-${name}" { } ''
-        mkdir -p $out/bin
-        ln -s ${target} $out/bin/${name}
-      '';
-    nixWrap = name:
-      "${mkSudoWrapper name "/run/current-system/sw/bin/${name}"}/bin/${name}";
+    sudoCmd = name: {
+      command = "/run/current-system/sw/bin/${name} *";
+      options = [ "NOPASSWD" ];
+    };
   in [
     {
       users = [ "hermes" ];
-      commands = [
-        {
-          command = "${nixWrap "nixos-rebuild"} *";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "${nixWrap "nix-collect-garbage"} *";
-          options = [ "NOPASSWD" ];
-        }
-        {
-          command = "${nixWrap "nix-env"} *";
-          options = [ "NOPASSWD" ];
-        }
-      ];
+      commands = map sudoCmd [ "nixos-rebuild" "nix-collect-garbage" "nix-env" ];
     }
   ];
 
