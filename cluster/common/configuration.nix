@@ -551,18 +551,8 @@
 
   # Resilio runs as the hermes user so Hermes' chmods can't lock it out of
   # the shared memory/skills directories (upstream module hardcodes rslsync).
-  # The upstream NixOS module writes known_hosts into config.json but never
-  # sets the per-folder "use_known_hosts" flag, so Resilio ignores the list.
-  # Inject it at startup before the daemon reads the config.
-  # Must run AFTER the module's own ExecStartPre (create-resilio-config)
-  # has written /run/rslsync/config.json, hence mkAfter on the list.
-  systemd.services.resilio.serviceConfig.ExecStartPre = lib.mkAfter [
-    "${pkgs.writeShellScript "resilio-inject-known-hosts" ''
-      ${pkgs.jq}/bin/jq '(.shared_folders // []) |= map(. + { use_hosts: true })' \
-        /run/rslsync/config.json > /run/rslsync/config.json.tmp
-      mv /run/rslsync/config.json.tmp /run/rslsync/config.json
-    ''}"
-  ];
+  # NOTE: known_hosts in shared_folders is a first-class config key (per the
+  # sample config embedded in the rslsync binary) — no extra flag needed.
 
   systemd.services.resilio.serviceConfig = {
     User = lib.mkForce "hermes";
