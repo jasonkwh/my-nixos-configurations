@@ -24,3 +24,7 @@ go.work
 .vscode
 hardware-configuration.nix
 etc-nixos-backup/
+
+# nix build symlinks (live ISO etc.)
+result
+result-*
