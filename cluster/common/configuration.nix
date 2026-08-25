@@ -378,7 +378,14 @@
       ];
     };
 
-    # Periodic SSD TRIM and irqbalance are laptop-only (see laptop.nix).
+    # Periodic SSD TRIM to maintain write performance.
+    fstrim = {
+      enable = true;
+      interval = "weekly";
+    };
+
+    # Distribute hardware IRQs across CPU cores.
+    irqbalance.enable = true;
 
     fwupd.enable = true;
 
@@ -458,7 +465,12 @@
       enable32Bit = true;
     };
 
-    # steam-hardware and bluetooth are laptop-only (see laptop.nix).
+    # Bluetooth is a general-machine capability (Mac Pro trashcan has it too);
+    # hosts without BT can override with mkForce false.
+    bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
   };
 
   # This value determines the NixOS release from which the default

@@ -4,22 +4,8 @@
 { pkgs, lib, ... }:
 
 {
-  # Periodic SSD TRIM to maintain write performance.
-  services.fstrim = {
-    enable = true;
-    interval = "weekly";
-  };
-
-  # Distribute hardware IRQs across CPU cores.
-  services.irqbalance.enable = true;
-
   hardware = {
     steam-hardware.enable = true;
-
-    bluetooth = {
-      enable = true;
-      powerOnBoot = true;
-    };
   };
 
   environment.systemPackages = with pkgs; [
