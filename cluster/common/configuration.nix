@@ -558,7 +558,7 @@
   # has written /run/rslsync/config.json, hence mkAfter on the list.
   systemd.services.resilio.serviceConfig.ExecStartPre = lib.mkAfter [
     "${pkgs.writeShellScript "resilio-inject-known-hosts" ''
-      ${pkgs.jq}/bin/jq '(.shared_folders // []) |= map(. + { use_known_hosts: true })' \
+      ${pkgs.jq}/bin/jq '(.shared_folders // []) |= map(. + { use_hosts: true })' \
         /run/rslsync/config.json > /run/rslsync/config.json.tmp
       mv /run/rslsync/config.json.tmp /run/rslsync/config.json
     ''}"
