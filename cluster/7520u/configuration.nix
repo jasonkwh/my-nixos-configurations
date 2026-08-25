@@ -63,11 +63,9 @@ in
 
   networking.hostName = "jasonkwh-7520u";
 
-  # This laptop's WhatsApp self-chat is the home channel for cron/notifications.
-  services.hermes-agent.environment = {
-    WHATSAPP_HOME_CHANNEL = "REDACTED_HOME_CHANNEL";
-    WHATSAPP_HOME_CHANNEL_NAME = "jasonkwh-7520u";
-  };
+  # WhatsApp gateway switch: only one machine in the fleet may hold the
+  # session at a time (same number would fight otherwise). Currently 7520u.
+  services.hermes-agent.environment.WHATSAPP_ENABLED = "true";
 
   programs = {
     wireshark.enable = true;
