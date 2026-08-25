@@ -141,8 +141,7 @@
     allowUnfree = true;
 
     permittedInsecurePackages = [
-      "electron-33.4.11"
-      "beekeeper-studio-5.3.4"
+      "electron-39.8.10"
     ];
   };
 
