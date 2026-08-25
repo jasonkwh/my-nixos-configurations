@@ -563,6 +563,52 @@
     '';
   };
 
+  # Per-host Resilio device identity: generate on first rebuild if missing,
+  # then redeploy on every rebuild (prevents cloned-image identity collisions).
+  system.activationScripts.resilio-identity = {
+    deps = [ "users" "resilio-state-ownership" ];
+    text = ''
+      ident="${homeDirectory}/.secrets/resilio-identity-${config.networking.hostName}"
+
+      if [ ! -f "$ident" ]; then
+        rm -f /var/lib/resilio-sync/.SyncUser*/identity.dat
+        # Activation runs before resilio.service, so spawn the daemon briefly
+        # to let it generate identity.dat.
+        rm -f /var/lib/resilio-sync/sync.pid
+        ${pkgs.resilio-sync}/bin/rslsync --nodaemon \
+          --config /run/rslsync/config.json &
+        daemon_pid=$!
+        generated=
+        for _ in $(seq 1 30); do
+          found=$(find /var/lib/resilio-sync/.SyncUser*/ -maxdepth 1 \
+            -name identity.dat -print -quit 2>/dev/null || true)
+          if [ -n "$found" ]; then generated=$found; break; fi
+          sleep 1
+        done
+        kill "$daemon_pid" 2>/dev/null || true
+        wait "$daemon_pid" 2>/dev/null || true
+        rm -f /var/lib/resilio-sync/sync.pid
+
+        if [ -z "$generated" ]; then
+          echo "resilio-identity: WARNING daemon did not generate identity.dat"
+        else
+          install -D -o ${username} -g users -m 600 "$generated" "$ident"
+        fi
+      fi
+
+      for d in /var/lib/resilio-sync/.SyncUser*/; do
+        [ -d "$d" ] || continue
+        install -o hermes -g hermes -m 0640 "$ident" "$d/identity.dat"
+      done
+
+      # Forget the legacy pre-.hermes memories path (same secret, two jobs).
+      legacy=/var/lib/hermes/'Resilio Sync'/memories
+      if [ -d "$legacy" ]; then
+        rm -rf "$legacy"
+      fi
+    '';
+  };
+
   # Resilio runs as the hermes user (overridden below), so it shares file
   # ownership with the Hermes agent and never needs ACLs on the synced
   # directories — Hermes' own chmods cannot lock Resilio out.
