@@ -1,5 +1,0 @@
-﻿platform: Linux 6.18.46 #1-NixOS SMP PREEMPT_DYNAMIC Sun Aug 23 12:27:10 UTC 2026 x86_64
-version: 3.1.1.1075
-[20260826 02:45:21.260] ZIP: Can't locate [version] in zip, error -100.
-[20260826 02:45:21.262] Torrent session shutdown: done waiting
-[20260826 02:45:21.262] Shutdown. Saving config sync.dat
