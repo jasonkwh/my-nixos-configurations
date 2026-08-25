@@ -550,7 +550,7 @@
   systemd.services.resilio.serviceConfig = {
     User = lib.mkForce "hermes";
     Group = lib.mkForce "hermes";
-    UMask = "0007";
+    UMask = lib.mkForce "0007";
   };
 
   system.activationScripts.resilio-state-ownership = {
