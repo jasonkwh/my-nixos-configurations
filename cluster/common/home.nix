@@ -1,6 +1,8 @@
-{ config, pkgs, username, fullName, email, homeDirectory, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, ... }:
 
 {
+  imports = lib.optionals isLaptop [ ./home-laptop.nix ];
+
   targets.genericLinux.enable = true;
 
   home = {
@@ -13,10 +15,8 @@
     sessionVariables = {
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
-      # Tell all Electron apps (Cursor, VSCode, etc.) to use the native Wayland
-      # backend when running under a Wayland compositor, avoiding the XWayland
-      # translation layer which adds CPU/GPU overhead and input latency.
-      ELECTRON_OZONE_PLATFORM_HINT = "auto";
+      # ELECTRON_OZONE_PLATFORM_HINT (Wayland for Electron apps) is
+      # laptop-only: see home-laptop.nix.
     };
 
     # Cursor startup flags (equivalent to "Preferences: Configure Runtime Arguments"):
@@ -68,7 +68,7 @@
       colorScheme = "BreezeDark";
     };
     
-    configFile."kdeglobals"."KDE"."TabletMode" = "Never";
+    # The fastfetch battery module is laptop-only: see home-laptop.nix.
 
     # Have KWin launch Fcitx5 as the Plasma Wayland virtual keyboard.
     # This is required for Fcitx5's native Wayland input-method frontend.
@@ -113,7 +113,6 @@
           "memory"
           "swap"
           "disk"
-          "battery"
           "locale"
           "break"
           "colors"

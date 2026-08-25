@@ -1,4 +1,3 @@
-
 { config, lib, pkgs, username, ... }:
 let
   swapUuid = "97c60ea8-adcf-444b-a44d-e9eeac24138f";
@@ -30,7 +29,6 @@ in
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages;
     # Resume hibernation image from the 7520u swap partition.
     resumeDevice = "/dev/disk/by-uuid/${swapUuid}";
 
@@ -51,17 +49,7 @@ in
       "amdgpu.dcdebugmask=0x10"
       # Use the modern AMD P-State driver for better CPU frequency scaling
       "amd_pstate=active"
-      # Reduce watchdog overhead
-      "nowatchdog"
     ];
-
-    kernel.sysctl = {
-      # Lower swappiness since we use zram; avoids premature disk swap
-      "vm.swappiness" = 10;
-      # Reduce dirty page write-back latency
-      "vm.dirty_ratio" = 15;
-      "vm.dirty_background_ratio" = 5;
-    };
   };
 
   # Keep a single authoritative swap definition and prevent duplicate entries
@@ -73,10 +61,7 @@ in
     }
   ];
 
-  networking = {
-    hostName = "jasonkwh-7520u"; # Define your hostname.
-    networkmanager.wifi.powersave = false;
-  };
+  networking.hostName = "jasonkwh-7520u";
 
   # This laptop's WhatsApp self-chat is the home channel for cron/notifications.
   services.hermes-agent.environment = {
@@ -84,29 +69,15 @@ in
     WHATSAPP_HOME_CHANNEL_NAME = "jasonkwh-7520u";
   };
 
-  # Compressed RAM swap — reduces memory pressure and avoids slow disk swap
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-    memoryPercent = 50;
-  };
-
   programs = {
-    steam = {
-      enable = true;
-    };
-
-    wireshark = {
-      enable = true;
-    };
+    steam.enable = true;
+    wireshark.enable = true;
 
     # Gamemode: temporarily boosts CPU governor and GPU clocks during gaming
     gamemode = {
       enable = true;
       settings = {
-        general = {
-          renice = 10;
-        };
+        general.renice = 10;
         gpu = {
           apply_gpu_optimisations = "accept-responsibility";
           gpu_device = 0;
@@ -117,19 +88,7 @@ in
   };
 
   services = {
-    # Provides KDE balanced, performance, and power-saver profiles.
-    power-profiles-daemon.enable = true;
-
-    upower = {
-      enable = true;
-      # If the battery becomes critical, do a clean shutdown instead of
-      # entering a potentially unrecoverable low-power suspend state.
-      criticalPowerAction = "PowerOff";
-    };
-
-    xserver = {
-      videoDrivers = [ "amdgpu" ];
-    };
+    xserver.videoDrivers = [ "amdgpu" ];
 
     # k3s = {
     #   enable = false;
@@ -146,16 +105,5 @@ in
       evdev:atkbd:*
         KEYBOARD_KEY_56=leftshift
     '';
-
-    logind = {
-      settings = {
-        Login = {
-          HandleLidSwitch = "ignore";
-          HandleLidSwitchDocked = "ignore";
-          HandleLidSwitchExternalPower = "ignore";
-        };
-      };
-    };
-
   };
 }

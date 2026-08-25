@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLive ? false, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -18,7 +18,8 @@
     };
   };
 
-  imports = lib.optional (!isLive) /etc/nixos/hardware-configuration.nix;
+  imports = [ /etc/nixos/hardware-configuration.nix ]
+    ++ lib.optionals isLaptop [ ./laptop.nix ];
 
   # Bootloader.
   boot = {
@@ -167,14 +168,12 @@
     '')
     kdePackages.partitionmanager
     tcpdump
-    hw-probe
     wineWow64Packages.full
     winetricks
     htop
     perf
     bpftrace
     direnv
-    pciutils
     ripgrep
   ];
 
@@ -379,14 +378,7 @@
       ];
     };
 
-    # Periodic SSD TRIM to maintain write performance.
-    fstrim = {
-      enable = true;
-      interval = "weekly";
-    };
-
-    # Distribute hardware IRQs across CPU cores.
-    irqbalance.enable = true;
+    # Periodic SSD TRIM and irqbalance are laptop-only (see laptop.nix).
 
     fwupd.enable = true;
 
@@ -458,7 +450,7 @@
     "${pkgs.coreutils}/bin/rm -f /run/avahi-daemon/pid"
   ];
 
-  hardware = {    
+  hardware = {
     enableRedistributableFirmware = true;
 
     graphics = {
@@ -466,14 +458,7 @@
       enable32Bit = true;
     };
 
-    steam-hardware = {
-      enable = true;
-    };
-
-    bluetooth = {
-      enable = true;
-      powerOnBoot = true;
-    };
+    # steam-hardware and bluetooth are laptop-only (see laptop.nix).
   };
 
   # This value determines the NixOS release from which the default
