@@ -350,6 +350,7 @@
         WHATSAPP_HOME_CHANNEL_NAME = "Jason's ShengOS";
         WHATSAPP_MODE = "self-chat";
         HIMALAYA_CONFIG = "${homeDirectory}/.config/himalaya/config.toml";
+        HERMES_MACHINE_IDENTITY = "xiaoshengsheng @ ${config.networking.hostName}";
       };
       # WHATSAPP_HOME_CHANNEL and WHATSAPP_ALLOWED_USERS live in
       # ~/.secrets/hermes-env (environmentFiles below) — keep personal
@@ -532,44 +533,36 @@
           ${pkgs.acl}/bin/setfacl -m u:hermes:r "$secrets_dir/gmail-app-password"
       fi
 
-      # Resilio reads its shared-folder secret from Jason's private secrets
-      # directory.  Grant rslsync only traversal plus read access to this one
-      # file; keep the secret itself outside the repository.
+      # Resilio now runs as the hermes user, so it reads its own secrets.
       if [ -d "$secrets_dir" ]; then
-        ${pkgs.acl}/bin/setfacl -m u:rslsync:--x \
+        ${pkgs.acl}/bin/setfacl -m u:hermes:--x \
           ${lib.escapeShellArg homeDirectory} "$secrets_dir"
         [ ! -f "$secrets_dir/resilio-memories-secret" ] || \
-          ${pkgs.acl}/bin/setfacl -m u:rslsync:r "$secrets_dir/resilio-memories-secret"
+          ${pkgs.acl}/bin/setfacl -m u:hermes:r "$secrets_dir/resilio-memories-secret"
         [ ! -f "$secrets_dir/resilio-skills-secret" ] || \
-          ${pkgs.acl}/bin/setfacl -m u:rslsync:r "$secrets_dir/resilio-skills-secret"
+          ${pkgs.acl}/bin/setfacl -m u:hermes:r "$secrets_dir/resilio-skills-secret"
       fi
     '';
   };
 
-  # Resilio runs as rslsync while Hermes runs as hermes.  Keep the shared
-  # memory and skills directories writable by both without broadening access
-  # to HERMES_HOME.
-  system.activationScripts.resilio-hermes-memory-access = {
+  # Resilio runs as the hermes user so Hermes' chmods can't lock it out of
+  # the shared memory/skills directories (upstream module hardcodes rslsync).
+  systemd.services.resilio.serviceConfig = {
+    User = lib.mkForce "hermes";
+    Group = lib.mkForce "hermes";
+    UMask = "0007";
+  };
+
+  system.activationScripts.resilio-state-ownership = {
     deps = [ "users" ];
     text = ''
-      for dir in /var/lib/hermes/.hermes/memories /var/lib/hermes/.hermes/skills; do
-        [ -d "$dir" ] || continue
-        ${pkgs.coreutils}/bin/chgrp -R rslsync "$dir"
-        ${pkgs.findutils}/bin/find "$dir" -type d \
-          -exec ${pkgs.coreutils}/bin/chmod 2770 {} +
-        ${pkgs.findutils}/bin/find "$dir" -type f \
-          -exec ${pkgs.coreutils}/bin/chmod 0660 {} +
-
-        # Both services must retain access regardless of which one creates a
-        # new file.  Default ACLs cover files created after activation.
-        ${pkgs.acl}/bin/setfacl -m u:hermes:rwx,u:rslsync:rwx,m:rwx "$dir"
-        ${pkgs.findutils}/bin/find "$dir" -type d \
-          -exec ${pkgs.acl}/bin/setfacl -m u:hermes:rwx,u:rslsync:rwx,m:rwx,d:u:hermes:rwx,d:u:rslsync:rwx,d:m:rwx {} +
-        ${pkgs.findutils}/bin/find "$dir" -type f \
-          -exec ${pkgs.acl}/bin/setfacl -m u:hermes:rw,u:rslsync:rw,m:rw {} +
-      done
+      install -d -o hermes -g hermes -m 0750 /var/lib/resilio-sync
     '';
   };
+
+  # Resilio runs as the hermes user (overridden below), so it shares file
+  # ownership with the Hermes agent and never needs ACLs on the synced
+  # directories — Hermes' own chmods cannot lock Resilio out.
 
   # Deploy ShengOS's personality (SOUL.md) into Hermes' HERMES_HOME so the
   # agent comes up as 小升升 on every host.  Owned by hermes, read-only it is

@@ -15,7 +15,6 @@
     sessionVariables = {
       KUBECONFIG = "${config.home.homeDirectory}/.kube/config";
       EDITOR = "vim";
-      HERMES_MACHINE_IDENTITY = "xiaoshengsheng @ ${osConfig.networking.hostName or "unknown"}";
       # ELECTRON_OZONE_PLATFORM_HINT (Wayland for Electron apps) is
       # laptop-only: see home-laptop.nix.
     };
