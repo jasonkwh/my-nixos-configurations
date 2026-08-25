@@ -276,6 +276,13 @@
     nix-ld = {
       enable = true;
     };
+
+    # Gamemode: temporarily boosts CPU governor and process priority during
+    # gaming. Inert unless launched via gamemoderun. GPU tuning is host-specific.
+    gamemode = {
+      enable = true;
+      settings.general.renice = 10;
+    };
   };
 
   # List services that you want to enable:
