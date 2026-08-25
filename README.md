@@ -91,39 +91,3 @@ version.yaml         # Current release version (auto-bumped by CI)
 ## Versioning
 
 The current release is tracked in `version.yaml`. On every push to `main`, the **Bump Version** workflow reads the current version, bumps it (patch by default, or `minor`/`major` via `workflow_dispatch`), commits the update, and tags the release as `vX.Y.Z` (semver).
-
-## GitHub Actions (Self-hosted)
-
-You can trigger builds and deployments remotely via GitHub Actions using a self-hosted runner managed by NixOS.
-
-### Setup self-hosted runner
-
-1. **Create a Fine-grained PAT:**
-   - Go to GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
-   - Repository access: Select `my-nixos-configurations`
-   - Permissions:
-     - **Administration** → Read and Write (for runner registration)
-     - **Contents** → Read-only (for git clone/pull)
-
-2. **Save the token** on your NixOS machine:
-
-   ```bash
-   mkdir -p ~/.secrets
-   echo "github_pat_xxx" | tee ~/.secrets/github-runner-token >/dev/null
-   chmod 600 ~/.secrets/github-runner-token
-   ```
-
-3. **Rebuild NixOS:**
-
-   ```bash
-   meow build jasonkwh-7520u
-   ```
-
-The runner automatically starts and registers with your GitHub repo. The **Deploy NixOS Configuration** workflow runs on the self-hosted runner, pulls the latest config, runs `nix flake update`, and rebuilds the target machine.
-
-### Trigger a build
-
-1. Go to the **Actions** tab in GitHub
-2. Select **Deploy NixOS Configuration**
-3. Click **Run workflow**
-4. Select your target machine and click **Run workflow**
