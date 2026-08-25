@@ -48,23 +48,23 @@
 
       # Home Manager module shared verbatim by every host.  Keeping it in one
       # place means a change here applies to all machines (and the Live image).
-      homeManagerModule = {
+      # Parameterised by isLaptop so laptop-only home config can be gated.
+      homeManagerModule = isLaptop: {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.backupFileExtension = "backup";
         home-manager.extraSpecialArgs = {
-          inherit username fullName email homeDirectory;
+          inherit username fullName email homeDirectory isLaptop;
         };
         home-manager.sharedModules = [
           plasma-manager.homeModules.plasma-manager
         ];
       };
 
-      mkHost = { name, ... }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false }: nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
-          inherit username fullName email homeDirectory;
-          isLive = false;
+          inherit username fullName email homeDirectory isLaptop;
         };
         modules = [
           inputs.hermes-agent.nixosModules.default
@@ -76,7 +76,7 @@
             nix.settings.trusted-users = [ username ];
           }
           home-manager.nixosModules.home-manager
-          homeManagerModule
+          (homeManagerModule isLaptop)
         ];
       };
 
@@ -84,7 +84,6 @@
         inherit system;
         specialArgs = {
           inherit username fullName email homeDirectory;
-          isLive = true;
           inherit system;
         };
         modules = [
@@ -94,15 +93,15 @@
             nix.settings.trusted-users = [ username ];
           }
           home-manager.nixosModules.home-manager
-          homeManagerModule
+          (homeManagerModule false) # live supports both laptop and desktop
         ];
       };
 
     in
     {
       nixosConfigurations = {
-        "jasonkwh-7300u" = mkHost { name = "7300u"; };
-        "jasonkwh-7520u" = mkHost { name = "7520u"; };
+        "jasonkwh-7300u" = mkHost { name = "7300u"; isLaptop = true; };
+        "jasonkwh-7520u" = mkHost { name = "7520u"; isLaptop = true; };
         "jasonkwh-live" = liveUsb;
       };
 

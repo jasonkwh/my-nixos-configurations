@@ -1,10 +1,9 @@
 { lib, pkgs, username, ... }:
 
 {
-  imports =
-    [
-      ../common/configuration.nix
-    ];
+  imports = [
+    ../common/configuration.nix
+  ];
 
   home-manager.users.${username} = {
     imports = [
@@ -15,43 +14,11 @@
 
   time.timeZone = "Australia/Melbourne";
 
-  boot = {
-    kernelPackages = pkgs.linuxPackages;
-    kernelParams = [
-      "nowatchdog"
-    ];
-    kernel.sysctl = {
-      "vm.swappiness" = 10;
-      "vm.dirty_ratio" = 15;
-      "vm.dirty_background_ratio" = 5;
-    };
-  };
-
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-    memoryPercent = 50;
-  };
-
-  networking = {
-    hostName = "jasonkwh-7300u"; # Define your hostname.
-    networkmanager.wifi.powersave = false;
-  };
+  networking.hostName = "jasonkwh-7300u";
 
   services = {
-    xserver = {
-      videoDrivers = [ "modesetting" ];
-    };
+    xserver.videoDrivers = [ "modesetting" ];
     thermald.enable = true;
-    # Provides KDE balanced, performance, and power-saver profiles.
-    power-profiles-daemon.enable = true;
-
-    upower = {
-      enable = true;
-      # If the battery becomes critical, do a clean shutdown instead of
-      # entering a potentially unrecoverable low-power suspend state.
-      criticalPowerAction = "PowerOff";
-    };
 
     libinput = {
       enable = true;
@@ -75,16 +42,6 @@
     #     "--flannel-iface=wlp58s0"
     #   ];
     # };
-
-    logind = {
-      settings = {
-        Login = {
-          HandleLidSwitch = "ignore";
-          HandleLidSwitchDocked = "ignore";
-          HandleLidSwitchExternalPower = "ignore";
-        };
-      };
-    };
   };
 
   hardware = {

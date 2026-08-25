@@ -1,19 +1,8 @@
 { config, pkgs, ... }:
 
 {
-  home.file.".config/powermanagementprofilesrc" = {
-    text = ''
-      [AC]
-      lidAction=0
-
-      [Battery]
-      lidAction=0
-
-      [LowBattery]
-      lidAction=0
-    '';
-    force = true;
-  };
+  # Laptop-shared home configuration (power management profiles, etc.) lives
+  # in ../common/home-laptop.nix.
 
   home.packages = with pkgs; [
     discord
