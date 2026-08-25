@@ -172,8 +172,6 @@
     wineWow64Packages.full
     winetricks
     htop
-    perf
-    bpftrace
     direnv
     ripgrep
   ];
