@@ -571,38 +571,30 @@
       ident="${homeDirectory}/.secrets/resilio-identity-${config.networking.hostName}"
 
       if [ ! -f "$ident" ]; then
-        rm -f /var/lib/resilio-sync/.SyncUser*/identity.dat
-        # Activation runs before resilio.service (and before its
-        # /run/rslsync/config.json exists), so spawn the daemon briefly with
-        # a minimal inline config to let it generate identity.dat.
-        tmpcfg=$(mktemp)
-        cat > "$tmpcfg" <<EOF
-{
-  "device_name": "${config.networking.hostName}",
-  "listening_port": 0,
-  "storage_path": "/var/lib/resilio-sync/",
-  "use_gui": false
-}
-EOF
-        rm -f /var/lib/resilio-sync/sync.pid
-        ${pkgs.resilio-sync}/bin/rslsync --nodaemon --config "$tmpcfg" &
+        # --identity is the only mode that writes identity.dat; a normal
+        # daemon run never creates it.  Generate into a scratch storage dir,
+        # then archive it.
+        tmpdir=$(mktemp -d)
+        ${pkgs.resilio-sync}/bin/rslsync \
+          --storage "$tmpdir" --identity "${config.networking.hostName}" \
+          >/dev/null 2>&1 &
         daemon_pid=$!
         generated=
         for _ in $(seq 1 30); do
-          found=$(find /var/lib/resilio-sync/.SyncUser*/ -maxdepth 1 \
+          found=$(find "$tmpdir"/.SyncUser*/ -maxdepth 1 \
             -name identity.dat -print -quit 2>/dev/null || true)
           if [ -n "$found" ]; then generated=$found; break; fi
           sleep 1
         done
         kill "$daemon_pid" 2>/dev/null || true
         wait "$daemon_pid" 2>/dev/null || true
-        rm -f /var/lib/resilio-sync/sync.pid "$tmpcfg"
 
         if [ -z "$generated" ]; then
           echo "resilio-identity: WARNING daemon did not generate identity.dat"
         else
           install -D -o ${username} -g users -m 600 "$generated" "$ident"
         fi
+        rm -rf "$tmpdir"
       fi
 
       # Deploy the archived identity (if any) into every .SyncUser* profile.
