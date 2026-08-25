@@ -197,6 +197,14 @@
     distrobox
     gcc-arm-embedded
 
+    # GUI apps shared by NixOS laptops
+    boxbuddy
+    libreoffice-qt
+    warp
+    zoom-us
+    brave
+    code-cursor
+
     # utilities
     tmux
     pigz

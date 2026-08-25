@@ -9,7 +9,6 @@
   home-manager.users.${username} = {
     imports = [
       ../common/home.nix
-      ../common/home-gui.nix
       ./home.nix
     ];
   };
