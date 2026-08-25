@@ -254,9 +254,8 @@
     git
     vim
     wget
-    curl
-    coreutils
-    gcc
+
+    # utilities
     cmake
     gnumake
     binutils
