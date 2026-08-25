@@ -185,6 +185,22 @@
     "sudo -u hermes ${pkgs.coreutils}/bin/env HERMES_HOME=/var/lib/hermes/.hermes hermes";
 
 
+  security.sudo.extraRules = [
+    {
+      users = [ "hermes" ];
+      commands = [
+        {
+          command = "${pkgs.nixos-rebuild}/bin/nixos-rebuild *";
+          options = [ "NOPASSWD" ];
+        }
+        {
+          command = "${pkgs.nix}/bin/nix-collect-garbage *";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
   security.wrappers.bwrap = {
     owner = "root";
     group = "root";
@@ -328,6 +344,10 @@
         # Keep the generated config stamped with the schema version expected by
         # the pinned Hermes Agent input, avoiding a perpetual migration warning.
         _config_version = 38;
+
+        agent = {
+          api_max_retries = 6;
+        };
 
         model = {
           provider = "openrouter";
