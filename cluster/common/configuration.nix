@@ -557,6 +557,9 @@
     deps = [ "users" ];
     text = ''
       install -d -o hermes -g hermes -m 0750 /var/lib/resilio-sync
+      # Legacy files from the rslsync era would block the daemon (pid file,
+      # settings.dat), so take ownership of everything inside as well.
+      chown -R hermes:hermes /var/lib/resilio-sync
     '';
   };
 
