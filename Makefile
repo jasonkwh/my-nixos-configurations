@@ -29,7 +29,8 @@ help:
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
-	sudo nixos-rebuild $(1) --flake .#$(2) --impure
+	NRB=$$(readlink /run/current-system/sw/bin/nixos-rebuild 2>/dev/null || command -v nixos-rebuild); \
+	"$$NRB" --sudo $(1) --flake $$(pwd)/#$(2) --impure
 endef
 
 # `make build` alone → upgrade current host
@@ -51,7 +52,8 @@ update:
 	nix flake update
 
 gc:
-	sudo nix-collect-garbage -d
+	NCG=$$(readlink /run/current-system/sw/bin/nix-collect-garbage 2>/dev/null || command -v nix-collect-garbage); \
+	sudo "$$NCG" -d
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
 live:
