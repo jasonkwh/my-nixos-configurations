@@ -310,7 +310,10 @@
           useDHT = true;
           searchLAN = true;
           useSyncTrash = true;
-          knownHosts = [ ];
+          # Discovery via tracker/DHT never paired the two hosts, so pin both
+          # peers by MagicDNS name (no fixed IP needed). Unreachable/self
+          # entries are simply skipped by Resilio.
+          knownHosts = [ "jasonkwh-7520u:55555" "jasonkwh-7300u:55555" ];
         }
         {
           # User-created Hermes skills: mostly read-only, low conflict risk.
@@ -322,7 +325,8 @@
           useDHT = true;
           searchLAN = true;
           useSyncTrash = true;
-          knownHosts = [ ];
+          # Same peer pinning as the memories folder above.
+          knownHosts = [ "jasonkwh-7520u:55555" "jasonkwh-7300u:55555" ];
         }
       ];
     };
