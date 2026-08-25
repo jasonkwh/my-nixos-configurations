@@ -554,7 +554,12 @@
   # The upstream NixOS module writes known_hosts into config.json but never
   # sets the per-folder "use_known_hosts" flag, so Resilio ignores the list.
   # Inject it at startup before the daemon reads the config.
-  systemd.services.resilio.preStart = ''
+  systemd.services.resilio.preStart = lib.mkAfter ''
+    # Wait until the module's own pre-start has generated the config.
+    for i in $(seq 1 50); do
+      [ -f /run/rslsync/config.json ] && break
+      sleep 0.2
+    done
     ${pkgs.jq}/bin/jq '(.shared_folders // []) |= map(. + { use_known_hosts: true })' \
       /run/rslsync/config.json > /run/rslsync/config.json.tmp
     mv /run/rslsync/config.json.tmp /run/rslsync/config.json
