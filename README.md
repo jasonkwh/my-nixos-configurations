@@ -30,8 +30,9 @@ The entire system — desktop, applications, development tools, services, and se
 - **Declarative everything** — system, user, and desktop config all live in this repo as code.
 - **Reproducible builds** — `flake.lock` pins every dependency; switch machines freely.
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
+- **Headless boards** — single-board computers (e.g. Raspberry Pi 4B) run a stripped, headless profile: no desktop/Steam/GPU stack, zram swap; SD images via `make image <host>`.
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
-- **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep two laptops in lockstep.
+- **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep the fleet in lockstep.
 - **One-USB install** — boot the Live USB, click through Calamares, and land on a full ShengOS machine: the config repo is copied over automatically and flakes work from the first rebuild.
 - **Private assistant** — Hermes Agent with a personal companion. See [小升升](#personal-assistant-小升升).
 
@@ -72,7 +73,7 @@ ShengOS ships with a personal AI assistant — **小升升** — a private compa
 | `meow update` | Refresh flake inputs (`nix flake update`) |
 | `meow gc` | Delete old generations + refresh bootloader |
 | `meow live` | Build the graphical Live USB ISO |
-| `meow bcm2711-image` | Build the Pi (bcm2711) SD-card image → `result/*.img.zst` |
+| `meow image <hostname>` | Build an SD-card image for a host, e.g. `meow image jasonkwh-bcm2711` → `result/*.img.zst` |
 | `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
 | `meow syncthing-init` | One-time bootstrap of Syncthing identity on a new machine; prints the device ID to register in `cluster/common/configuration.nix` |
 

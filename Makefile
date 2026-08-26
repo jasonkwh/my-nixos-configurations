@@ -14,7 +14,7 @@ HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-bcm2711
 HOST  ?= $(shell hostname)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
-.PHONY: help upgrade boot build update gc live jasonkwh-live bcm2711-image syncthing-init $(HOSTS)
+.PHONY: help upgrade boot build update gc live jasonkwh-live image syncthing-init $(HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -27,7 +27,7 @@ help:
 		'make gc                  nix-collect-garbage -d + boot refresh' \
 		'make live                build the graphical Live USB ISO' \
 		'make jasonkwh-live       alias for make live' \
-		'make bcm2711-image       build the Pi 4B SD-card image' \
+		'make image <host>        build that host SD-card image (e.g. jasonkwh-bcm2711)' \
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
@@ -62,13 +62,14 @@ live:
 
 jasonkwh-live: live
 
-# SD-card image for the bcm2711 (Raspberry Pi 4B) headless node.
+# SD-card image for a host (e.g. `make image jasonkwh-bcm2711`).
 # Cross-built on this x86 host via QEMU binfmt emulation; flash the
-# resulting .img to a card with e.g. `sudo dd if=<img> of=/dev/sdX bs=4M`.
-bcm2711-image:
+# resulting .img.zst to a card: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
+image:
+	@test -n "$(filter-out image,$(MAKECMDGOALS))" || { echo 'usage: make image jasonkwh-<host>'; exit 1; }
 	nix build --impure --accept-flake-config \
-	  .#nixosConfigurations.jasonkwh-bcm2711.config.system.build.images.sd-card
-	@printf '\nImage: ls result/*.img.zst — flash with: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M\n'
+	  .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card
+	@printf '\nImage: ls result/*.img.zst\n'
 
 # One-time bootstrap for services.syncthing: generate the device identity
 # before the first `make upgrade`, so the real device ID can be pasted into

@@ -135,7 +135,7 @@ Example: `jasonkwh-bcm2711` (headless, 4GB).
    automatically for x86 non-headless hosts):
 
    ```bash
-   make bcm2711-image    # → result/*.img.zst
+   make image jasonkwh-bcm2711    # → result/*.img.zst
    zstd -d result/*.img.zst
    sudo dd if=result/*.img of=/dev/sdX bs=4M status=progress
    ```
