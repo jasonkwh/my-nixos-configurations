@@ -322,10 +322,13 @@
         # Pin peers by MagicDNS name (not raw 100.x IPs — those can change).
         # "dynamic" discovery alone is not enough: local broadcast doesn't
         # cross the Tailscale interface and global announce is disabled.
-        devices."jasonkwh-7520u".addresses =
-          [ "tcp://jasonkwh-7520u.tail0c0276.ts.net:22000" ];
-        devices."jasonkwh-7300u".addresses =
-          [ "tcp://jasonkwh-7300u.tail0c0276.ts.net:22000" ];
+        # Addresses are derived from the device hostname + tailnet domain.
+        devices = builtins.mapAttrs
+          (name: dev:
+            dev // {
+              addresses = [ "tcp://${name}.tail0c0276.ts.net:22000" ];
+            })
+          devices;
         folders = {
           hermes-memories = {
             path = "/var/lib/hermes/.hermes/memories";
