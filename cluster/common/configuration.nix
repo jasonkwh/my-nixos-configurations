@@ -394,7 +394,7 @@
 
         model = {
           provider = "openrouter";
-          default = "stealth/ox-alpha";
+          default = "deepseek/deepseek-v4-flash-0731";
           base_url = "https://openrouter.ai/api/v1";
         };
         memory = {
