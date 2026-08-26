@@ -394,7 +394,7 @@
 
         model = {
           provider = "openrouter";
-          default = "deepseek/deepseek-v4-flash-0731";
+          default = "z-ai/glm-5.3-flash";
           base_url = "https://openrouter.ai/api/v1";
         };
         memory = {
