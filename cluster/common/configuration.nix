@@ -293,42 +293,53 @@
   services = {
     tailscale.enable = true;
 
-    # Share only Hermes' curated long-term memory files.  The secret lives
-    # outside this repository and must be copied to every participating host.
-    resilio = {
+    # Peer-to-peer sync of Hermes' memories and skills across the fleet.
+    # Replaces the previous Resilio (services.resilio) setup, which never
+    # paired reliably. Syncthing discovers devices automatically over LAN
+    # and Tailscale — no known_hosts pinning or shared secrets to copy.
+    syncthing = {
       enable = true;
-      enableWebUI = false;
-      listeningPort = 55555;
-      httpListenAddr = "127.0.0.1";
-      httpListenPort = 9000;
-      sharedFolders = [
-        {
-          directory = "/var/lib/hermes/.hermes/memories";
-          secretFile = "${homeDirectory}/.secrets/resilio-memories-secret";
-          useRelayServer = true;
-          useTracker = true;
-          useDHT = true;
-          searchLAN = true;
-          useSyncTrash = true;
-          # Discovery via tracker/DHT never paired the two hosts, so pin both
-          # peers by MagicDNS name (no fixed IP needed). Unreachable/self
-          # entries are simply skipped by Resilio.
-          knownHosts = [ "jasonkwh-7520u:55555" "jasonkwh-7300u:55555" ];
-        }
-        {
-          # User-created Hermes skills: mostly read-only, low conflict risk.
-          # Secret must be copied to every participating host, same as memories.
-          directory = "/var/lib/hermes/.hermes/skills";
-          secretFile = "${homeDirectory}/.secrets/resilio-skills-secret";
-          useRelayServer = true;
-          useTracker = true;
-          useDHT = true;
-          searchLAN = true;
-          useSyncTrash = true;
-          # Same peer pinning as the memories folder above.
-          knownHosts = [ "jasonkwh-7520u:55555" "jasonkwh-7300u:55555" ];
-        }
-      ];
+      user = "hermes";
+      group = "hermes";
+      dataDir = "/var/lib/syncthing-hermes";
+      configDir = "/var/lib/syncthing-hermes/.config/syncthing";
+      overrideDevices = true;
+      overrideFolders = true;
+      settings = {
+        options = {
+          # Fleet is always behind Tailscale; no need for global
+          # discovery/relay/NAT traversal.
+          globalAnnounceEnabled = false;
+          localAnnounceEnabled = true;
+          relaysEnabled = false;
+          natEnabled = false;
+          urAccepted = -1;
+        };
+        devices = {
+          "jasonkwh-7520u".id = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
+          "jasonkwh-7300u".id = "SET-ME-7300U-DEVICE-ID";
+        };
+        folders = {
+          hermes-memories = {
+            path = "/var/lib/hermes/.hermes/memories";
+            devices = [ "jasonkwh-7520u" "jasonkwh-7300u" ];
+            versioning = {
+              type = "trashcan";
+              fsType = "simple";
+              params.cleanoutDays = "14";
+            };
+          };
+          hermes-skills = {
+            path = "/var/lib/hermes/.hermes/skills";
+            devices = [ "jasonkwh-7520u" "jasonkwh-7300u" ];
+            versioning = {
+              type = "trashcan";
+              fsType = "simple";
+              params.cleanoutDays = "14";
+            };
+          };
+        };
+      };
     };
 
     hermes-agent = {
@@ -541,10 +552,8 @@
       if [ -d "$secrets_dir" ]; then
         ${pkgs.acl}/bin/setfacl -m u:hermes:--x \
           ${lib.escapeShellArg homeDirectory} "$secrets_dir"
-        [ ! -f "$secrets_dir/resilio-memories-secret" ] || \
-          ${pkgs.acl}/bin/setfacl -m u:hermes:r "$secrets_dir/resilio-memories-secret"
-        [ ! -f "$secrets_dir/resilio-skills-secret" ] || \
-          ${pkgs.acl}/bin/setfacl -m u:hermes:r "$secrets_dir/resilio-skills-secret"
+        [ ! -f "$secrets_dir/resilio-memories-secret" ] || true
+        [ ! -f "$secrets_dir/resilio-skills-secret" ] || true
       fi
     '';
   };

@@ -8,6 +8,7 @@
 #   make gc                     # delete old generations + refresh bootloader
 #   make live                   # build the graphical Live USB ISO
 #   make jasonkwh-live          # alias for make live
+#   make syncthing-init         # one-time: pre-generate syncthing identity + print device ID
 
 HOSTS := jasonkwh-7520u jasonkwh-7300u
 HOST  ?= $(shell hostname)
@@ -59,6 +60,14 @@ live:
 	nix build --impure --accept-flake-config .#shengos-live-iso
 
 jasonkwh-live: live
+
+# One-time bootstrap for services.syncthing: generate the device identity
+# before the first `make upgrade`, so the real device ID can be pasted into
+# cluster/common/configuration.nix. Safe to re-run (idempotent).
+syncthing-init:
+	sudo nix run nixpkgs#syncthing -- generate --home=/var/lib/syncthing-hermes/.config/syncthing
+	sudo chown -R hermes:hermes /var/lib/syncthing-hermes
+	@printf '\n^^^ Device ID for $(HOST) is on the "Calculated device ID" line above — paste it into configuration.nix\n'
 
 $(HOSTS):
 	$(call nixos-rebuild,switch,$@)

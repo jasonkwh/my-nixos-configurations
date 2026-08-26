@@ -45,7 +45,35 @@ cd ~/Documents/my-nixos-configurations
 ./meow build <new-hostname>    # or: make <new-hostname>
 ```
 
-## Step 5: Verify
+## Step 5: Pair Syncthing (fleet file sync)
+
+Hermes' memories and skills folders sync across the fleet via Syncthing. Each
+device has a unique device ID that must be registered in
+`cluster/common/configuration.nix` — a fresh machine is not known to the fleet
+until you complete this step:
+
+1. Generate the device identity and print the new machine's device ID:
+
+   ```bash
+   cd ~/Documents/my-nixos-configurations
+   make syncthing-init    # idempotent; needs sudo once (chown to hermes)
+   ```
+
+2. Paste the printed ID into `cluster/common/configuration.nix` under
+   `services.syncthing.settings.devices."jasonkwh-<hostname>".id`, commit, and
+   pull on the other machines.
+3. Rebuild both machines (`make upgrade`). Verify pairing:
+
+   ```bash
+   systemctl status syncthing-hermes
+   sudo journalctl -u syncthing-hermes | grep -i 'established\|connected'
+   ```
+
+Device IDs are public-key fingerprints — safe to commit to GitHub. The private
+key lives in `/var/lib/syncthing-hermes/.config/syncthing/` and never leaves
+the machine.
+
+## Step 6: Verify
 
 ```bash
 hostname          # should print the new hostname
@@ -67,15 +95,26 @@ Prefer scp/rsync over an encrypted Tailscale link, never a plaintext USB stick:
 scp -r jasonkwh@<7520U-IP>:~/.secrets/ ~/
 ```
 
-### Q: Where is the Resilio token?
-`~/.secrets/resilio-memories-secret` (memories) and
-`~/.secrets/resilio-skills-secret` (user-created skills). Both are copied over
-together with the rest of `~/.secrets/` in the command above.
+### Q: How does file sync work, and where is the Syncthing device ID?
+Hermes' memories and skills folders sync via **Syncthing** (the fleet no longer
+uses Resilio). Unlike Resilio there are no shared folder secrets to copy —
+devices trust each other by device ID instead.
 
-Note: each Resilio shared folder has its own unique secret. When adding a new
-shared folder to the fleet, generate it once on a single host, then copy the
-file to every other host — never regenerate per host, or the folders will not
-pair.
+The device ID is generated on first boot of the syncthing service. On a new
+machine run:
 
-### Q: The new machine has no memories/token yet — can it overwrite the old machine's data?
-No. Resilio identifies nodes by a key under `/var/lib/resilio`, which is unrelated to `~/.secrets`. The Resilio service is enabled by default, but it only starts syncing once the secrets are in place and it can reach the tracker. A fresh node will not write to existing data before its first sync.
+```bash
+cd ~/Documents/my-nixos-configurations
+make syncthing-init    # pre-generates identity and prints the device ID
+```
+
+then paste it into `cluster/common/configuration.nix` under
+`services.syncthing.settings.devices` (see Step 5 of this guide). Device IDs
+are public-key fingerprints and are safe to commit to GitHub; the private key
+stays in `/var/lib/syncthing-hermes/.config/syncthing/`.
+
+### Q: The new machine has no memories yet — can it overwrite the old machine's data?
+No. Syncthing only exchanges data between devices that have each other's device
+ID registered. A fresh node pairs with an empty/unknown state only after you
+complete the pairing step above; both folders also use trashcan versioning
+(14-day retention) as a safety net against accidental overwrites.

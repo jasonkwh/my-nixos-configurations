@@ -31,7 +31,7 @@ The entire system — desktop, applications, development tools, services, and se
 - **Reproducible builds** — `flake.lock` pins every dependency; switch machines freely.
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
-- **Always in sync** — Tailscale (networking) + Resilio (file sync) keep two laptops in lockstep.
+- **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep two laptops in lockstep.
 - **One-USB install** — boot the Live USB, click through Calamares, and land on a full ShengOS machine: the config repo is copied over automatically and flakes work from the first rebuild.
 - **Private assistant** — Hermes Agent with a personal companion. See [小升升](#personal-assistant-小升升).
 
@@ -58,7 +58,7 @@ See [Command reference](#command-reference) for the full list, or [docs/install.
 
 ## Personal assistant (小升升)
 
-ShengOS ships with a personal AI assistant — **小升升** — a private companion that lives on the machine, answers to its owner, and looks after them day to day. She runs entirely from the flake, boots on every host, and stays in sync between laptops via Tailscale and Resilio. No cloud, no telemetry — just your own machine.
+ShengOS ships with a personal AI assistant — **小升升** — a private companion that lives on the machine, answers to its owner, and looks after them day to day. She runs entirely from the flake, boots on every host, and stays in sync between laptops via Tailscale and Syncthing. No cloud, no telemetry — just your own machine.
 
 ## Command reference
 
