@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig ? "/etc/nixos/hardware-configuration.nix", ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -18,8 +18,9 @@
     };
   };
 
-  imports = [ /etc/nixos/hardware-configuration.nix ]
-    ++ lib.optionals isLaptop [ ./laptop.nix ];
+  imports = [ hardwareConfig ]
+    ++ lib.optionals isLaptop [ ./laptop.nix ]
+    ++ lib.optionals isHeadless [ ./headless.nix ];
 
   # Bootloader.
   boot = {
@@ -166,11 +167,11 @@
     (writeShellScriptBin "meow" ''
       exec ${gnumake}/bin/make -C ${homeDirectory}/Documents/my-nixos-configurations "$@"
     '')
-    kdePackages.partitionmanager
     tcpdump
     pciutils
-    wineWow64Packages.full
-    winetricks
+    ]
+    ++ lib.optionals (!isHeadless) [ wineWow64Packages.full winetricks kdePackages.partitionmanager ]
+    ++ [
     htop
     direnv
     ripgrep
@@ -473,16 +474,6 @@
       enable = true;
     };
 
-    avahi = {
-      enable = true;
-      nssmdns4 = true;  # Enable mDNS name resolution in the NSS layer
-      publish = {
-        enable = true;
-        addresses = true;  # Publish the host's IP addresses
-        workstation = true;  # Publish the workstation service
-      };
-    };
-
     openssh = {
       enable = true; # Enable the OpenSSH daemon.
       settings = {
@@ -494,12 +485,6 @@
     };
 
   };
-
-  # Avahi can occasionally leave a stale PID file in /run after abrupt exits,
-  # which causes switch-to-configuration to fail on service restart.
-  systemd.services.avahi-daemon.serviceConfig.ExecStartPre = [
-    "${pkgs.coreutils}/bin/rm -f /run/avahi-daemon/pid"
-  ];
 
   hardware = {
     enableRedistributableFirmware = true;

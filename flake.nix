@@ -15,6 +15,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     hermes-agent.url = "github:NousResearch/hermes-agent/v2026.8.19";
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -26,9 +27,9 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, plasma-manager, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, plasma-manager, nixos-hardware, ... }@inputs:
     let
-      system = "x86_64-linux";
+      lib = nixpkgs.lib;
       username = "jasonkwh";
       fullName = "Jason Huang";
       email = "jasonkwh@gmail.com";
@@ -48,43 +49,49 @@
 
       # Home Manager module shared verbatim by every host.  Keeping it in one
       # place means a change here applies to all machines (and the Live image).
-      # Parameterised by isLaptop so laptop-only home config can be gated.
-      homeManagerModule = isLaptop: {
+      # Parameterised by isLaptop/isHeadless so host-class-specific home
+      # config can be gated per machine.
+      homeManagerModule = { isLaptop ? false, isHeadless ? false }: {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.backupFileExtension = "backup";
         home-manager.extraSpecialArgs = {
-          inherit username fullName email homeDirectory isLaptop;
+          inherit username fullName email homeDirectory isLaptop isHeadless;
         };
         home-manager.sharedModules = [
           plasma-manager.homeModules.plasma-manager
         ];
       };
 
-      mkHost = { name, isLaptop ? false }: nixpkgs.lib.nixosSystem {
-        inherit system;
+      # Per-host arch so non-x86 boards can join the fleet.
+      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", hardwareConfig ? "/etc/nixos/hardware-configuration.nix", extraModules ? [ ] }: nixpkgs.lib.nixosSystem {
+        system = hostSystem;
         specialArgs = {
-          inherit username fullName email homeDirectory isLaptop;
+          inherit username fullName email homeDirectory isLaptop isHeadless hardwareConfig;
         };
         modules = [
           inputs.hermes-agent.nixosModules.default
-          ({
-            nixpkgs.overlays = [ kernelOverlay ];
+          ({ nixpkgs.overlays = [ kernelOverlay ]; })
+          # Only x86 non-headless hosts get aarch64 QEMU emulation
+          # (bcm2711 SD image builds). ARM/headless hosts never do.
+          (lib.mkIf (hostSystem == "x86_64-linux" && !isHeadless) {
+            boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
           })
+        ] ++ extraModules ++ [
           ./cluster/${name}/configuration.nix
           {
             nix.settings.trusted-users = [ username ];
           }
           home-manager.nixosModules.home-manager
-          (homeManagerModule isLaptop)
+          (homeManagerModule { inherit isLaptop isHeadless; })
         ];
       };
 
       liveUsb = nixpkgs.lib.nixosSystem {
-        inherit system;
+        system = "x86_64-linux";
         specialArgs = {
           inherit username fullName email homeDirectory;
-          inherit system;
+          system = "x86_64-linux";
         };
         modules = [
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"
@@ -93,18 +100,25 @@
             nix.settings.trusted-users = [ username ];
           }
           home-manager.nixosModules.home-manager
-          (homeManagerModule false) # live supports both laptop and desktop
+          (homeManagerModule { }) # live supports both laptop and desktop
         ];
       };
 
     in
     {
       nixosConfigurations = {
-        "jasonkwh-7300u" = mkHost { name = "7300u"; isLaptop = true; };
-        "jasonkwh-7520u" = mkHost { name = "7520u"; isLaptop = true; };
+        "jasonkwh-7300u" = mkHost { name = "7300u"; hostSystem = "x86_64-linux"; isLaptop = true; };
+        "jasonkwh-7520u" = mkHost { name = "7520u"; hostSystem = "x86_64-linux"; isLaptop = true; };
+        "jasonkwh-bcm2711" = mkHost {
+          name = "bcm2711";
+          isHeadless = true;
+          hostSystem = "aarch64-linux";
+          hardwareConfig = ./cluster/bcm2711/hardware-configuration.nix;
+          extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
+        };
         "jasonkwh-live" = liveUsb;
       };
 
-      packages.${system}.shengos-live-iso = liveUsb.config.system.build.isoImage;
+      packages.x86_64-linux.shengos-live-iso = liveUsb.config.system.build.isoImage;
     };
 }

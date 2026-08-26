@@ -37,13 +37,16 @@ The entire system — desktop, applications, development tools, services, and se
 
 ## Machine profiles
 
-ShengOS supports one Live USB profile and any number of laptops sharing a common base, keeping hardware-specific configuration scoped per-host:
+ShengOS supports one Live USB profile and any number of machines sharing a common base, keeping hardware-specific configuration scoped per-host. Both x86_64-linux and aarch64-linux (ARM boards) are supported:
 
 | Profile | Hardware | Notes |
 |---------|----------|-------|
-| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M | Daily driver — Steam, gaming, hibernation |
-| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 | Spare laptop |
+| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
+| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card |
 | **`jasonkwh-live`** | n/a | Graphical Calamares installer — auto-copies this repo to the target, flakes ready out of the box, autologin |
+
+Host classes are selected via `mkHost` flags in `flake.nix`: `hostSystem` (per-host architecture), `isLaptop` (laptop extras), `isHeadless` (strips desktop/Steam/GPU stack; see `cluster/common/headless.nix`). x86 non-headless hosts can cross-build aarch64 images via QEMU binfmt emulation.
 
 ## Quick start
 
@@ -69,6 +72,7 @@ ShengOS ships with a personal AI assistant — **小升升** — a private compa
 | `meow update` | Refresh flake inputs (`nix flake update`) |
 | `meow gc` | Delete old generations + refresh bootloader |
 | `meow live` | Build the graphical Live USB ISO |
+| `meow bcm2711-image` | Build the Pi (bcm2711) SD-card image → `result/*.img.zst` |
 | `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
 | `meow syncthing-init` | One-time bootstrap of Syncthing identity on a new machine; prints the device ID to register in `cluster/common/configuration.nix` |
 
@@ -80,8 +84,10 @@ ShengOS ships with a personal AI assistant — **小升升** — a private compa
 flake.nix            # Entry point — inputs, hosts, kernel overlay
 cluster/             # Per-host & shared NixOS config
   common/            #   Shared across all machines (branding, fonts, services…)
+                     #   headless.nix — imported when isHeadless = true
   7520u/             #   AMD Ryzen 5 7520U host
   7300u/             #   Intel Core i5-7300U host
+  bcm2711/           #   Raspberry Pi 4B headless host (aarch64)
   live/              #   Live USB installer profile
 docs/                # Guides (install, troubleshooting, …)
 assets/              # Logos, wallpapers

@@ -1,6 +1,9 @@
 # ShengOS Installation Guide
 
-This document explains how to install ShengOS on a brand-new machine from a Live USB and restore a full development environment.
+This document explains how to install ShengOS on a brand-new machine and restore a full development environment. Two paths:
+
+- **x86 laptop/desktop** — install from the Live USB, then follow Steps 2–6.
+- **ARM board / headless node (e.g. Raspberry Pi 4B)** — skip the Live USB; see "Headless board path" at the end.
 
 **Core principle:** use an existing machine as the source of truth, and copy secrets over an encrypted channel (Tailscale) — never a plaintext USB stick.
 
@@ -31,10 +34,15 @@ git pull origin main    # fetch the latest configuration
 2. Register the host in `flake.nix` under `nixosConfigurations`:
 
 ```nix
-"jasonkwh-<new-hostname>" = mkHost { name = "<new-hostname>"; };
+"jasonkwh-<new-hostname>" = mkHost {
+  name = "<new-hostname>";
+  hostSystem = "x86_64-linux";   # or "aarch64-linux" for ARM boards
+  isLaptop = true;               # laptop extras (power, touchpad…)
+  isHeadless = true;             # headless: strips desktop/Steam/GPU stack
+};
 ```
 
-> Hardware-specific configuration (`hardware-configuration.nix`) lives in each machine's `/etc/nixos/` and is **not** committed to the repository.
+> Hardware-specific configuration (`hardware-configuration.nix`) lives in each machine's `/etc/nixos/` by default and is not committed to the repository. ARM boards pass `hardwareConfig = ./cluster/<name>/hardware-configuration.nix` instead so it lives in the repo.
 
 ## Step 4: Build and switch
 
@@ -117,3 +125,44 @@ No. Syncthing only exchanges data between devices that have each other's device
 ID registered. A fresh node pairs with an empty/unknown state only after you
 complete the pairing step above; both folders also use trashcan versioning
 (14-day retention) as a safety net against accidental overwrites.
+
+## Headless board path (e.g. Raspberry Pi 4B)
+
+Boards without a desktop are installed from an SD card image, not the Live USB.
+Example: `jasonkwh-bcm2711` (headless, 4GB).
+
+1. **Build the image** on an x86 host (binfmt emulation is enabled
+   automatically for x86 non-headless hosts):
+
+   ```bash
+   make bcm2711-image    # → result/*.img.zst
+   zstd -d result/*.img.zst
+   sudo dd if=result/*.img of=/dev/sdX bs=4M status=progress
+   ```
+
+2. **First boot**: insert the card, power on, get SSH access.
+3. **Copy repo + secrets** from an existing machine over Tailscale:
+
+   ```bash
+   rsync -a jasonkwh@<source>:Documents/my-nixos-configurations ~/Documents/
+   rsync -a jasonkwh@<source>:.secrets ~/
+   ```
+
+4. **Tailscale**: `sudo tailscale up`, authorize in the browser once.
+5. **Syncthing identity** — before the first rebuild, pre-generate it:
+
+   ```bash
+   cd ~/Documents/my-nixos-configurations
+   make syncthing-init    # prints this machine's device ID
+   ```
+
+6. **Register everywhere**: paste the device ID into
+   `cluster/common/configuration.nix` (`syncthingDevices` map + both folder
+   `devices` lists), commit, pull on the other machines, rebuild them.
+7. **Build and switch on the board**: `make upgrade`.
+
+The Pi boots via Broadcom firmware + extlinux (`boot.loader.generic-extlinux-compatible`),
+not UEFI — its `cluster/bcm2711/configuration.nix` overrides the common
+systemd-boot defaults with `mkForce`. The hardware layout
+(`cluster/bcm2711/hardware-configuration.nix`) is committed to the repo, so a
+freshly flashed card needs no `nixos-generate-config` step.

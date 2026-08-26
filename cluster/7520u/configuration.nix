@@ -63,6 +63,7 @@ in
 
   networking.hostName = "jasonkwh-7520u";
 
+
   # WhatsApp gateway switch: only one machine in the fleet may hold the
   # session at a time (same number would fight otherwise). Currently 7520u.
   services.hermes-agent.environment.WHATSAPP_ENABLED = "true";

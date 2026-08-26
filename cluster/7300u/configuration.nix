@@ -16,6 +16,16 @@
 
   networking.hostName = "jasonkwh-7300u";
 
+  # 8GB RAM — the tightest desktop in the fleet. Compressed RAM swap gives
+  # headroom under memory spikes without touching the (fast NVMe) disk swap.
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+  };
+  # Build aarch64 (bcm2711 SD image) on this x86 host via QEMU emulation:
+  # enabled centrally in flake.nix mkHost for x86 non-headless hosts.
+
   services = {
     xserver.videoDrivers = [ "modesetting" ];
     thermald.enable = true;

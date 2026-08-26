@@ -25,13 +25,6 @@
     };
   };
 
-  # Compressed RAM swap — reduces memory pressure and avoids slow disk swap
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-    memoryPercent = 50;
-  };
-
   networking.networkmanager.wifi.powersave = false;
 
   services = {

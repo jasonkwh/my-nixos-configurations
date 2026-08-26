@@ -1,4 +1,4 @@
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, osConfig ? {}, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, osConfig ? {}, ... }:
 
 {
   imports = lib.optionals isLaptop [ ./home-laptop.nix ];
@@ -32,11 +32,13 @@
       prefix=${config.home.homeDirectory}/.npm-global
     '';
 
-    # KWallet-only setup: keep Secret Service API enabled.
-    file.".config/kwalletrc".text = ''
-      [org.freedesktop.secrets]
-      apiEnabled=true
-    '';
+    # KWallet-only setup: keep Secret Service API enabled (desktop hosts only).
+    file.".config/kwalletrc" = lib.mkIf (!isHeadless) {
+      text = ''
+        [org.freedesktop.secrets]
+        apiEnabled=true
+      '';
+    };
   };
 
   accounts.email.accounts.gmail = {
@@ -57,8 +59,8 @@
     himalaya.enable = true;
   };
 
-  # KDE Plasma configuration (using plasma-manager)
-  programs.plasma = {
+  # KDE Plasma configuration (using plasma-manager) — desktop hosts only.
+  programs.plasma = lib.mkIf (!isHeadless) {
     enable = true;
     
     # Use Breeze Dark theme
@@ -184,25 +186,25 @@
 
   xdg = {
     mimeApps.enable = false;
-    autostart.enable = true;
+    autostart = lib.mkIf (!isHeadless) { enable = true; };
   };
   
   fonts.fontconfig.enable = true;
 
   # Packages that should be installed to the user profile.
-  home.packages = with pkgs; [
+  home.packages = with pkgs;
+    # GUI apps shared by NixOS laptops (desktop hosts only; several have no
+    # aarch64 build, e.g. zoom-us, and none make sense headless).
+    lib.optionals (!isHeadless) [
+      libreoffice-qt
+      zoom-us
+      brave
+      code-cursor
+    ]
+    ++ [
     # migrated from system packages
     samba
-    distrobox
     gcc-arm-embedded
-
-    # GUI apps shared by NixOS laptops
-    boxbuddy
-    libreoffice-qt
-    warp
-    zoom-us
-    brave
-    code-cursor
 
     # utilities
     tmux
