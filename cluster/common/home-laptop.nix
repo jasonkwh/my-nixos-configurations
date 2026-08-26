@@ -11,17 +11,18 @@
     ELECTRON_OZONE_PLATFORM_HINT = "auto";
   };
 
-  # Shared by both laptops: never suspend/sleep on lid close (the machines
-  # run docked or headless most of the time).
+  # Shared by both laptops: lid close turns off the screen only, never
+  # suspend (the machines run docked or headless as servers).
+  # lidAction=64 is PowerDevil PowerButtonAction::TurnOffScreen.
   home.file.".config/powermanagementprofilesrc".text = ''
-    [AC]
-    lidAction=0
+    [AC][HandleButtonEvents]
+    lidAction=64
 
-    [Battery]
-    lidAction=0
+    [Battery][HandleButtonEvents]
+    lidAction=64
 
-    [LowBattery]
-    lidAction=0
+    [LowBattery][HandleButtonEvents]
+    lidAction=64
   '';
 
   # Fastfetch settings fully replace the built-in defaults, but the modules
