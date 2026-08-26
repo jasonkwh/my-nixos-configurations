@@ -319,6 +319,13 @@
           "jasonkwh-7520u".id = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
           "jasonkwh-7300u".id = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
         };
+        # Pin peers by MagicDNS name (not raw 100.x IPs — those can change).
+        # "dynamic" discovery alone is not enough: local broadcast doesn't
+        # cross the Tailscale interface and global announce is disabled.
+        devices."jasonkwh-7520u".addresses =
+          [ "tcp://jasonkwh-7520u.tail0c0276.ts.net:22000" ];
+        devices."jasonkwh-7300u".addresses =
+          [ "tcp://jasonkwh-7300u.tail0c0276.ts.net:22000" ];
         folders = {
           hermes-memories = {
             path = "/var/lib/hermes/.hermes/memories";
