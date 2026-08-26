@@ -154,6 +154,7 @@ in
     kdePackages.partitionmanager
     nvme-cli
     pciutils
+    rsync
     smartmontools
     usbutils
     vim
