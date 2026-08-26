@@ -70,6 +70,7 @@ ShengOS ships with a personal AI assistant — **小升升** — a private compa
 | `meow gc` | Delete old generations + refresh bootloader |
 | `meow live` | Build the graphical Live USB ISO |
 | `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
+| `meow syncthing-init` | One-time bootstrap of Syncthing identity on a new machine; prints the device ID to register in `cluster/common/configuration.nix` |
 
 `upgrade` defaults to the machine's hostname; pass `HOST=` or name a host directly to target a specific machine.
 

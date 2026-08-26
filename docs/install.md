@@ -96,9 +96,8 @@ scp -r jasonkwh@<7520U-IP>:~/.secrets/ ~/
 ```
 
 ### Q: How does file sync work, and where is the Syncthing device ID?
-Hermes' memories and skills folders sync via **Syncthing** (the fleet no longer
-uses Resilio). Unlike Resilio there are no shared folder secrets to copy —
-devices trust each other by device ID instead.
+Hermes' memories and skills folders sync via **Syncthing**. Devices trust
+each other by device ID — there are no shared secrets to copy.
 
 The device ID is generated on first boot of the syncthing service. On a new
 machine run:
