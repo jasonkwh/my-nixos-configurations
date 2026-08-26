@@ -317,7 +317,7 @@
         };
         devices = {
           "jasonkwh-7520u".id = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
-          "jasonkwh-7300u".id = "SET-ME-7300U-DEVICE-ID";
+          "jasonkwh-7300u".id = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
         };
         folders = {
           hermes-memories = {
