@@ -94,6 +94,7 @@
           hostSystem = "aarch64-linux";
           isHeadless = true;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
+          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };
         "jasonkwh-live" = null; # live USB: not a fleet peer, handled below
       };
