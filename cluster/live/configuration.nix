@@ -205,6 +205,10 @@ in
   # A Live image must be hardware-neutral and must not resume or configure
   # the installed laptops' swap devices.
   boot.resumeDevice = lib.mkForce "";
+
+  # Live environment imports no ZFS pools; silence upstream evaluation
+  # warning (cluster/common fix does not reach this config).
+  boot.zfs.forceImportRoot = false;
   swapDevices = lib.mkForce [ ];
   hardware.cpu.amd.updateMicrocode = lib.mkForce false;
   hardware.cpu.intel.updateMicrocode = lib.mkForce false;
