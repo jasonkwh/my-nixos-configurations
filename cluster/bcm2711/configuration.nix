@@ -8,7 +8,7 @@
 
   home-manager.users.${username} = {
     imports = [
-      ../common/home-headless.nix
+      ../common/home.nix
       ./home.nix
     ];
   };

@@ -47,10 +47,11 @@
         });
       };
 
-      # Home Manager module shared verbatim by every host (and the Live image).
-      # Host-class file selection happens per-host in cluster/<host>/configuration.nix:
-      # desktop/laptop -> ../common/home.nix (chains home-headless core; laptop
-      # extras gated inside by isLaptop); headless -> ../common/home-headless.nix.
+      # Home Manager entry point shared verbatim by every host (and the Live
+      # image). cluster/common/home.nix is a pure router: every host gets
+      # home-headless core; isLaptop/isHeadless flags (set per-host below)
+      # add home-desktop / home-laptop layers. Per-host extra packages live
+      # in cluster/<host>/home.nix.
       homeManagerModule = { isLaptop ? false, isHeadless ? false }: {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
