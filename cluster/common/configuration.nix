@@ -563,4 +563,9 @@
     '';
   };
 
+  # The syncthing unit's default hardening (PrivateUsers=true + trimmed
+  # capability bounding set) puts it in a user namespace that cannot chmod
+  # synced dirs — every dir pull fails with "operation not permitted".
+  systemd.services.syncthing.serviceConfig.PrivateUsers = lib.mkForce false;
+
 }
