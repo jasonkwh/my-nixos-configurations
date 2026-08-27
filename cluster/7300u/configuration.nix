@@ -14,6 +14,13 @@
 
   time.timeZone = "Australia/Melbourne";
 
+  # Storage tuning layered onto hardware-configuration.nix (kept untouched):
+  # NVMe btrfs wants noatime + transparent zstd compression (space and less
+  # write amplification); ssd/discard=async are auto-derived by btrfs.
+  fileSystems."/" = {
+    options = [ "noatime" "compress=zstd" ];
+  };
+
   networking.hostName = "jasonkwh-7300u";
 
   # 8GB RAM — the tightest desktop in the fleet. Compressed RAM swap gives

@@ -63,6 +63,14 @@ in
 
   networking.hostName = "jasonkwh-7520u";
 
+  # Storage tuning layered onto hardware-configuration.nix (kept untouched):
+  # NVMe btrfs wants noatime + transparent zstd compression (space and less
+  # write amplification); ssd/discard=async are auto-derived by btrfs.
+  # Hibernation is unaffected: resumeDevice above stays the raw swap UUID.
+  fileSystems."/" = {
+    options = [ "noatime" "compress=zstd" ];
+  };
+
 
   # WhatsApp gateway switch: only one machine in the fleet may hold the
   # session at a time (same number would fight otherwise). Currently 7520u.
