@@ -330,20 +330,20 @@
             fsType = "simple";
             params.cleanoutDays = "14";
           };
-          # Sync content, not permission bits. Both hosts manage their own
-          # trees (different gids/ACLs), and syncthing's chmod pass fails
-          # with "operation not permitted" on every dir otherwise.
-          ignorePerms = true;
         in {
+          # ignorePerms: sync content, not permission bits — syncthing's
+          # chmod pass fails on dirs with per-host gids/ACLs.
           hermes-memories = {
             path = "/var/lib/hermes/.hermes/memories";
             devices = allDevices;
             versioning = folderVersioning;
+            ignorePerms = true;
           };
           hermes-skills = {
             path = "/var/lib/hermes/.hermes/skills";
             devices = allDevices;
             versioning = folderVersioning;
+            ignorePerms = true;
           };
         };
       };
