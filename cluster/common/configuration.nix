@@ -326,24 +326,25 @@
               addresses = [ "tcp://${name}.tail0c0276.ts.net:22000" ];
             })
           syncthingDevices;
-        folders = {
+        folders = let
+          # Every fleet member syncs every folder; versioning keeps a
+          # 14-day trashcan on both.
+          allDevices = builtins.attrNames syncthingDevices;
+          folderVersioning = {
+            type = "trashcan";
+            fsType = "simple";
+            params.cleanoutDays = "14";
+          };
+        in {
           hermes-memories = {
             path = "/var/lib/hermes/.hermes/memories";
-            devices = [ "jasonkwh-7520u" "jasonkwh-7300u" ];
-            versioning = {
-              type = "trashcan";
-              fsType = "simple";
-              params.cleanoutDays = "14";
-            };
+            devices = allDevices;
+            versioning = folderVersioning;
           };
           hermes-skills = {
             path = "/var/lib/hermes/.hermes/skills";
-            devices = [ "jasonkwh-7520u" "jasonkwh-7300u" ];
-            versioning = {
-              type = "trashcan";
-              fsType = "simple";
-              params.cleanoutDays = "14";
-            };
+            devices = allDevices;
+            versioning = folderVersioning;
           };
         };
       };
