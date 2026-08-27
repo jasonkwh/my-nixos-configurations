@@ -28,10 +28,8 @@
 
   networking.hostName = "jasonkwh-bcm2711";
 
-  # First-boot entry: no password hash lives in this (public) repo;
-  # login with the matching ed25519 key once, then set a password via passwd.
   users.users.${username}.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDt+8OZmQmY/A9wF0vsw5BChq9N7P6B2li2uAnmMu0nU jasonkwh-bcm2711-firstboot"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzR/nJQE3wQ+1+J0ffO6bNsUI6SzUxOWDtDEbgFTrRj shengos-ssh-access-2026-08"
   ];
 
   # Pi boots via Broadcom firmware + extlinux, no UEFI — override the

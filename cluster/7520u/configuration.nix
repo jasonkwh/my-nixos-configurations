@@ -60,9 +60,8 @@ in
     }
   ];
 
-  # Fleet access: Jason's personal key (the same key on every ShengOS host).
   users.users.${username}.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDt+8OZmQmY/A9wF0vsw5BChq9N7P6B2li2uAnmMu0nU jasonkwh-bcm2711-firstboot"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzR/nJQE3wQ+1+J0ffO6bNsUI6SzUxOWDtDEbgFTrRj shengos-ssh-access-2026-08"
   ];
 
   networking.hostName = "jasonkwh-7520u";
