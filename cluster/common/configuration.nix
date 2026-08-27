@@ -60,17 +60,6 @@
       dns = "none";
 
     };
-
-      # Kubernetes firewall rules (enable only when running k8s)
-      firewall = {
-        allowedTCPPorts = [
-          # 6443   # Kubernetes API server (required)
-          # 10250  # Kubelet API (optional but recommended for metrics/debugging)
-        ];
-        allowedUDPPorts = [
-          # 8472   # Flannel VXLAN (required for inter-node pod networking)
-        ];
-      };
   };
 
   # Permit direct Resilio peers only over the private Tailscale interface;

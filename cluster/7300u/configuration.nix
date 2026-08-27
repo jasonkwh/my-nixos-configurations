@@ -58,16 +58,6 @@
         accelSpeed = "0.0";
       };
     };
-
-    # k3s = {
-    #   enable = false;
-    #   role = "agent";
-    #   serverAddr = "https://jasonkwh-7520u.local:6443";
-    #   token = "";
-    #   extraFlags = [
-    #     "--flannel-iface=wlp58s0"
-    #   ];
-    # };
   };
 
   hardware = {

@@ -1,7 +1,6 @@
 { config, lib, pkgs, username, ... }:
 let
   swapUuid = "97c60ea8-adcf-444b-a44d-e9eeac24138f";
-  wifiIface = "wlp2s0";
 in
 {
   imports = [
@@ -82,16 +81,6 @@ in
 
   services = {
     xserver.videoDrivers = [ "amdgpu" ];
-
-    # k3s = {
-    #   enable = false;
-    #   role = "server";
-    #   extraFlags = toString [
-    #     "--tls-san=${config.networking.hostName}"
-    #     "--flannel-iface=${wifiIface}"
-    #     "--disable-network-policy"
-    #   ];
-    # };
 
     # use evtest to find out the device id & key num
     udev.extraHwdb = ''
