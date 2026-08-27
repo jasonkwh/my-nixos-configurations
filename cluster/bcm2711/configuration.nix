@@ -28,9 +28,6 @@
 
   networking.hostName = "jasonkwh-bcm2711";
 
-  users.users.${username}.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzR/nJQE3wQ+1+J0ffO6bNsUI6SzUxOWDtDEbgFTrRj shengos-ssh-access-2026-08"
-  ];
 
   # Pi boots via Broadcom firmware + extlinux, no UEFI — override the
   # systemd-boot/EFI defaults from common (which are for the x86 hosts).

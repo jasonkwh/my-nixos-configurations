@@ -285,6 +285,9 @@
 
   services = {
     tailscale.enable = true;
+    # Fleet SSH goes through Tailscale SSH (identity-based, no keys);
+    # public key auth stays off in services.openssh below.
+    tailscale.extraSetFlags = [ "--ssh" ];
 
     # Peer-to-peer sync of Hermes' memories and skills across the fleet.
     # Replaces the previous Resilio (services.resilio) setup, which never

@@ -23,9 +23,6 @@
 
   networking.hostName = "jasonkwh-7300u";
 
-  users.users.${username}.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzR/nJQE3wQ+1+J0ffO6bNsUI6SzUxOWDtDEbgFTrRj shengos-ssh-access-2026-08"
-  ];
 
   # 8GB RAM — the tightest desktop in the fleet. Compressed RAM swap gives
   # headroom under memory spikes without touching the (fast NVMe) disk swap.
