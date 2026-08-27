@@ -30,3 +30,6 @@ result-*
 
 # resilio scratch dirs
 .sync/
+
+# SSH private keys (first-boot etc.) — NEVER commit
+assets/secrets/
