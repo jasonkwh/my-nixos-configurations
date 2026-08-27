@@ -407,6 +407,11 @@
         terminal = {
           backend = "local";
         };
+        web = {
+          # Tavily key (TAVILY_API_KEY) is in ~/.secrets/hermes-env.
+          search_backend = "tavily";
+          extract_backend = "tavily";
+        };
         browser = {
           cdp_url = "http://127.0.0.1:9222";
           backend = "off";
