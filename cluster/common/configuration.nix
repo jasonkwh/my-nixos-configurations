@@ -67,9 +67,8 @@
   networking.firewall.interfaces.tailscale0 = {
     allowedTCPPorts = [
       22 # fleet ssh (key-only)
-      55555 # resilio sync
+      8642 # hermes agent-to-agent (peer dm)
     ];
-    allowedUDPPorts = [ 55555 ];
   };
 
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
