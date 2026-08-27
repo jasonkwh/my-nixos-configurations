@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig, hermesPeerHosts, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig, hermesPeerHosts, syncthingDevices, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -300,12 +300,7 @@
       configDir = "/var/lib/syncthing-hermes/.config/syncthing";
       overrideDevices = true;
       overrideFolders = true;
-      settings = let
-        syncthingDevices = {
-          "jasonkwh-7520u".id = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
-          "jasonkwh-7300u".id = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
-        };
-      in {
+      settings = {
         options = {
           # Fleet is always behind Tailscale; no need for global
           # discovery/relay/NAT traversal.

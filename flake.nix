@@ -72,11 +72,23 @@
       # Per-host arch so non-x86 boards can join the fleet.
       # Hardware layout comes from each host's directory in this repo,
       # never from /etc/nixos.
-      # Host definitions shared between nixosConfigurations and the hermes
-      # agent-to-agent peer list (bot_peers derives from these names).
+      # Host definitions shared between nixosConfigurations, the hermes
+      # agent-to-agent peer list (bot_peers), and Syncthing device ids.
+      # syncthingId is the machine's Syncthing device fingerprint
+      # (`syncthing -device-id`); omit it for hosts that don't sync.
       hostDefs = {
-        "jasonkwh-7300u" = { name = "7300u"; hostSystem = "x86_64-linux"; isLaptop = true; };
-        "jasonkwh-7520u" = { name = "7520u"; hostSystem = "x86_64-linux"; isLaptop = true; };
+        "jasonkwh-7300u" = {
+          name = "7300u";
+          hostSystem = "x86_64-linux";
+          isLaptop = true;
+          syncthingId = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
+        };
+        "jasonkwh-7520u" = {
+          name = "7520u";
+          hostSystem = "x86_64-linux";
+          isLaptop = true;
+          syncthingId = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
+        };
         "jasonkwh-bcm2711" = {
           name = "bcm2711";
           isHeadless = true;
@@ -88,11 +100,16 @@
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ] }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], ... }@def: nixpkgs.lib.nixosSystem {
         system = hostSystem;
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
           inherit hermesPeerHosts;
+          # Syncthing device ids for all fleet members that sync, from hostDefs.
+          # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).
+          syncthingDevices = builtins.mapAttrs
+            (_: def: { id = def.syncthingId; })
+            (lib.filterAttrs (_: def: def ? syncthingId) hostDefs);
           # Each machine pulls its own cluster/<name>/hardware-configuration.nix,
           # imported in cluster/common/configuration.nix.
           hardwareConfig = ./cluster/${name}/hardware-configuration.nix;
