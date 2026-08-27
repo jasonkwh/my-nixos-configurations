@@ -1,4 +1,7 @@
 { lib, pkgs, username, ... }:
+let
+  swapUuid = "f89a3a65-b8c4-473b-99cd-31ed1436e049";
+in
 
 {
   imports = [
@@ -23,6 +26,10 @@
 
   networking.hostName = "jasonkwh-7300u";
 
+  # Hibernation: resume from the NVMe swap partition (11.8GiB > 8GiB RAM,
+  # image always fits).
+  boot.resumeDevice = "/dev/disk/by-uuid/${swapUuid}";
+
 
   # 8GB RAM — the tightest desktop in the fleet. Compressed RAM swap gives
   # headroom under memory spikes without touching the (fast NVMe) disk swap.
@@ -36,7 +43,7 @@
   # can attach discardPolicy without stacking a duplicate swap device.
   swapDevices = lib.mkForce [
     {
-      device = "/dev/disk/by-uuid/f89a3a65-b8c4-473b-99cd-31ed1436e049";
+      device = "/dev/disk/by-uuid/${swapUuid}";
       discardPolicy = "both";
     }
   ];
