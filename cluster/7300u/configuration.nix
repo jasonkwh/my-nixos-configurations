@@ -30,6 +30,15 @@
     algorithm = "zstd";
     memoryPercent = 50;
   };
+
+  # Swap TRIM: mkForce takes over the hardware-config entry (same UUID) so we
+  # can attach discardPolicy without stacking a duplicate swap device.
+  swapDevices = lib.mkForce [
+    {
+      device = "/dev/disk/by-uuid/f89a3a65-b8c4-473b-99cd-31ed1436e049";
+      discardPolicy = "both";
+    }
+  ];
   # Build aarch64 (bcm2711 SD image) on this x86 host via QEMU emulation:
   # enabled centrally in flake.nix mkHost for x86 non-headless hosts.
 
