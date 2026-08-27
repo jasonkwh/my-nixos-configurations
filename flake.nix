@@ -91,8 +91,8 @@
         };
         "jasonkwh-bcm2711" = {
           name = "bcm2711";
-          isHeadless = true;
           hostSystem = "aarch64-linux";
+          isHeadless = true;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
         };
         "jasonkwh-live" = null; # live USB: not a fleet peer, handled below
