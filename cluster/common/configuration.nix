@@ -411,6 +411,13 @@
           cdp_url = "http://127.0.0.1:9222";
           backend = "off";
         };
+
+        # Agent-to-agent: peer gateways over tailscale (api_server on :8642).
+        # Peer keys are HERMES_PEER_<NAME>_KEY in ~/.secrets/hermes-env.
+        bot_peers = {
+          jasonkwh-7300u.url = "http://jasonkwh-7300u.tail0c0276.ts.net:8642";
+          jasonkwh-7520u.url = "http://jasonkwh-7520u.tail0c0276.ts.net:8642";
+        };
       };
       environmentFiles = [
         "${config.users.users.${username}.home}/.secrets/hermes-env"
