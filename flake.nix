@@ -37,10 +37,8 @@
 
       # Hermes agent-to-agent peers: every NixOS host in the fleet gets a
       # bot_peers entry pointing at every other host (api_server on :8642).
-      hermesPeerHosts = [
-        "jasonkwh-7300u"
-        "jasonkwh-7520u"
-      ];
+      # Filled in inside the outputs attrset below, once nixosConfigurations
+      # is available.
 
       kernelOverlay = final: prev: {
         linux_latest = prev.linux_latest.overrideAttrs (oldAttrs: {
@@ -74,6 +72,22 @@
       # Per-host arch so non-x86 boards can join the fleet.
       # Hardware layout comes from each host's directory in this repo,
       # never from /etc/nixos.
+      # Host definitions shared between nixosConfigurations and the hermes
+      # agent-to-agent peer list (bot_peers derives from these names).
+      hostDefs = {
+        "jasonkwh-7300u" = { name = "7300u"; hostSystem = "x86_64-linux"; isLaptop = true; };
+        "jasonkwh-7520u" = { name = "7520u"; hostSystem = "x86_64-linux"; isLaptop = true; };
+        "jasonkwh-bcm2711" = {
+          name = "bcm2711";
+          isHeadless = true;
+          hostSystem = "aarch64-linux";
+          extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
+        };
+        "jasonkwh-live" = null; # live USB: not a fleet peer, handled below
+      };
+
+      hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
+
       mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ] }: nixpkgs.lib.nixosSystem {
         system = hostSystem;
         specialArgs = {
@@ -120,17 +134,9 @@
 
     in
     {
-      nixosConfigurations = {
-        "jasonkwh-7300u" = mkHost { name = "7300u"; hostSystem = "x86_64-linux"; isLaptop = true; };
-        "jasonkwh-7520u" = mkHost { name = "7520u"; hostSystem = "x86_64-linux"; isLaptop = true; };
-        "jasonkwh-bcm2711" = mkHost {
-          name = "bcm2711";
-          isHeadless = true;
-          hostSystem = "aarch64-linux";
-          extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
-        };
-        "jasonkwh-live" = liveUsb;
-      };
+      nixosConfigurations = builtins.mapAttrs
+        (hostName: def: if def == null then liveUsb else mkHost def)
+        hostDefs;
 
       packages.x86_64-linux.shengos-live-iso = liveUsb.config.system.build.isoImage;
     };
