@@ -24,7 +24,6 @@ in
     options = [ "noatime" "compress=zstd" ];
   };
 
-  networking.hostName = "jasonkwh-7300u";
 
   # Hibernation: resume from the NVMe swap partition (11.8GiB > 8GiB RAM,
   # image always fits).

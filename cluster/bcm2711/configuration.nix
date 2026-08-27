@@ -27,7 +27,6 @@
 
   time.timeZone = "Australia/Melbourne";
 
-  networking.hostName = "jasonkwh-bcm2711";
 
 
   # Pi boots via Broadcom firmware + extlinux, no UEFI — override the

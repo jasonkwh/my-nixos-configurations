@@ -61,7 +61,6 @@ in
   ];
 
 
-  networking.hostName = "jasonkwh-7520u";
 
   # Storage tuning layered onto hardware-configuration.nix (kept untouched):
   # NVMe btrfs wants noatime + transparent zstd compression (space and less

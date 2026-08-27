@@ -100,7 +100,7 @@
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], ... }@def: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         system = hostSystem;
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
@@ -117,6 +117,8 @@
         modules = [
           inputs.hermes-agent.nixosModules.default
           ({ nixpkgs.overlays = [ kernelOverlay ]; })
+          # Hostname comes from the hostDefs key — single source of truth.
+          { networking.hostName = lib.mkOverride 900 hostName; }
           # Only x86 non-headless hosts get aarch64 QEMU emulation
           # (bcm2711 SD image builds). ARM/headless hosts never do.
           (lib.mkIf (hostSystem == "x86_64-linux" && !isHeadless) {
@@ -152,7 +154,7 @@
     in
     {
       nixosConfigurations = builtins.mapAttrs
-        (hostName: def: if def == null then liveUsb else mkHost def)
+        (hostName: def: if def == null then liveUsb else mkHost (def // { inherit hostName; }))
         hostDefs;
 
       packages.x86_64-linux.shengos-live-iso = liveUsb.config.system.build.isoImage;
