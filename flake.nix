@@ -47,10 +47,10 @@
         });
       };
 
-      # Home Manager module shared verbatim by every host.  Keeping it in one
-      # place means a change here applies to all machines (and the Live image).
-      # Parameterised by isLaptop/isHeadless so host-class-specific home
-      # config can be gated per machine.
+      # Home Manager module shared verbatim by every host (and the Live image).
+      # Host-class file selection happens per-host in cluster/<host>/configuration.nix:
+      # desktop/laptop -> ../common/home.nix (chains home-headless core; laptop
+      # extras gated inside by isLaptop); headless -> ../common/home-headless.nix.
       homeManagerModule = { isLaptop ? false, isHeadless ? false }: {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
