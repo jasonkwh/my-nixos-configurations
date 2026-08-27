@@ -65,7 +65,10 @@
   # Permit direct Resilio peers only over the private Tailscale interface;
   # do not expose the sync port on public/Wi-Fi interfaces.
   networking.firewall.interfaces.tailscale0 = {
-    allowedTCPPorts = [ 55555 ];
+    allowedTCPPorts = [
+      22 # fleet ssh (key-only)
+      55555 # resilio sync
+    ];
     allowedUDPPorts = [ 55555 ];
   };
 
@@ -467,10 +470,16 @@
       enable = true; # Enable the OpenSSH daemon.
       settings = {
         X11Forwarding = true;
-        PermitRootLogin = "yes";
-        PasswordAuthentication = true;
+        PermitRootLogin = "no";
+        # Key-only fleet: machines reach each other over Tailscale with
+        # per-host identity keys declared in cluster/<host>/configuration.nix.
+        PasswordAuthentication = false;
+        # Separate PAM-backed door; must match PasswordAuthentication or
+        # passwords re-enter via keyboard-interactive.
+        KbdInteractiveAuthentication = false;
       };
-      openFirewall = true;
+      # Port 22 stays shut on LAN/WLAN; tailnet-only reachability below.
+      openFirewall = false;
     };
 
   };

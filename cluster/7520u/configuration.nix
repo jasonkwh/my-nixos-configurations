@@ -60,6 +60,11 @@ in
     }
   ];
 
+  # Fleet access: Jason's personal key (the same key on every ShengOS host).
+  users.users.${username}.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDt+8OZmQmY/A9wF0vsw5BChq9N7P6B2li2uAnmMu0nU jasonkwh-bcm2711-firstboot"
+  ];
+
   networking.hostName = "jasonkwh-7520u";
 
   # Storage tuning layered onto hardware-configuration.nix (kept untouched):
