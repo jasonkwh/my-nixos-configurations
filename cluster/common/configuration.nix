@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig ? "/etc/nixos/hardware-configuration.nix", ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;

@@ -64,10 +64,15 @@
       };
 
       # Per-host arch so non-x86 boards can join the fleet.
-      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", hardwareConfig ? "/etc/nixos/hardware-configuration.nix", extraModules ? [ ] }: nixpkgs.lib.nixosSystem {
+      # Hardware layout comes from each host's directory in this repo,
+      # never from /etc/nixos.
+      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ] }: nixpkgs.lib.nixosSystem {
         system = hostSystem;
         specialArgs = {
-          inherit username fullName email homeDirectory isLaptop isHeadless hardwareConfig;
+          inherit username fullName email homeDirectory isLaptop isHeadless;
+          # Each machine pulls its own cluster/<name>/hardware-configuration.nix,
+          # imported in cluster/common/configuration.nix.
+          hardwareConfig = ./cluster/${name}/hardware-configuration.nix;
         };
         modules = [
           inputs.hermes-agent.nixosModules.default
@@ -113,7 +118,6 @@
           name = "bcm2711";
           isHeadless = true;
           hostSystem = "aarch64-linux";
-          hardwareConfig = ./cluster/bcm2711/hardware-configuration.nix;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
         };
         "jasonkwh-live" = liveUsb;

@@ -31,7 +31,7 @@ help:
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
-	sudo /run/current-system/sw/bin/nixos-rebuild $(1) --flake $$(pwd)/#$(2) --impure
+	sudo /run/current-system/sw/bin/nixos-rebuild $(1) --flake $$(pwd)/#$(2)
 endef
 
 # `make build` alone → upgrade current host
@@ -58,7 +58,7 @@ gc:
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
 live:
-	nix build --impure --accept-flake-config .#shengos-live-iso
+	nix build --accept-flake-config .#shengos-live-iso
 
 jasonkwh-live: live
 
@@ -67,7 +67,7 @@ jasonkwh-live: live
 # resulting .img.zst to a card: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
 image:
 	@test -n "$(filter-out image,$(MAKECMDGOALS))" || { echo 'usage: make image jasonkwh-<host>'; exit 1; }
-	nix build --impure --accept-flake-config \
+	nix build --accept-flake-config \
 	  .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card
 	@printf '\nImage: ls result/*.img.zst\n'
 
