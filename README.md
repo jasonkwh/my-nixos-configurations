@@ -43,11 +43,11 @@ ShengOS supports one Live USB profile and any number of machines sharing a commo
 | Profile | Hardware | Notes |
 |---------|----------|-------|
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
-| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop |
+| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card |
 | **`jasonkwh-live`** | n/a | Graphical Calamares installer — auto-copies this repo to the target, flakes ready out of the box, autologin |
 
-Host classes are selected via `mkHost` flags in `flake.nix`: `hostSystem` (per-host architecture), `isLaptop` (laptop extras), `isHeadless` (strips desktop/Steam/GPU stack; see `cluster/common/headless.nix`). x86 non-headless hosts can cross-build aarch64 images via QEMU binfmt emulation.
+Host classes are selected via `mkHost` flags in `flake.nix`: `hostSystem` (per-host architecture), `isLaptop`, `isHeadless` — setting neither flag means a desktop machine. Home Manager layers route through `cluster/common/home.nix`: every host gets the shared CLI core (`home-headless.nix`), non-headless hosts add `home-desktop.nix` (Plasma/GUI), and laptops additionally get `home-laptop.nix`; machine-specific packages live in `cluster/<host>/home.nix`. System-level headless stripping remains `cluster/common/headless.nix`. x86 non-headless hosts can cross-build aarch64 images via QEMU binfmt emulation.
 
 ## Quick start
 
@@ -86,6 +86,7 @@ flake.nix            # Entry point — inputs, hosts, kernel overlay
 cluster/             # Per-host & shared NixOS config
   common/            #   Shared across all machines (branding, fonts, services…)
                      #   headless.nix — imported when isHeadless = true
+                     #   home.nix — HM entry point routing home-headless/-desktop/-laptop
   7520u/             #   AMD Ryzen 5 7520U host
   7300u/             #   Intel Core i5-7300U host
   bcm2711/           #   Raspberry Pi 4B headless host (aarch64)

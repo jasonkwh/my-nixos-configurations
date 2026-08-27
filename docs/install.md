@@ -37,12 +37,14 @@ git pull origin main    # fetch the latest configuration
 "jasonkwh-<new-hostname>" = mkHost {
   name = "<new-hostname>";
   hostSystem = "x86_64-linux";   # or "aarch64-linux" for ARM boards
-  isLaptop = true;               # laptop extras (power, touchpad…)
-  isHeadless = true;             # headless: strips desktop/Steam/GPU stack
+  isLaptop = true;               # laptops only: lid/Wayland/battery extras
+  isHeadless = true;             # boards only: strips Plasma/GUI/Steam/GPU
 };
 ```
 
-> Hardware-specific configuration (`hardware-configuration.nix`) lives in each machine's `/etc/nixos/` by default and is not committed to the repository. ARM boards pass `hardwareConfig = ./cluster/<name>/hardware-configuration.nix` instead so it lives in the repo.
+Set neither flag for a regular x86 desktop. Home Manager file selection is automatic: `cluster/common/home.nix` routes the shared CLI core plus desktop/laptop layers based on these flags — only put machine-specific packages in the copied `cluster/<host>/home.nix`.
+
+> Each host's `hardware-configuration.nix` lives in the repo at `cluster/<host>/` and is picked up automatically by `mkHost` — do not regenerate it for fun. A leftover `/etc/nixos/` directory on installed machines is a stale legacy copy: never edit it.
 
 ## Step 4: Build and switch
 
@@ -100,8 +102,19 @@ The copy script now fails loudly instead of silently leaving a broken state. In 
 Prefer scp/rsync over an encrypted Tailscale link, never a plaintext USB stick:
 
 ```bash
-scp -r jasonkwh@<7520U-IP>:~/.secrets/ ~/
+scp -r jasonkwh@jasonkwh-7520u:~/.secrets/ ~/
 ```
+
+### Q: How does SSH access work between machines?
+Fleet SSH goes through **Tailscale SSH** (`services.tailscale.extraSetFlags = [ "--ssh" ]`):
+no authorized_keys to distribute, password auth disabled, port 22 reachable only on
+`tailscale0`. Connect by tailnet hostname:
+
+```bash
+ssh jasonkwh@jasonkwh-7520u     # or any jasonkwh-<host>
+```
+
+Access is revoked in the Tailscale admin console (expire/remove the device's node key).
 
 ### Q: How does file sync work, and where is the Syncthing device ID?
 Hermes' memories and skills folders sync via **Syncthing**. Devices trust
@@ -140,7 +153,7 @@ Example: `jasonkwh-bcm2711` (headless, 4GB).
    sudo dd if=result/*.img of=/dev/sdX bs=4M status=progress
    ```
 
-2. **First boot**: insert the card, power on, get SSH access.
+2. **First boot**: insert the card, power on; SSH works via Tailscale SSH once the board joins the tailnet (see FAQ below).
 3. **Copy repo + secrets** from an existing machine over Tailscale:
 
    ```bash
