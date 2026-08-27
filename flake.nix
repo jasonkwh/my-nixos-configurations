@@ -35,6 +35,13 @@
       email = "jasonkwh@gmail.com";
       homeDirectory = "/home/${username}";
 
+      # Hermes agent-to-agent peers: every NixOS host in the fleet gets a
+      # bot_peers entry pointing at every other host (api_server on :8642).
+      hermesPeerHosts = [
+        "jasonkwh-7300u"
+        "jasonkwh-7520u"
+      ];
+
       kernelOverlay = final: prev: {
         linux_latest = prev.linux_latest.overrideAttrs (oldAttrs: {
           structuredExtraConfig = with prev.lib.kernelConfig; {
@@ -71,6 +78,7 @@
         system = hostSystem;
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
+          inherit hermesPeerHosts;
           # Each machine pulls its own cluster/<name>/hardware-configuration.nix,
           # imported in cluster/common/configuration.nix.
           hardwareConfig = ./cluster/${name}/hardware-configuration.nix;

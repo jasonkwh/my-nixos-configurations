@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig, hermesPeerHosts, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -414,10 +414,11 @@
 
         # Agent-to-agent: peer gateways over tailscale (api_server on :8642).
         # Peer keys are HERMES_PEER_<NAME>_KEY in ~/.secrets/hermes-env.
-        bot_peers = {
-          jasonkwh-7300u.url = "http://jasonkwh-7300u.tail0c0276.ts.net:8642";
-          jasonkwh-7520u.url = "http://jasonkwh-7520u.tail0c0276.ts.net:8642";
-        };
+        bot_peers = builtins.listToAttrs (map
+          (host: lib.nameValuePair host {
+            url = "http://${host}.tail0c0276.ts.net:8642";
+          })
+          (lib.filter (h: h != config.networking.hostName) hermesPeerHosts));
       };
       environmentFiles = [
         "${config.users.users.${username}.home}/.secrets/hermes-env"
