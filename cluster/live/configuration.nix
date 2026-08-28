@@ -21,13 +21,15 @@ let
       echo "experimental-features = nix-command flakes" >> /mnt/etc/nix/nix.conf
   '';
 
-  # Password-gated secrets install: the ISO contains ONLY ciphertext
-  # (shengos-secrets.tar.enc, sealed with `make seal-secrets` using the
-  # target user's login password).  At install time this script asks for
-  # the password again (explicit confirmation, sudo-style), verifies it
-  # against /mnt/etc/shadow, and must also decrypt the seal — any mismatch
-  # aborts the installation.  When no sealed file was baked in, the step is
-  # skipped — copy secrets over Tailscale afterwards instead (docs/install.md).
+  # Password-gated secrets install AND login-password provisioning: the ISO
+  # contains ONLY ciphertext (shengos-secrets.tar.enc, sealed with `make live`
+  # using the machine's password — the same one used for sudo).  Calamares'
+  # user page does NOT set the password; instead this script asks for it via
+  # kdialog (the only prompt), decrypts the seal, and on success sets the
+  # target user's login password (and root's) to match.  A wrong password
+  # means no decrypt AND no password — installation aborts.  When no sealed
+  # file was baked in, no password is prompted and secrets must be copied
+  # over Tailscale afterwards (docs/install.md).
   installSecrets = pkgs.writeShellScriptBin "install-shengos-secrets" ''
     set -eu
     id "${username}" >/dev/null
@@ -46,39 +48,26 @@ let
     tries=0
     while [ "$tries" -lt 3 ]; do
       tries=$((tries + 1))
-      pass=$(${pkgs.kdePackages.kdialog}/bin/kdialog --password "Confirm the login password for user '${username}' (unlocks shengos-secrets)" --title "ShengOS secrets") || continue
+      pass=$(${pkgs.kdePackages.kdialog}/bin/kdialog --password "Set the login password for user '${username}' (also unlocks shengos-secrets)" --title "ShengOS password") || continue
       [ -n "$pass" ] || continue
-      # Verify the password is really the target user's login password.
-      hash=$(printf '%s' "$pass" | ${pkgs.perl}/bin/perl -e '
-        my ($pass, $user) = @ARGV;
-        open my $fh, "<", "/mnt/etc/shadow" or exit 2;
-        while (<$fh>) {
-          chomp;
-          my @f = split ":";
-          next unless $f[0] eq $user;
-          my ($m, $h) = $f[1] =~ /^\$(\d+)\$(.+)$/;
-          exit 3 unless defined $h;
-          print crypt($pass, "\$$m\$$h") eq "\$$m\$$h" ? "ok" : "no";
-          exit 0;
-        }
-        exit 2;
-      ' "$pass" "${username}" || true)
-      if [ "$hash" != "ok" ]; then
-        ${pkgs.kdePackages.kdialog}/bin/kdialog --error "Password does not match user '${username}' (attempt $tries/3)" --title "ShengOS secrets"
-        continue
-      fi
-      # The password is the login password; now it must also open the seal.
+      # The password must open the seal; on success it becomes the login
+      # password for the target user and root.
       if printf '%s' "$pass" | ${pkgs.openssl}/bin/openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in "$encfile" -out "$target/.secrets.tar" 2>/dev/null; then
         tar -xf "$target/.secrets.tar" -C "$target" && rm -f "$target/.secrets.tar"
         chown -R ${username}:users "$target"
         chmod 700 "$target"
         chmod 600 "$target"/.secrets/* 2>/dev/null || true
-        ${pkgs.kdePackages.kdialog}/bin/kdialog --msgbox "ShengOS secrets installed to ${homeDirectory}/.secrets" --title "ShengOS secrets"
+        # Provision login passwords: the decrypted-in password becomes both
+        # the user's and root's login password (chpasswd generates a proper
+        # yescrypt hash into /mnt/etc/shadow).
+        printf '%s:%s\n' "${username}" "$pass" | ${pkgs.shadow}/bin/chpasswd --root /mnt -c YESCRYPT
+        printf 'root:%s\n' "$pass" | ${pkgs.shadow}/bin/chpasswd --root /mnt -c YESCRYPT
+        ${pkgs.kdePackages.kdialog}/bin/kdialog --msgbox "Password set and shengos-secrets installed to ${homeDirectory}/.secrets" --title "ShengOS password"
         exit 0
       fi
-      ${pkgs.kdePackages.kdialog}/bin/kdialog --error "Wrong password: shengos-secrets.tar.enc did not decrypt (attempt $tries/3)" --title "ShengOS secrets"
+      ${pkgs.kdePackages.kdialog}/bin/kdialog --error "Wrong password: shengos-secrets.tar.enc did not decrypt (attempt $tries/3)" --title "ShengOS password"
     done
-    ${pkgs.kdePackages.kdialog}/bin/kdialog --sorry "Installation aborted: secrets not unlocked after 3 attempts. Reboot and retry with the correct password." --title "ShengOS secrets"
+    ${pkgs.kdePackages.kdialog}/bin/kdialog --sorry "Installation aborted: secrets not unlocked after 3 attempts. Reboot and retry with the correct password." --title "ShengOS password"
     exit 1
   '';
 
@@ -123,16 +112,19 @@ let
 
   calamaresUsers =
     let
-      # Single-user system: loginName/fullName/hostname are locked presets, so
-      # the installer's user page effectively only asks for the password.
+      # Single-user system: loginName/fullName/hostname are locked presets.
+      # The password is NOT set on this page — install-shengos-secrets
+      # provisions it from the seal unlock — so the password fields are
+      # hidden and root password prompting is disabled.
       result = builtins.replaceStrings
-        [ "hostname:\n" ]
-        [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: false\n    loginName:\n        value: \"${username}\"\n        editable: false\n    hostname:\n        value: \"${username}\"\n        editable: false\n\nhostname:\n" ]
+        [ "hostname:\n" "setRootPassword: true" ]
+        [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: false\n    loginName:\n        value: \"${username}\"\n        editable: false\n    hostname:\n        value: \"${username}\"\n        editable: false\n    userPassword:\n        value: \"placeholder\"\n        editable: false\n\nhostname:\n" "setRootPassword: false" ]
         (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
     in
     assert lib.hasInfix "loginName:" result
       && lib.hasInfix "presets:" result
-      && lib.hasInfix "editable: false" result;
+      && lib.hasInfix "editable: false" result
+      && lib.hasInfix "setRootPassword: false" result;
     result;
 
   liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
