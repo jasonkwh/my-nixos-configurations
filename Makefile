@@ -66,9 +66,6 @@ live:
 	  tar -cf /tmp/.shengos-seal.$$$${RANDOM} -C /home/jasonkwh .secrets; \
 	  printf 'Seal password (the new machine'\''s login password): '; \
 	  read -rs SEAL_PASS; echo; \
-	  printf 'Confirm: '; \
-	  read -rs SEAL_PASS2; echo; \
-	  [ "$$SEAL_PASS" = "$$SEAL_PASS2" ] || { echo 'passwords differ'; rm -f /tmp/.shengos-seal.*; exit 1; }; \
 	  SEAL_PASS=$$SEAL_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
 	    -in /tmp/.shengos-seal.$$$${RANDOM} -out shengos-secrets.tar.enc -pass env:SEAL_PASS; \
 	  rm -f /tmp/.shengos-seal.*; \
