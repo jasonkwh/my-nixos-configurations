@@ -27,6 +27,9 @@
 
   time.timeZone = "Australia/Melbourne";
 
+  # SD card trim is unreliable/pointless here (cheap cards + zram + vfat boot).
+  services.fstrim.enable = lib.mkForce false;
+
 
 
   # Pi boots via Broadcom firmware + extlinux, no UEFI — override the
