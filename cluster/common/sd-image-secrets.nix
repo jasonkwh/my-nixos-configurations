@@ -4,27 +4,82 @@
 # so the sdImage options only exist inside the SD-image variant — the plain
 # system toplevel never sees them.
 #
-# `make image` (Makefile) sets SECRETS_SRC to the build host's ~/.secrets;
-# that path is read at EVAL time and the directory is copied into the image's
-# root filesystem, so a freshly flashed board boots with working Wi-Fi
-# (headless-env) and Hermes keys (hermes-env) already in place — no
-# post-flash rsync step. Without SECRETS_SRC the module is inert.
+# `make image` (Makefile) prompts once for the machine password and sets:
+#   SECRETS_ENC   — ~/.secrets sealed with that password (AES-256)
+#   SECRETS_PASS  — the same password (eval-time, for decrypt + hashing)
+# Populate time then:
+#   - decrypts the seal into /home/<username>/.secrets
+#   - bakes the repo bundle into ~/Documents/my-nixos-configurations
+#   - sets jasonkwh's AND root's login password (yescrypt, via
+#     users.users.<>.hashedPassword — native NixOS, survives rebuilds)
+# Without SECRETS_ENC the module is inert (legacy plaintext SECRETS_SRC
+# fallback kept, deprecated; no password is set in that mode).
 {
   lib,
+  pkgs,
   username,
   ...
 }:
 
 let
+  secretsEnc = builtins.getEnv "SECRETS_ENC";
+  secretsPass = builtins.getEnv "SECRETS_PASS";
   secretsSrc = builtins.getEnv "SECRETS_SRC";
-in
-{
-  sdImage.populateRootCommands = lib.mkIf (secretsSrc != "") (lib.mkAfter ''
+
+  repoBundle = pkgs.runCommand "my-nixos-configurations-bundle" { } ''
+    mkdir -p "$out/share"
+    cp -R ${../..} "$out/share/my-nixos-configurations"
+    chmod -R u+rwX,go+rX "$out/share/my-nixos-configurations"
+  '';
+
+  # yescrypt hash of the machine password, computed at EVAL time from the
+  # SECRETS_PASS env var. mkpasswd (shadow) generates a random salt each
+  # call — fine, the store path just changes when the password changes.
+  passHash = if secretsPass != ""
+    then
+      let
+        raw = builtins.readFile (pkgs.runCommand "machine-pass-hash" { } ''
+          ${lib.getExe' pkgs.mkpasswd "mkpasswd"} -m yescrypt ${lib.escapeShellArg secretsPass} > "$out"
+        '');
+      in
+      # strip the trailing newline readFile captures (option type forbids them)
+      lib.removeSuffix "\n" raw
+    else "";
+
+  secretsSetup = lib.optionalString (secretsEnc != "") ''
+    mkdir -p ./files/home/${username}/.secrets
+    ${lib.getExe' pkgs.openssl "openssl"} enc -d -aes-256-cbc -pbkdf2 -iter 600000 \
+      -in ${secretsEnc} -out ./files/.secrets.tar -pass env:SECRETS_PASS
+    tar -xf ./files/.secrets.tar -C ./files/home/${username}/.secrets
+    rm -f ./files/.secrets.tar
+    chown -R 1000:100 ./files/home/${username}/.secrets
+    chmod 700 ./files/home/${username}/.secrets
+    chmod 600 ./files/home/${username}/.secrets/* 2>/dev/null || true
+    echo "sd-image: secrets baked into /home/${username}/.secrets"
+
+    mkdir -p ./files/home/${username}/Documents
+    cp -R ${repoBundle}/share/my-nixos-configurations ./files/home/${username}/Documents/
+    chown -R 1000:100 ./files/home/${username}/Documents/my-nixos-configurations
+    chmod -R u+rwX,go+rX ./files/home/${username}/Documents/my-nixos-configurations
+    echo "sd-image: repo baked into /home/${username}/Documents/my-nixos-configurations"
+  '';
+
+  legacyPlaintext = lib.optionalString (secretsEnc == "" && secretsSrc != "") ''
     mkdir -p ./files/home/${username}/.secrets
     cp -a ${secretsSrc}/. ./files/home/${username}/.secrets/
     chown -R 1000:100 ./files/home/${username}/.secrets
     chmod 700 ./files/home/${username}/.secrets
     chmod 600 ./files/home/${username}/.secrets/* 2>/dev/null || true
-    echo "sd-image: secrets baked into /home/${username}/.secrets"
+    echo "sd-image: (plaintext) secrets baked into /home/${username}/.secrets"
+  '';
+in
+{
+  sdImage.populateRootCommands = lib.mkIf (secretsEnc != "" || secretsSrc != "") (lib.mkAfter ''
+    ${secretsSetup}
+    ${legacyPlaintext}
   '');
+
+  # Machine password = login password for both jasonkwh and root.
+  users.users.${username}.hashedPassword = lib.mkIf (passHash != "") passHash;
+  users.users.root.hashedPassword = lib.mkIf (passHash != "") passHash;
 }

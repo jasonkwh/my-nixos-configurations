@@ -80,11 +80,32 @@ jasonkwh-live: live
 # SD-card image for a host (e.g. `make image jasonkwh-bcm2711`).
 # Cross-built on this x86 host via QEMU binfmt emulation; flash the
 # resulting .img.zst to a card: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
-# The build host's ~/.secrets is baked into the image when readable.
+# Build a host SD-card image (e.g. `make image jasonkwh-bcm2711`).
+# Prompts once for the machine password: ~/.secrets is sealed with it and
+# baked into the image (ciphertext), and it becomes the login password of
+# both jasonkwh and root on the board.  SECRETS_SKIP=1 builds without.
 image:
 	@test -n "$(filter-out image,$(MAKECMDGOALS))" || { echo 'usage: make image jasonkwh-<host>'; exit 1; }
-	SECRETS_SRC=$(wildcard /home/jasonkwh/.secrets) nix build --accept-flake-config \
-	  .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card
+	@if [ -n "$(SECRETS_SKIP)" ]; then \
+	  echo 'image: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
+	  nix build --accept-flake-config \
+	    .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card; \
+	elif [ -d /home/jasonkwh/.secrets ]; then \
+	  tar -cf /tmp/.shengos-seal.$$$${RANDOM} -C /home/jasonkwh .secrets; \
+	  printf 'Machine password (board login/sudo for jasonkwh + root): '; \
+	  read -rs IMG_PASS; echo; \
+	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
+	    -in /tmp/.shengos-seal.$$$${RANDOM} -out /tmp/shengos-secrets.tar.enc -pass env:SEAL_PASS; \
+	  rm -f /tmp/.shengos-seal.*; \
+	  SECRETS_ENC=/tmp/shengos-secrets.tar.enc SECRETS_PASS=$$IMG_PASS \
+	    nix build --accept-flake-config \
+	    .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card; \
+	  rm -f /tmp/shengos-secrets.tar.enc; \
+	else \
+	  echo 'image: no ~/.secrets — building without baked secrets'; \
+	  nix build --accept-flake-config \
+	    .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card; \
+	fi
 	@printf '\nImage: ls result/*.img.zst\n'
 
 # One-time bootstrap for services.syncthing: generate the device identity
