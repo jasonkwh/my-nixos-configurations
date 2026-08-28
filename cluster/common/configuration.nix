@@ -51,6 +51,33 @@
       max-jobs = "auto";
       cores = 0;
     };
+
+    # Distributed builds: each x86 laptop points at the other (local jobs
+    # fill first, overflow spills over). Tailscale SSH handles auth, and the
+    # peer's jasonkwh user is already in trusted-users. Pi excluded (aarch64).
+    distributedBuilds = true;
+    buildMachines =
+      let
+        mkPeer = { hostName, maxJobs, speedFactor }: {
+          inherit hostName maxJobs speedFactor;
+          sshUser = username;
+          system = "x86_64-linux";
+          supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
+        };
+      in
+      lib.mkIf (config.networking.hostName != "jasonkwh-bcm2711")
+        (lib.filter (m: m.hostName != (config.networking.hostName + ".tail0c0276.ts.net")) [
+          (mkPeer {
+            hostName = "jasonkwh-7520u.tail0c0276.ts.net";
+            maxJobs = 4;
+            speedFactor = 3;
+          })
+          (mkPeer {
+            hostName = "jasonkwh-7300u.tail0c0276.ts.net";
+            maxJobs = 4;
+            speedFactor = 2;
+          })
+        ]);
   };
 
   networking = {
