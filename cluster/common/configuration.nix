@@ -53,25 +53,31 @@
     };
 
     # Distributed builds: builders come from hostDefs in flake.nix (hosts
-    # declaring buildSpeed/maxBuildJobs; others excluded). Local jobs fill
-    # first, overflow spills over. Tailscale SSH handles auth, and the
-    # peer's jasonkwh user is already in trusted-users.
+    # declaring buildSpeed/maxBuildJobs; others excluded). One entry per
+    # (builder, hostSystem) — add a system to the list below when the fleet
+    # grows a new arch. Local jobs fill first, overflow spills over.
+    # Tailscale SSH handles auth, and the peer's jasonkwh user is already
+    # in trusted-users.
     distributedBuilds = true;
     buildMachines =
       let
         tsDomain = "tail0c0276.ts.net";
         builders = lib.filterAttrs (_: def: def ? buildSpeed && def ? maxBuildJobs) hostDefs;
-      in
-      lib.mapAttrsToList
-        (host: def: {
+        mkBuilder = host: def: system: {
           hostName = "${host}.${tsDomain}";
           sshUser = username;
-          system = def.hostSystem;
+          inherit system;
           maxJobs = def.maxBuildJobs;
           speedFactor = def.buildSpeed;
           supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
-        })
-        (lib.filterAttrs (host: _: host != config.networking.hostName) builders);
+        };
+      in
+      lib.filter (m: m.hostName != "${config.networking.hostName}.${tsDomain}")
+        (lib.concatMap
+          (system:
+            lib.mapAttrsToList (host: def: mkBuilder host def system)
+              (lib.filterAttrs (_: def: def.hostSystem == system) builders))
+          [ "x86_64-linux" "aarch64-linux" ]);
   };
 
   networking = {
