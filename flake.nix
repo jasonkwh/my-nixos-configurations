@@ -76,17 +76,23 @@
       # agent-to-agent peer list (bot_peers), and Syncthing device ids.
       # syncthingId is the machine's Syncthing device fingerprint
       # (`syncthing -device-id`); omit it for hosts that don't sync.
+      # buildSpeed/maxBuildJobs feed the distributed buildMachines config in
+      # cluster/common/configuration.nix; hosts without them are excluded.
       hostDefs = {
         "jasonkwh-7300u" = {
           name = "7300u";
           hostSystem = "x86_64-linux";
           isLaptop = true;
+          buildSpeed = 2;
+          maxBuildJobs = 4;
           syncthingId = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
         };
         "jasonkwh-7520u" = {
           name = "7520u";
           hostSystem = "x86_64-linux";
           isLaptop = true;
+          buildSpeed = 3;
+          maxBuildJobs = 4;
           syncthingId = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
         };
         "jasonkwh-bcm2711" = {
@@ -106,6 +112,7 @@
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
           inherit hermesPeerHosts;
+          inherit hostDefs;
           # Syncthing device ids for all fleet members that sync, from hostDefs.
           # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).
           syncthingDevices = builtins.mapAttrs

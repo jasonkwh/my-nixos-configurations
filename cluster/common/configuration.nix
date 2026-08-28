@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig, hermesPeerHosts, syncthingDevices, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, hardwareConfig, hermesPeerHosts, hostDefs, syncthingDevices, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -52,32 +52,26 @@
       cores = 0;
     };
 
-    # Distributed builds: each x86 laptop points at the other (local jobs
-    # fill first, overflow spills over). Tailscale SSH handles auth, and the
-    # peer's jasonkwh user is already in trusted-users. Pi excluded (aarch64).
+    # Distributed builds: builders come from hostDefs in flake.nix (hosts
+    # declaring buildSpeed/maxBuildJobs; others excluded). Local jobs fill
+    # first, overflow spills over. Tailscale SSH handles auth, and the
+    # peer's jasonkwh user is already in trusted-users.
     distributedBuilds = true;
     buildMachines =
       let
-        mkPeer = { hostName, maxJobs, speedFactor }: {
-          inherit hostName maxJobs speedFactor;
-          sshUser = username;
-          system = "x86_64-linux";
-          supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
-        };
+        tsDomain = "tail0c0276.ts.net";
+        builders = lib.filterAttrs (_: def: def ? buildSpeed && def ? maxBuildJobs) hostDefs;
       in
-      lib.mkIf (config.networking.hostName != "jasonkwh-bcm2711")
-        (lib.filter (m: m.hostName != (config.networking.hostName + ".tail0c0276.ts.net")) [
-          (mkPeer {
-            hostName = "jasonkwh-7520u.tail0c0276.ts.net";
-            maxJobs = 4;
-            speedFactor = 3;
-          })
-          (mkPeer {
-            hostName = "jasonkwh-7300u.tail0c0276.ts.net";
-            maxJobs = 4;
-            speedFactor = 2;
-          })
-        ]);
+      lib.mapAttrsToList
+        (host: def: {
+          hostName = "${host}.${tsDomain}";
+          sshUser = username;
+          system = def.hostSystem;
+          maxJobs = def.maxBuildJobs;
+          speedFactor = def.buildSpeed;
+          supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
+        })
+        (lib.filterAttrs (host: _: host != config.networking.hostName) builders);
   };
 
   networking = {
