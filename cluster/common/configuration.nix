@@ -192,6 +192,7 @@
     '')
     tcpdump
     pciutils
+    smartmontools
     ]
     ++ lib.optionals (!isHeadless) [ wineWow64Packages.full winetricks kdePackages.partitionmanager ]
     ++ [
