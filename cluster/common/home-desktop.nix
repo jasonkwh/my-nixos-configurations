@@ -17,6 +17,16 @@
     "enable-proposed-api" = [];
   };
 
+  # Silence Qt Multimedia startup noise (e.g. Dolphin):
+  # "qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library".
+  # QtMultimedia dlopens libpipewire-0.3 on init; on NixOS the default
+  # dlopen search path can't see it, so it logs a warning. PipeWire
+  # itself runs fine (pipewire-pulse handles audio); this is pure noise.
+  home.file.".config/QtProject/qtlogging.ini".text = ''
+    [Rules]
+    qt.multimedia.symbolsresolver=false
+  '';
+
   # KWallet-only setup: keep Secret Service API enabled (desktop hosts only).
   home.file.".config/kwalletrc".text = ''
     [org.freedesktop.secrets]
