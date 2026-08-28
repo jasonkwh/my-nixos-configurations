@@ -14,7 +14,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    hermes-agent.url = "github:NousResearch/hermes-agent/v2026.8.19";
+    hermes-agent.url = "github:NousResearch/hermes-agent/v2026.8.27";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
