@@ -24,9 +24,4 @@
     [LowBattery][HandleButtonEvents]
     lidAction=64
   '';
-
-  # Fastfetch settings fully replace the built-in defaults, but the modules
-  # list itself merges across modules — appending here adds the laptop-only
-  # battery entry after the base list declared in common/home.nix.
-  programs.fastfetch.settings.modules = lib.mkAfter [ "battery" ];
 }

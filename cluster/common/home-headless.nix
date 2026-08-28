@@ -74,6 +74,7 @@
           "gpu"
           "memory"
           "swap"
+          "battery"
           "disk"
           "locale"
           "break"
@@ -151,16 +152,11 @@
   # CLI toolchains for every host; GUI apps live in ../common/home.nix.
   home.packages = with pkgs;
     [
-      # migrated from system packages
-      samba
-      gcc-arm-embedded
-
       # utilities
       tmux
       pigz
       pixz
       graphviz
-      ngrok
       tilt
       percona-toolkit
       kubectl
@@ -171,7 +167,6 @@
       lazygit
       act
       tree
-      fluxcd
       eksctl
       openssl
       cloc
@@ -209,13 +204,11 @@
       cmake
       gnumake
       binutils
-      bc
       file
       nixVersions.latest
       buildah
       skopeo
       podman-compose
-      picotool
     ];
 
   # Automatically run podman system migrate after home-manager activation
