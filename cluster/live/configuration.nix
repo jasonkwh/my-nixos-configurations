@@ -216,10 +216,21 @@ in
   hardware.cpu.amd.updateMicrocode = lib.mkForce false;
   hardware.cpu.intel.updateMicrocode = lib.mkForce false;
 
-  # Mac Pro 2013 (trashcan) support, verified by community reports:
-  # - FirePro D-series (GCN1) works via modern amdgpu with DC;
-  # - intel_iommu=off fixes random crashes (Debian wiki / MacPro6,1).
-  boot.kernelParams = [ "radeon.si_support=0" "amdgpu.si_support=1" "amdgpu.dc=1" "intel_iommu=off" ];
+  # Mac Pro 2013 (trashcan) support, per the Debian wiki page for MacPro6,1:
+  # - FirePro D-series (GCN1) via modern amdgpu with DC, dpm off (stability);
+  # - intel_iommu=off fixes random crashes;
+  # - mbpfan: Apple SMC fan curve, needed to keep the twin fans cooling.
+  #   https://wiki.debian.org/InstallingDebianOn/Apple/MacPro/6-1
+  boot.kernelParams = [ "radeon.si_support=0" "amdgpu.si_support=1" "amdgpu.dc=1" "amdgpu.dpm=0" "intel_iommu=off" ];
+  services.mbpfan = {
+    enable = true;
+    minFanSpeed = 900;
+    maxFanSpeed = 6200;
+    lowTemp = 50;
+    highTemp = 55;
+    maxTemp = 65;
+    pollingInterval = 1;
+  };
   boot.extraModulePackages = [
     # BCM4360 (14e4:43a0) Wi-Fi: only the out-of-tree broadcom-wl driver.
     # Best-effort: if the module fails to build against linux_latest this
