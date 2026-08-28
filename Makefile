@@ -10,7 +10,7 @@
 #   make jasonkwh-live          # alias for make live
 #   make syncthing-init         # one-time: pre-generate syncthing identity + print device ID
 
-HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-bcm2711
+HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-bcm2711 jasonkwh-bcm2710a1
 HOST  ?= $(shell hostname)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
@@ -65,9 +65,10 @@ jasonkwh-live: live
 # SD-card image for a host (e.g. `make image jasonkwh-bcm2711`).
 # Cross-built on this x86 host via QEMU binfmt emulation; flash the
 # resulting .img.zst to a card: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
+# The build host's ~/.secrets is baked into the image when readable.
 image:
 	@test -n "$(filter-out image,$(MAKECMDGOALS))" || { echo 'usage: make image jasonkwh-<host>'; exit 1; }
-	nix build --accept-flake-config \
+	SECRETS_SRC=$(wildcard /home/jasonkwh/.secrets) nix build --accept-flake-config \
 	  .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card
 	@printf '\nImage: ls result/*.img.zst\n'
 

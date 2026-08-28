@@ -20,7 +20,7 @@
 
   imports = [ hardwareConfig ]
     ++ lib.optionals isLaptop [ ./laptop.nix ]
-    ++ lib.optionals isHeadless [ ./headless.nix ];
+    ++ lib.optionals isHeadless [ ./headless.nix ./tailscale-enrol.nix ./wifi-home.nix ];
 
   # Bootloader.
   boot = {
@@ -80,8 +80,13 @@
           [ "x86_64-linux" "aarch64-linux" ]);
   };
 
+  networking.wireless.enable = lib.mkIf isHeadless true;
+
   networking = {
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
+    # Headless boards take wlan0 away from NetworkManager (wpa_supplicant
+    # owns it via common/wifi-home.nix); NM keeps eth0 and the desktops.
+    networkmanager.unmanaged = lib.mkIf isHeadless [ "wlan0" ];
     networkmanager = {
       enable = true; # Enable networking
       dns = "none";

@@ -102,6 +102,13 @@
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
           syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };
+        "jasonkwh-bcm2710a1" = {
+          name = "bcm2710a1";
+          hostSystem = "aarch64-linux";
+          isHeadless = true;
+          # No nixos-hardware module exists for Zero 2 W; generic aarch64.
+          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
+        };
         "jasonkwh-live" = null; # live USB: not a fleet peer, handled below
       };
 

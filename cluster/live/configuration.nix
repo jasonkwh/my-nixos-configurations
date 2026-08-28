@@ -21,6 +21,32 @@ let
       echo "experimental-features = nix-command flakes" >> /mnt/etc/nix/nix.conf
   '';
 
+  # Optional secrets install: the ISO itself never contains credentials.
+  # Before installing, drop shengos-secrets.tar into the USB stick's live
+  # medium (or any mounted volume at /run/media/*/shengos-secrets.tar);
+  # Calamares unpacks it into the target user's ~/.secrets. Without the file
+  # the step is skipped — copy secrets over Tailscale afterwards instead
+  # (docs/install.md).
+  installSecrets = pkgs.writeShellScriptBin "install-shengos-secrets" ''
+    set -eu
+    id "${username}" >/dev/null
+    tarball=""
+    for d in /run/media/*/* /media/*/*; do
+      if [ -f "$d/shengos-secrets.tar" ]; then tarball="$d/shengos-secrets.tar"; break; fi
+    done
+    target=${homeDirectory}/.secrets
+    if [ -n "$tarball" ]; then
+      echo "install-shengos-secrets: installing from $tarball"
+      mkdir -p "$target"
+      tar -xf "$tarball" -C "$target"
+      chown -R ${username}:users "$target"
+      chmod 700 "$target"
+      chmod 600 "$target"/* 2>/dev/null || true
+    else
+      echo "install-shengos-secrets: no shengos-secrets.tar on install medium; skipping"
+    fi
+  '';
+
   # Branding substitutions for Calamares' branding.desc.  Each entry matches
   # by leading key (whitespace-tolerant) so upstream formatting drift does not
   # silently skip a replacement; every substitution is asserted afterwards.
@@ -74,12 +100,13 @@ let
     let
       result = builtins.replaceStrings
         [ "- module:   nixos\n  weight:   48\n" "  - nixos\n  - users\n  - umount\n" "branding: nixos" ]
-        [ "- module:   nixos\n  weight:   48\n- id:       copy-shengos-config\n  module:   shellprocess\n  config:   copy-shengos-config.conf\n"
-          "  - nixos\n  - users\n  - copy-shengos-config\n  - umount\n"
+        [ "- module:   nixos\n  weight:   48\n- id:       copy-shengos-config\n  module:   shellprocess\n  config:   copy-shengos-config.conf\n- id:       install-shengos-secrets\n  module:   shellprocess\n  config:   install-shengos-secrets.conf\n"
+          "  - nixos\n  - users\n  - copy-shengos-config\n  - install-shengos-secrets\n  - umount\n"
           "branding: shengos" ]
         (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/settings.conf");
     in
     assert lib.hasInfix "copy-shengos-config.conf" result
+      && lib.hasInfix "install-shengos-secrets.conf" result
       && lib.hasInfix "branding: shengos" result
       && ! lib.hasInfix "branding: nixos" result;
     result;
@@ -149,6 +176,7 @@ in
   # to be present in the installed user's Documents directory.
   environment.systemPackages = with pkgs; [
     copyRepo
+    installSecrets
     btrfs-progs
     curl
     efibootmgr
@@ -196,6 +224,12 @@ in
     script:
       - command: ${copyRepo}/bin/copy-shengos-config
         timeout: 120
+  '';
+  environment.etc."calamares/modules/install-shengos-secrets.conf".text = ''
+    dontChroot: false
+    script:
+      - command: ${installSecrets}/bin/install-shengos-secrets
+        timeout: 60
   '';
 
   networking.hostName = "jasonkwh-live";
