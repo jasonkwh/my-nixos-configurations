@@ -21,4 +21,7 @@
 
   # Graphics acceleration not needed headless; saves firmware/DRM bloat.
   hardware.graphics.enable = lib.mkForce false;
+
+  # No container runtime on small boards.
+  virtualisation.podman.enable = lib.mkForce false;
 }

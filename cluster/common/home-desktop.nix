@@ -59,5 +59,15 @@
       zoom-us
       brave
       code-cursor
+      buildah
+      skopeo
+      podman-compose
     ];
+
+  # Automatically run podman system migrate after home-manager activation
+  home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+    if command -v podman &> /dev/null; then
+      ${pkgs.podman}/bin/podman system migrate 2>/dev/null || true
+    fi
+  '';
 }
