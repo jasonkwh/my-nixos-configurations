@@ -139,6 +139,34 @@ ID registered. A fresh node pairs with an empty/unknown state only after you
 complete the pairing step above; both folders also use trashcan versioning
 (14-day retention) as a safety net against accidental overwrites.
 
+### Q: How do distributed builds work?
+Any host declaring `buildSpeed` and `maxBuildJobs` in `flake.nix`'s `hostDefs`
+joins the fleet builder pool (see README "Distributed build pool"). During a
+rebuild, local jobs fill first; overflow derivations are dispatched to pooled
+peers over Tailscale SSH. A peer that is offline is simply skipped — builds
+never hang waiting for it. To add a machine to the pool, set its two numbers
+in `hostDefs`; to add a whole new architecture, extend the per-arch list in
+`cluster/common/configuration.nix`.
+
+### Q: Installing on a Mac Pro 2013 (trashcan)?
+Supported via the standard Live USB path. The Live image already carries the
+hardware fixes this machine needs (added to `cluster/live/configuration.nix`):
+
+- **Graphics**: FirePro D300/D700 (GCN1) via modern amdgpu — kernel params
+  `radeon.si_support=0 amdgpu.si_support=1 amdgpu.dc=1`.
+- **Stability**: `intel_iommu=off` — without it the machine crashes randomly
+  (see Debian wiki, MacPro6,1).
+- **Wi-Fi**: BCM4360 (14e4:43a0) only works with the out-of-tree
+  `broadcom_sta` driver, accepted as a deliberately permitted insecure
+  package. **Plug in Ethernet anyway** — the Wi-Fi driver is known to be
+  flaky in the community, and Ethernet is the reliable path for install.
+
+When you create the permanent `cluster/macpro/` host config, mirror these
+settings there (the Live USB only covers the install phase) and decide the
+bootloader variant then: GRUB with standard NVRAM entries is the default, but
+Mac firmware occasionally drops NVRAM entries — if boot becomes unreliable,
+switch to `boot.loader.grub.efiInstallAsRemovable = true`.
+
 ## Headless board path (e.g. Raspberry Pi 4B)
 
 Boards without a desktop are installed from an SD card image, not the Live USB.
