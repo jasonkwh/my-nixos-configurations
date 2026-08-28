@@ -21,31 +21,73 @@ let
       echo "experimental-features = nix-command flakes" >> /mnt/etc/nix/nix.conf
   '';
 
-  # Optional secrets install: the ISO itself never contains credentials.
-  # Before installing, drop shengos-secrets.tar into the USB stick's live
-  # medium (or any mounted volume at /run/media/*/shengos-secrets.tar);
-  # Calamares unpacks it into the target user's ~/.secrets. Without the file
-  # the step is skipped — copy secrets over Tailscale afterwards instead
-  # (docs/install.md).
+  # Password-gated secrets install: the ISO contains ONLY ciphertext
+  # (shengos-secrets.tar.enc, sealed with `make seal-secrets` using the
+  # target user's login password).  At install time this script asks for
+  # the password again (explicit confirmation, sudo-style), verifies it
+  # against /mnt/etc/shadow, and must also decrypt the seal — any mismatch
+  # aborts the installation.  When no sealed file was baked in, the step is
+  # skipped — copy secrets over Tailscale afterwards instead (docs/install.md).
   installSecrets = pkgs.writeShellScriptBin "install-shengos-secrets" ''
     set -eu
     id "${username}" >/dev/null
-    tarball=""
-    for d in /run/media/*/* /media/*/*; do
-      if [ -f "$d/shengos-secrets.tar" ]; then tarball="$d/shengos-secrets.tar"; break; fi
+    encfile=""
+    for f in /run/media/system-iso/shengos-secrets.tar.enc \
+             /iso/shengos-secrets.tar.enc \
+             /run/media/*/*/shengos-secrets.tar.enc /media/*/*/shengos-secrets.tar.enc; do
+      if [ -f "$f" ]; then encfile="$f"; break; fi
     done
     target=${homeDirectory}/.secrets
-    if [ -n "$tarball" ]; then
-      echo "install-shengos-secrets: installing from $tarball"
-      mkdir -p "$target"
-      tar -xf "$tarball" -C "$target"
-      chown -R ${username}:users "$target"
-      chmod 700 "$target"
-      chmod 600 "$target"/* 2>/dev/null || true
-    else
-      echo "install-shengos-secrets: no shengos-secrets.tar on install medium; skipping"
+    if [ -z "$encfile" ]; then
+      echo "install-shengos-secrets: no shengos-secrets.tar.enc on install medium; skipping"
+      exit 0
     fi
+    mkdir -p "$target"
+    tries=0
+    while [ "$tries" -lt 3 ]; do
+      tries=$((tries + 1))
+      pass=$(${pkgs.kdePackages.kdialog}/bin/kdialog --password "Confirm the login password for user '${username}' (unlocks shengos-secrets)" --title "ShengOS secrets") || continue
+      [ -n "$pass" ] || continue
+      # Verify the password is really the target user's login password.
+      hash=$(printf '%s' "$pass" | ${pkgs.perl}/bin/perl -e '
+        my ($pass, $user) = @ARGV;
+        open my $fh, "<", "/mnt/etc/shadow" or exit 2;
+        while (<$fh>) {
+          chomp;
+          my @f = split ":";
+          next unless $f[0] eq $user;
+          my ($m, $h) = $f[1] =~ /^\$(\d+)\$(.+)$/;
+          exit 3 unless defined $h;
+          print crypt($pass, "\$$m\$$h") eq "\$$m\$$h" ? "ok" : "no";
+          exit 0;
+        }
+        exit 2;
+      ' "$pass" "${username}" || true)
+      if [ "$hash" != "ok" ]; then
+        ${pkgs.kdePackages.kdialog}/bin/kdialog --error "Password does not match user '${username}' (attempt $tries/3)" --title "ShengOS secrets"
+        continue
+      fi
+      # The password is the login password; now it must also open the seal.
+      if printf '%s' "$pass" | ${pkgs.openssl}/bin/openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in "$encfile" -out "$target/.secrets.tar" 2>/dev/null; then
+        tar -xf "$target/.secrets.tar" -C "$target" && rm -f "$target/.secrets.tar"
+        chown -R ${username}:users "$target"
+        chmod 700 "$target"
+        chmod 600 "$target"/.secrets/* 2>/dev/null || true
+        ${pkgs.kdePackages.kdialog}/bin/kdialog --msgbox "ShengOS secrets installed to ${homeDirectory}/.secrets" --title "ShengOS secrets"
+        exit 0
+      fi
+      ${pkgs.kdePackages.kdialog}/bin/kdialog --error "Wrong password: shengos-secrets.tar.enc did not decrypt (attempt $tries/3)" --title "ShengOS secrets"
+    done
+    ${pkgs.kdePackages.kdialog}/bin/kdialog --sorry "Installation aborted: secrets not unlocked after 3 attempts. Reboot and retry with the correct password." --title "ShengOS secrets"
+    exit 1
   '';
+
+  # The sealed secrets ciphertext baked INTO the ISO at build time.
+  # `make live` sets SECRETS_ENC to the sealed file; eval-time only, and
+  # inert when unset (ISO then contains no secrets material at all).
+  sealedSecrets =
+    let src = builtins.getEnv "SECRETS_ENC";
+    in lib.optionalString (src != "") src;
 
   # Branding substitutions for Calamares' branding.desc.  Each entry matches
   # by leading key (whitespace-tolerant) so upstream formatting drift does not
@@ -81,13 +123,16 @@ let
 
   calamaresUsers =
     let
+      # Single-user system: loginName/fullName/hostname are locked presets, so
+      # the installer's user page effectively only asks for the password.
       result = builtins.replaceStrings
         [ "hostname:\n" ]
-        [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: true\n    loginName:\n        value: \"${username}\"\n        editable: true\n\nhostname:\n" ]
+        [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: false\n    loginName:\n        value: \"${username}\"\n        editable: false\n    hostname:\n        value: \"${username}\"\n        editable: false\n\nhostname:\n" ]
         (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
     in
     assert lib.hasInfix "loginName:" result
-      && lib.hasInfix "presets:" result;
+      && lib.hasInfix "presets:" result
+      && lib.hasInfix "editable: false" result;
     result;
 
   liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
@@ -284,6 +329,16 @@ in
   image.fileName = lib.mkForce "shengos-live-${config.system.nixos.release}-${system}.iso";
   isoImage.volumeID = "SHENGOS_LIVE";
   image.baseName = lib.mkForce "shengos-live-${config.system.nixos.release}-${system}";
+
+  # Bake the sealed secrets ciphertext into the ISO filesystem itself, so a
+  # single USB stick carries everything.  Ciphertext only — unlocking needs
+  # the target user's login password (install-shengos-secrets above).
+  isoImage.contents = lib.optionals (sealedSecrets != "") [
+    {
+      source = sealedSecrets;
+      target = "/shengos-secrets.tar.enc";
+    }
+  ];
 
   # A portable troubleshooting/install USB should not prompt for a sudo
   # password.  The normal installed systems keep their existing policy.

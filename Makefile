@@ -14,7 +14,7 @@ HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-bcm2711 jasonkwh-bcm2710a1
 HOST  ?= $(shell hostname)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
-.PHONY: help upgrade boot build update gc live jasonkwh-live image syncthing-init $(HOSTS)
+.PHONY: help upgrade boot build update gc live jasonkwh-live image seal-secrets syncthing-init $(HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -28,6 +28,7 @@ help:
 		'make live                build the graphical Live USB ISO' \
 		'make jasonkwh-live       alias for make live' \
 		'make image <host>        build that host SD-card image (e.g. jasonkwh-bcm2711)' \
+		'make seal-secrets        encrypt ~/.secrets for the installer (target-user password)' \
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
@@ -58,7 +59,16 @@ gc:
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
 live:
-	nix build --accept-flake-config .#shengos-live-iso
+	@if [ -n "$(SECRETS_SKIP)" ]; then \
+	  echo 'live: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
+	  SECRETS_ENC= nix build --accept-flake-config .#shengos-live-iso; \
+	elif [ -f shengos-secrets.tar.enc ]; then \
+	  echo 'live: baking shengos-secrets.tar.enc into the ISO (ciphertext)'; \
+	  SECRETS_ENC=$$(pwd)/shengos-secrets.tar.enc nix build --accept-flake-config .#shengos-live-iso; \
+	else \
+	  echo 'live: no shengos-secrets.tar.enc found — building without secrets (run `make seal-secrets` to include them)'; \
+	  nix build --accept-flake-config .#shengos-live-iso; \
+	fi
 
 jasonkwh-live: live
 
@@ -71,6 +81,20 @@ image:
 	SECRETS_SRC=$(wildcard /home/jasonkwh/.secrets) nix build --accept-flake-config \
 	  .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card
 	@printf '\nImage: ls result/*.img.zst\n'
+
+# Seal ~/.secrets for the Live installer: tar + AES-256 encrypt with the
+# password the NEW machine's user will set at install time.  The ISO stays
+# credential-free (ciphertext only); the installer asks for this password
+# before it can proceed (cluster/live/configuration.nix).  Re-run after any
+# change to ~/.secrets and re-run `make live` to re-bake the ISO.
+seal-secrets:
+	@test -d /home/jasonkwh/.secrets || { echo 'no ~/.secrets to seal'; exit 1; }
+	@test -n "$$SEAL_PASS" || { echo 'usage: make seal-secrets SEAL_PASS=<the shared jasonkwh password>'; exit 1; }
+	tar -cf /tmp/.shengos-seal.$$ -C /home/jasonkwh .secrets
+	openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
+	  -in /tmp/.shengos-seal.$$ -out shengos-secrets.tar.enc -pass env:SEAL_PASS
+	rm -f /tmp/.shengos-seal.$$
+	@printf '\nSealed: shengos-secrets.tar.enc (encrypted with SEAL_PASS) — `make live` bakes it into the ISO.\n'
 
 # One-time bootstrap for services.syncthing: generate the device identity
 # before the first `make upgrade`, so the real device ID can be pasted into
