@@ -62,11 +62,15 @@ live:
 	@if [ -n "$(SECRETS_SKIP)" ]; then \
 	  echo 'live: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
 	  SECRETS_ENC= nix build --accept-flake-config .#shengos-live-iso; \
+	elif [ -d /home/jasonkwh/.secrets ] && { [ ! -f shengos-secrets.tar.enc ] || [ /home/jasonkwh/.secrets -nt shengos-secrets.tar.enc ]; }; then \
+	  echo 'live: sealing ~/.secrets (stale or missing seal)'; \
+	  $(MAKE) --no-print-directory seal-secrets; \
+	  SECRETS_ENC=$$(pwd)/shengos-secrets.tar.enc nix build --accept-flake-config .#shengos-live-iso; \
 	elif [ -f shengos-secrets.tar.enc ]; then \
-	  echo 'live: baking shengos-secrets.tar.enc into the ISO (ciphertext)'; \
+	  echo 'live: baking existing shengos-secrets.tar.enc into the ISO (ciphertext)'; \
 	  SECRETS_ENC=$$(pwd)/shengos-secrets.tar.enc nix build --accept-flake-config .#shengos-live-iso; \
 	else \
-	  echo 'live: no shengos-secrets.tar.enc found — building without secrets (run `make seal-secrets` to include them)'; \
+	  echo 'live: no ~/.secrets — building without baked secrets'; \
 	  nix build --accept-flake-config .#shengos-live-iso; \
 	fi
 
@@ -89,12 +93,19 @@ image:
 # change to ~/.secrets and re-run `make live` to re-bake the ISO.
 seal-secrets:
 	@test -d /home/jasonkwh/.secrets || { echo 'no ~/.secrets to seal'; exit 1; }
-	@test -n "$$SEAL_PASS" || { echo 'usage: make seal-secrets SEAL_PASS=<the shared jasonkwh password>'; exit 1; }
+	@if [ -z "$$SEAL_PASS" ]; then \
+	  printf 'Seal password (the new machine'\''s login password): '; \
+	  read -rs SEAL_PASS; echo; \
+	  printf 'Confirm: '; \
+	  read -rs SEAL_PASS2; echo; \
+	  [ "$$SEAL_PASS" = "$$SEAL_PASS2" ] || { echo 'passwords differ'; exit 1; }; \
+	  export SEAL_PASS; \
+	fi
 	tar -cf /tmp/.shengos-seal.$$ -C /home/jasonkwh .secrets
-	openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
+	SEAL_PASS=$$SEAL_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
 	  -in /tmp/.shengos-seal.$$ -out shengos-secrets.tar.enc -pass env:SEAL_PASS
 	rm -f /tmp/.shengos-seal.$$
-	@printf '\nSealed: shengos-secrets.tar.enc (encrypted with SEAL_PASS) — `make live` bakes it into the ISO.\n'
+	@printf '\nSealed: shengos-secrets.tar.enc — `make live` bakes it into the ISO.\n'
 
 # One-time bootstrap for services.syncthing: generate the device identity
 # before the first `make upgrade`, so the real device ID can be pasted into
