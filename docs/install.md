@@ -141,7 +141,9 @@ complete the pairing step above; both folders also use trashcan versioning
 
 ### Q: How do distributed builds work?
 Any host declaring `buildSpeed` and `maxBuildJobs` in `flake.nix`'s `hostDefs`
-joins the fleet builder pool (see README "Distributed build pool"). During a
+joins the fleet builder pool (see the
+["Distributed build pool"](../README.md#distributed-build-pool) section in the
+README). During a
 rebuild, local jobs fill first; overflow derivations are dispatched to pooled
 peers over Tailscale SSH. A peer that is offline is simply skipped — builds
 never hang waiting for it. To add a machine to the pool, set its two numbers
@@ -149,7 +151,9 @@ in `hostDefs`; to add a whole new architecture, extend the per-arch list in
 `cluster/common/configuration.nix`.
 
 ### Q: Installing on a Mac Pro 2013 (trashcan)?
-Supported via the standard Live USB path. The Live image already carries the
+Supported via the standard Live USB path — see the
+[One-USB install](../README.md#features) note in the README for what the image
+carries. The Live image already includes the
 hardware fixes this machine needs (added to `cluster/live/configuration.nix`):
 
 - **Graphics**: FirePro D300/D700 (GCN1) via modern amdgpu — kernel params
