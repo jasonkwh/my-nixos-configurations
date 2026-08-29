@@ -40,18 +40,6 @@
       # Filled in inside the outputs attrset below, once nixosConfigurations
       # is available.
 
-      kernelOverlay = final: prev: {
-        linux_latest = prev.linux_latest.overrideAttrs (oldAttrs: {
-          structuredExtraConfig = with prev.lib.kernelConfig; {
-            NF_TABLES = module;
-            NFT_COUNTER = module;
-            NFT_EXPR_COUNTER = module;
-            VXLAN = module;
-            BRIDGE_NETFILTER = module;
-          };
-        });
-      };
-
       # Home Manager entry point shared verbatim by every host (and the Live
       # image). cluster/common/home.nix is a pure router: every host gets
       # home-headless core; isLaptop/isHeadless flags (set per-host below)
@@ -131,7 +119,6 @@
         };
         modules = [
           inputs.hermes-agent.nixosModules.default
-          ({ nixpkgs.overlays = [ kernelOverlay ]; })
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
           # Only x86 non-headless hosts get aarch64 QEMU emulation
