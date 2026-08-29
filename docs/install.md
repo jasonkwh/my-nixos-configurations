@@ -3,7 +3,7 @@
 This document explains how to install ShengOS on a brand-new machine and restore a full development environment. Two paths:
 
 - **x86 laptop/desktop** — install from the Live USB, then follow Steps 2–6.
-- **ARM board / headless node (e.g. Raspberry Pi 4B)** — skip the Live USB; see "Headless board path" at the end.
+- **ARM board / headless node (Raspberry Pi 4B, Pi Zero 2 W)** — skip the Live USB; see "Headless board path" at the end.
 
 **Core principle:** use an existing machine as the source of truth, and copy secrets over an encrypted channel (Tailscale) — never a plaintext USB stick.
 
@@ -167,40 +167,63 @@ bootloader variant then: GRUB with standard NVRAM entries is the default, but
 Mac firmware occasionally drops NVRAM entries — if boot becomes unreliable,
 switch to `boot.loader.grub.efiInstallAsRemovable = true`.
 
-## Headless board path (e.g. Raspberry Pi 4B)
+## Headless board path (Raspberry Pi 4B / Pi Zero 2 W)
 
 Boards without a desktop are installed from an SD card image, not the Live USB.
-Example: `jasonkwh-bcm2711` (headless, 4GB).
+Examples: `jasonkwh-bcm2711` (Pi 4B, 4GB) and `jasonkwh-bcm2710a1` (Pi Zero 2 W,
+512MB). Headless boards get their Wi-Fi credentials and Tailscale auth key from
+`~/.secrets/headless-env` on the build host — create it first:
+
+```bash
+# On a laptop connected to the home Wi-Fi:
+TS_AUTH_KEY=<paste from https://login.tailscale.com/admin/settings/keys> \
+  make headless-env
+# → writes ssid_home / psk_home / ts_auth_key into ~/.secrets/headless-env
+```
+
+For the Tailscale key: generate an **auth key** in the admin console with
+`reusable=on` (limit to the number of boards), `ephemeral=on`, `tag:fleet`.
 
 1. **Build the image** on an x86 host (binfmt emulation is enabled
    automatically for x86 non-headless hosts):
 
    ```bash
-   make image jasonkwh-bcm2711    # → result/*.img.zst
+   make image jasonkwh-bcm2711      # Pi 4B
+   make image jasonkwh-bcm2710a1    # Pi Zero 2 W
    zstd -d result/*.img.zst
    sudo dd if=result/*.img of=/dev/sdX bs=4M status=progress
    ```
 
-2. **First boot**: insert the card, power on; SSH works via Tailscale SSH once the board joins the tailnet (see FAQ below).
-3. **Copy repo + secrets** from an existing machine over Tailscale:
+2. **First boot**: insert the card, power on. Wi-Fi and Tailscale enrolment
+   are automatic — the enrol service reads the baked-in `ts_auth_key` and
+   joins the tailnet without interaction. SSH works via Tailscale SSH from
+   then on.
+3. **Copy repo + secrets** from an existing machine over Tailscale (only
+   needed if `headless-env` wasn't baked in at image time):
 
    ```bash
    rsync -a jasonkwh@<source>:Documents/my-nixos-configurations ~/Documents/
    rsync -a jasonkwh@<source>:.secrets ~/
    ```
 
-4. **Tailscale**: `sudo tailscale up`, authorize in the browser once.
-5. **Syncthing identity** — before the first rebuild, pre-generate it:
+4. **Syncthing identity** — before the first rebuild, pre-generate it:
 
    ```bash
    cd ~/Documents/my-nixos-configurations
    make syncthing-init    # prints this machine's device ID
    ```
 
-6. **Register everywhere**: paste the device ID into
+5. **Register everywhere**: paste the device ID into
    `cluster/common/configuration.nix` (`syncthingDevices` map + both folder
    `devices` lists), commit, pull on the other machines, rebuild them.
-7. **Build and switch on the board**: `make upgrade`.
+6. **Build and switch on the board**: `make upgrade`.
+
+Zero 2 W note: the `bcm2710a1` host has no nixos-hardware module (nixpkgs has
+none for the Zero 2 W), so its SD image uses the generic aarch64 firmware set
+(`bcm2710-rpi-zero-2-w.dtb` is included). When cabled to the Pi 4, its
+micro-USB OTG port provides both power and Ethernet (g_ether → `usb0`,
+10.55.0.2/24 via the Pi 4's DHCP/NAT — see `cluster/bcm2710a1/usb-gadget.nix`
+and `cluster/bcm2711/gadget-downlink.nix`).
 
 The Pi boots via Broadcom firmware + extlinux (`boot.loader.generic-extlinux-compatible`),
 not UEFI — its `cluster/bcm2711/configuration.nix` overrides the common
