@@ -124,6 +124,9 @@
           inherit username fullName email homeDirectory isLaptop isHeadless;
           inherit hermesPeerHosts;
           inherit hostDefs;
+          # Unstable channel for cherry-picking packages broken on the stable
+          # pin (see cluster/7520u/configuration.nix rpi-imager).
+          inherit (inputs) nixpkgs-master;
           # Syncthing device ids for all fleet members that sync, from hostDefs.
           # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).
           syncthingDevices = builtins.mapAttrs
