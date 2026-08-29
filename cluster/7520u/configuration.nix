@@ -41,6 +41,15 @@ in
     source = rpiImagerPolicy;
   };
 
+  # Upstream hardcodes access("/usr/bin/pkexec", X_OK) before self-elevating
+  # (platformquirks_linux.cpp tryElevate). NixOS keeps pkexec in
+  # /run/wrappers/bin, so drop a forwarding symlink at /usr/bin/pkexec.
+  # /usr/bin is a real directory managed by activation scripts (normally only
+  # holds env), and envfs guarantees it exists early.
+  system.activationScripts.rpi-imager-pkexec-shim = ''
+    ln -sfn /run/wrappers/bin/pkexec /usr/bin/pkexec
+  '';
+
   imports = [
     ../common/configuration.nix
   ];
