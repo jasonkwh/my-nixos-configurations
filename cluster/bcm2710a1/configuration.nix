@@ -4,7 +4,7 @@
 {
   imports = [
     ../common/configuration.nix
-    ./gpi-shutdown.nix
+    ./usb-gadget.nix
   ];
 
   home-manager.users.${username} = {

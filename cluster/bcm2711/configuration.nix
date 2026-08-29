@@ -4,6 +4,7 @@
 {
   imports = [
     ../common/configuration.nix
+    ./gadget-downlink.nix
   ];
 
   home-manager.users.${username} = {
