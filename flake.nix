@@ -14,9 +14,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    # Unstable channel, only for cherry-picking packages broken on the
-    # stable pin (e.g. rpi-imager 2.0.9 + Qt 6.10, issue #1553).
-    nixpkgs-master.url = "github:NixOS/nixpkgs/nixos-unstable";
     hermes-agent.url = "github:NousResearch/hermes-agent/v2026.8.27";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
@@ -30,7 +27,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-master, home-manager, plasma-manager, nixos-hardware, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, plasma-manager, nixos-hardware, ... }@inputs:
     let
       lib = nixpkgs.lib;
       username = "jasonkwh";
@@ -66,7 +63,6 @@
         home-manager.backupFileExtension = "backup";
         home-manager.extraSpecialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
-          nixpkgs-master = inputs.nixpkgs-master;
         };
         home-manager.sharedModules = [
           plasma-manager.homeModules.plasma-manager
@@ -124,9 +120,6 @@
           inherit username fullName email homeDirectory isLaptop isHeadless;
           inherit hermesPeerHosts;
           inherit hostDefs;
-          # Unstable channel for cherry-picking packages broken on the stable
-          # pin (see cluster/7520u/configuration.nix rpi-imager).
-          inherit (inputs) nixpkgs-master;
           # Syncthing device ids for all fleet members that sync, from hostDefs.
           # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).
           syncthingDevices = builtins.mapAttrs

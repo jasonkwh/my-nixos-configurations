@@ -1,55 +1,9 @@
-{ config, lib, pkgs, username, nixpkgs-master, ... }:
+{ config, lib, pkgs, username, ... }:
 
 let
   swapUuid = "97c60ea8-adcf-444b-a44d-e9eeac24138f";
-
-  # nixos-26.05 pins rpi-imager 2.0.9, which fails to launch on Qt 6.10
-  # (upstream WritingStep.qml missing Material import, issue #1553).
-  # nixpkgs unstable has 2.0.10 without the bug — take it from there.
-  rpi-imager = nixpkgs-master.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rpi-imager;
-
-  # Imager 2.0 self-elevates via pkexec, but only if a polkit policy exists
-  # whose exec.path annotation matches the binary's absolute path. Upstream
-  # ships one for /usr/bin/rpi-imager; the nix store path never matches and
-  # changes every build, so generate a matching policy here. auth_admin_keep
-  # caches the auth for a few minutes so repeated flashes don't re-prompt.
-  rpiImagerPolicy = pkgs.writeText "com.raspberrypi.rpi-imager.policy" ''
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE policyconfig PUBLIC
-     "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
-     "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
-    <policyconfig>
-      <vendor>Raspberry Pi Ltd</vendor>
-      <vendor_url>https://www.raspberrypi.com/</vendor_url>
-      <action id="com.raspberrypi.rpi-imager.run">
-        <description>Run Raspberry Pi Imager</description>
-        <message>Authentication is required to run Raspberry Pi Imager</message>
-        <icon_name>rpi-imager</icon_name>
-        <defaults>
-          <allow_any>auth_admin_keep</allow_any>
-          <allow_inactive>auth_admin_keep</allow_inactive>
-          <allow_active>auth_admin_keep</allow_active>
-        </defaults>
-        <annotate key="org.freedesktop.policykit.exec.path">${rpi-imager}/bin/rpi-imager</annotate>
-        <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
-      </action>
-    </policyconfig>
-  '';
 in
 {
-  environment.etc."polkit-1/actions/com.raspberrypi.rpi-imager.policy" = {
-    source = rpiImagerPolicy;
-  };
-
-  # Upstream hardcodes access("/usr/bin/pkexec", X_OK) before self-elevating
-  # (platformquirks_linux.cpp tryElevate). NixOS keeps pkexec in
-  # /run/wrappers/bin, so drop a forwarding symlink at /usr/bin/pkexec.
-  # /usr/bin is a real directory managed by activation scripts (normally only
-  # holds env), and envfs guarantees it exists early.
-  system.activationScripts.rpi-imager-pkexec-shim = ''
-    ln -sfn /run/wrappers/bin/pkexec /usr/bin/pkexec
-  '';
-
   imports = [
     ../common/configuration.nix
   ];

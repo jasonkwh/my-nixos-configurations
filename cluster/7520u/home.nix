@@ -1,4 +1,4 @@
-{ config, pkgs, nixpkgs-master, ... }:
+{ config, pkgs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -9,8 +9,7 @@
     flac
     calibre
     vlc
-    # 2.0.10 + polkit policy, wired up in cluster/7520u/configuration.nix
-    (nixpkgs-master.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rpi-imager)
+    kdePackages.isoimagewriter
     beekeeper-studio
     postman
     pulumi
