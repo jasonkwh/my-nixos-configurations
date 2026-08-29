@@ -9,12 +9,13 @@
 #   make live                   # build the graphical Live USB ISO
 #   make jasonkwh-live          # alias for make live
 #   make syncthing-init         # one-time: pre-generate syncthing identity + print device ID
+#   make headless-env           # export Wi-Fi/Tailscale secrets for headless boards (~/.secrets/headless-env)
 
 HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-bcm2711 jasonkwh-bcm2710a1
 HOST  ?= $(shell hostname)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
-.PHONY: help upgrade boot build update gc live jasonkwh-live image syncthing-init $(HOSTS)
+.PHONY: help upgrade boot build update gc live jasonkwh-live image syncthing-init headless-env $(HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -115,6 +116,12 @@ syncthing-init:
 	sudo nix run nixpkgs#syncthing -- generate --home=/var/lib/syncthing-hermes/.config/syncthing
 	sudo chown -R hermes:hermes /var/lib/syncthing-hermes
 	@printf '\n^^^ Device ID for $(HOST) is on the "Calculated device ID" line above — paste it into configuration.nix\n'
+
+# Export the build host's live Wi-Fi credentials (and optionally a Tailscale
+# auth key) into ~/.secrets/headless-env, read by wifi-home.nix /
+# tailscale-enrol.nix on headless boards and baked into SD images.
+headless-env:
+	bash cluster/misc/export-headless-env.sh
 
 $(HOSTS):
 	$(call nixos-rebuild,switch,$@)
