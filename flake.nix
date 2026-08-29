@@ -141,8 +141,11 @@
           })
         ] ++ extraModules ++ [
           ./cluster/${name}/configuration.nix
+          # hermes: the service user runs builds/evals too (cron jobs,
+          # agent tooling) and must be allowed to set substituters from
+          # flake nixConfig — e.g. nix-community cachix.
           {
-            nix.settings.trusted-users = [ username ];
+            nix.settings.trusted-users = [ username "hermes" ];
           }
           home-manager.nixosModules.home-manager
           (homeManagerModule { inherit isLaptop isHeadless; })
