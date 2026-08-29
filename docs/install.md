@@ -3,7 +3,7 @@
 This document explains how to install ShengOS on a brand-new machine and restore a full development environment. Two paths:
 
 - **x86 laptop/desktop** — install from the Live USB, then follow Steps 2–6.
-- **ARM board / headless node (Raspberry Pi 4B, Pi Zero 2 W)** — skip the Live USB; see "Headless board path" at the end.
+- **ARM board / headless node (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`)** — skip the Live USB; see "Headless board path" at the end.
 
 **Core principle:** use an existing machine as the source of truth, and copy secrets over an encrypted channel (Tailscale) — never a plaintext USB stick.
 
@@ -167,10 +167,10 @@ bootloader variant then: GRUB with standard NVRAM entries is the default, but
 Mac firmware occasionally drops NVRAM entries — if boot becomes unreliable,
 switch to `boot.loader.grub.efiInstallAsRemovable = true`.
 
-## Headless board path (Raspberry Pi 4B / Pi Zero 2 W)
+## Headless board path (jasonkwh-bcm2711 / jasonkwh-bcm2710a1)
 
 Boards without a desktop are installed from an SD card image, not the Live USB.
-Examples: `jasonkwh-bcm2711` (Pi 4B, 4GB) and `jasonkwh-bcm2710a1` (Pi Zero 2 W,
+Examples: `jasonkwh-bcm2711` (Pi 4B, 4GB) and `jasonkwh-bcm2710a1` (BCM2710A1,
 512MB). Headless boards get their Wi-Fi credentials and Tailscale auth key from
 `~/.secrets/headless-env` on the build host — create it first:
 
@@ -189,7 +189,7 @@ For the Tailscale key: generate an **auth key** in the admin console with
 
    ```bash
    make image jasonkwh-bcm2711      # Pi 4B
-   make image jasonkwh-bcm2710a1    # Pi Zero 2 W
+   make image jasonkwh-bcm2710a1    # bcm2710a1
    zstd -d result/*.img.zst
    sudo dd if=result/*.img of=/dev/sdX bs=4M status=progress
    ```
@@ -218,9 +218,9 @@ For the Tailscale key: generate an **auth key** in the admin console with
    `devices` lists), commit, pull on the other machines, rebuild them.
 6. **Build and switch on the board**: `make upgrade`.
 
-Zero 2 W note: the `bcm2710a1` host has no nixos-hardware module (nixpkgs has
-none for the Zero 2 W), so its SD image uses the generic aarch64 firmware set
-(`bcm2710-rpi-zero-2-w.dtb` is included). When cabled to the Pi 4, its
+Gadget-link note: the `bcm2710a1` host has no nixos-hardware module, so its SD
+image uses the generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is
+included). When cabled to the Pi 4, its
 micro-USB OTG port provides both power and Ethernet (g_ether → `usb0`,
 10.55.0.2/24 via the Pi 4's DHCP/NAT — see `cluster/bcm2710a1/usb-gadget.nix`
 and `cluster/bcm2711/gadget-downlink.nix`).

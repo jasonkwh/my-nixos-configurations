@@ -31,7 +31,7 @@ The entire system — desktop, applications, development tools, services, and se
 - **Reproducible builds** — `flake.lock` pins every dependency; switch machines freely.
 - **Distributed builds** — every x86_64/aarch64 Linux host declared with `buildSpeed`/`maxBuildJobs` in `flake.nix`'s `hostDefs` automatically joins the fleet builder pool: local jobs fill first, overflow spills to peers over Tailscale SSH. Add a machine, add two numbers — it's in the pool.
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
-- **Headless boards** — single-board computers (Raspberry Pi 4B, Pi Zero 2 W) run a stripped, headless profile: no desktop/Steam/GPU stack, zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
+- **Headless boards** — single-board computers (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`) run a stripped, headless profile: no desktop/Steam/GPU stack, zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
 - **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep the fleet in lockstep.
 - **One-USB install** — boot the Live USB, click through Calamares, and land on a full ShengOS machine: the config repo is copied over automatically and flakes work from the first rebuild. The Live image carries hardware support for Mac Pro 2013 (trashcan): FirePro D-series via amdgpu DC, `intel_iommu=off` crash fix, and BCM4360 Wi-Fi (broadcom_sta).
@@ -45,8 +45,8 @@ ShengOS supports one Live USB profile and any number of machines sharing a commo
 |---------|----------|-------|
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
-| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card; USB host for the Zero 2 W gadget link |
-| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 (Pi Zero 2 W) · 512MB | Headless thin client — zram-only swap, SD card; networked to the Pi 4 over one USB cable (g_ether, `cluster/bcm2710a1/usb-gadget.nix`) |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card; USB host for the `bcm2710a1` gadget link |
+| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless thin client — zram-only swap, SD card; networked to the Pi 4 over one USB cable (g_ether, `cluster/bcm2710a1/usb-gadget.nix`) |
 | **`jasonkwh-live`** | n/a | Graphical Calamares installer — auto-copies this repo to the target, flakes ready out of the box, autologin. Includes Mac Pro 2013 (trashcan) hardware support |
 
 ### Distributed build pool
@@ -106,7 +106,7 @@ cluster/             # Per-host & shared NixOS config
   7520u/             #   AMD Ryzen 5 7520U host
   7300u/             #   Intel Core i5-7300U host
   bcm2711/           #   Raspberry Pi 4B headless host (aarch64)
-  bcm2710a1/         #   Raspberry Pi Zero 2 W headless host (aarch64)
+  bcm2710a1/         #   BCM2710A1 headless host (aarch64)
   live/              #   Live USB installer profile (hardware-neutral, Mac Pro 2013 ready)
 docs/                # Guides (install, troubleshooting, …)
 assets/              # Logos, wallpapers
