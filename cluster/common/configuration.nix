@@ -601,7 +601,7 @@
     deps = [ "users" ];
     text = ''
       install -o hermes -g hermes -m 0640 \
-        ${./SOUL.md} /var/lib/hermes/.hermes/SOUL.md
+        ${../misc/SOUL.md} /var/lib/hermes/.hermes/SOUL.md
     '';
   };
 

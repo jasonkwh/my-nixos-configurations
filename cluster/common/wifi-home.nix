@@ -2,7 +2,7 @@
 #
 # The image is cross-built on the x86 laptops (make image ...). This module
 # wires networking.wireless to a secretsFile holding the build host's current
-# Wi-Fi credentials, written by cluster/common/export-headless-env.sh into
+# credentials, written by cluster/misc/export-headless-env.sh into
 # ~/.secrets/headless-env (keys: ssid_home / psk_home). The PSK therefore
 # never enters the flake, git, or the image — the board reads it at runtime
 # like every other fleet secret. First boot on the home Wi-Fi needs no
