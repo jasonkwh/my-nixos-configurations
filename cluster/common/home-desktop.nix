@@ -86,6 +86,8 @@
       kubernetes-helm
       helmfile
       # language toolchains — desktop only, keep ARM images lean.
+      yamllint
+      img2pdf
       go_1_26
       protobuf
       rustup

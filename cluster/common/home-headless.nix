@@ -159,9 +159,7 @@
       tree
       openssl
       cloc
-      yamllint
       yq
-      img2pdf
 
       # programming
       neovim
