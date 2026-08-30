@@ -65,6 +65,7 @@
   # GUI apps shared by desktop hosts (several have no aarch64 build, e.g. zoom-us).
   home.packages = with pkgs;
     [
+      gh
       libreoffice-qt
       zoom-us
       brave

@@ -177,7 +177,6 @@
 
       # programming
       neovim
-      gh
       go_1_26
       protobuf
       rustup
