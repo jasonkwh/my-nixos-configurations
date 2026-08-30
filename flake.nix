@@ -64,13 +64,13 @@
       # agent-to-agent peer list (bot_peers), and Syncthing device ids.
       # syncthingId is the machine's Syncthing device fingerprint
       # (`syncthing -device-id`); omit it for hosts that don't sync.
-      # buildSpeed/maxBuildJobs feed the distributed buildMachines config in
-      # cluster/common/configuration.nix; hosts without them are excluded.
+      # isBuilder gates who joins buildMachines (cluster/common/configuration.nix).
       hostDefs = {
         "jasonkwh-7300u" = {
           name = "7300u";
           hostSystem = "x86_64-linux";
           isLaptop = true;
+          isBuilder = true;
           buildSpeed = 2;
           maxBuildJobs = 4;
           syncthingId = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
@@ -79,6 +79,7 @@
           name = "7520u";
           hostSystem = "x86_64-linux";
           isLaptop = true;
+          isBuilder = true;
           buildSpeed = 3;
           maxBuildJobs = 4;
           syncthingId = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
@@ -87,6 +88,9 @@
           name = "bcm2711";
           hostSystem = "aarch64-linux";
           isHeadless = true;
+          isBuilder = true;
+          buildSpeed = 3;
+          maxBuildJobs = 4;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
           syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };

@@ -52,32 +52,25 @@
       cores = 0;
     };
 
-    # Distributed builds: builders come from hostDefs in flake.nix (hosts
-    # declaring buildSpeed/maxBuildJobs; others excluded). One entry per
-    # (builder, hostSystem) — add a system to the list below when the fleet
-    # grows a new arch. Local jobs fill first, overflow spills over.
-    # Tailscale SSH handles auth, and the peer's jasonkwh user is already
-    # in trusted-users.
+    # Builders: opt-in via isBuilder, and only serve their own arch.
+    # No self-entry (local builds stay local). Tailscale SSH handles auth.
     distributedBuilds = true;
     buildMachines =
       let
         tsDomain = "tail0c0276.ts.net";
-        builders = lib.filterAttrs (_: def: def ? buildSpeed && def ? maxBuildJobs) hostDefs;
-        mkBuilder = host: def: system: {
+        builders = lib.filterAttrs (_: def:
+          def.isBuilder or false && def.hostSystem == pkgs.system) hostDefs;
+        mkBuilder = host: def: {
           hostName = "${host}.${tsDomain}";
           sshUser = username;
-          inherit system;
+          system = def.hostSystem;
           maxJobs = def.maxBuildJobs;
           speedFactor = def.buildSpeed;
           supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
         };
       in
       lib.filter (m: m.hostName != "${config.networking.hostName}.${tsDomain}")
-        (lib.concatMap
-          (system:
-            lib.mapAttrsToList (host: def: mkBuilder host def system)
-              (lib.filterAttrs (_: def: def.hostSystem == system) builders))
-          [ "x86_64-linux" "aarch64-linux" ]);
+        (lib.mapAttrsToList mkBuilder builders);
   };
 
   networking.wireless.enable = lib.mkIf isHeadless true;
