@@ -71,6 +71,7 @@
       code-cursor
       buildah
       skopeo
+      ollama
       podman-compose
     ];
 

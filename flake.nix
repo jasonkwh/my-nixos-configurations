@@ -107,7 +107,6 @@
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
       mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
-        system = hostSystem;
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
           inherit hermesPeerHosts;
@@ -122,6 +121,7 @@
           hardwareConfig = ./cluster/${name}/hardware-configuration.nix;
         };
         modules = [
+          { nixpkgs.hostPlatform = hostSystem; }
           inputs.hermes-agent.nixosModules.default
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
@@ -150,12 +150,12 @@
       };
 
       liveUsb = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         specialArgs = {
           inherit username fullName email homeDirectory;
           system = "x86_64-linux";
         };
         modules = [
+          { nixpkgs.hostPlatform = "x86_64-linux"; }
           "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"
           ./cluster/live/configuration.nix
           {

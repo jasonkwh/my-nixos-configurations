@@ -59,7 +59,7 @@
       let
         tsDomain = "tail0c0276.ts.net";
         builders = lib.filterAttrs (_: def:
-          def.isBuilder or false && def.hostSystem == pkgs.system) hostDefs;
+          def.isBuilder or false && def.hostSystem == pkgs.stdenv.hostPlatform.system) hostDefs;
         mkBuilder = host: def: {
           hostName = "${host}.${tsDomain}";
           sshUser = username;
