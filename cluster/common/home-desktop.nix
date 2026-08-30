@@ -85,6 +85,17 @@
       terraform
       kubernetes-helm
       helmfile
+      # language toolchains — desktop only, keep ARM images lean.
+      go_1_26
+      protobuf
+      rustup
+      python3
+      php84
+      php84Extensions.mysqli
+      php84Extensions.grpc
+      php84Extensions.protobuf
+      php84Packages.composer
+      tilt
       libreoffice-qt
       zoom-us
       brave
@@ -95,10 +106,11 @@
       podman-compose
     ];
 
-  # kc=kubectl alias rides along with the k8s tools (zsh itself is
-  # configured in home-headless.nix).
+  # kc/python aliases ride along with the tools they point at (zsh itself
+  # is configured in home-headless.nix).
   programs.zsh.shellAliases = lib.mkIf config.programs.zsh.enable {
     kc = "kubectl";
+    python = "python3";
   };
 
   # Automatically run podman system migrate after home-manager activation

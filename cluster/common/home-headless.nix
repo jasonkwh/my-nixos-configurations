@@ -118,7 +118,6 @@
       enable = true;
       shellAliases = {
         ll = "ls -lh --color=auto";
-        python = "python3";
         vi = "nvim";
         neofetch = "fastfetch";
       };
@@ -166,16 +165,6 @@
 
       # programming
       neovim
-      go_1_26
-      protobuf
-      rustup
-      python3
-      php84
-      php84Extensions.mysqli
-      php84Extensions.grpc
-      php84Extensions.protobuf
-      php84Packages.composer
-      tilt
       # migrated from system packages
       git
       vim
