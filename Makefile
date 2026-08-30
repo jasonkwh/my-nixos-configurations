@@ -79,7 +79,7 @@ live:
 jasonkwh-live: live
 
 # SD-card image for a host (e.g. `make image jasonkwh-bcm2711`).
-# Cross-built on this x86 host via QEMU binfmt emulation; flash the
+# Cross-built natively on x86 (no QEMU); flash the
 # resulting .img.zst to a card: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
 # Build a host SD-card image (e.g. `make image jasonkwh-bcm2711`).
 # Prompts once for the machine password: ~/.secrets is sealed with it and

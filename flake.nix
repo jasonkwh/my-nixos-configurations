@@ -130,6 +130,12 @@
           (lib.mkIf (hostSystem == "x86_64-linux" && !isHeadless) {
             boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
           })
+          # ARM hosts cross-compile natively on x86 eval; on-board rebuilds
+          # run --impure and see aarch64 currentSystem, so stay native.
+          (lib.mkIf (hostSystem == "aarch64-linux" && (builtins.currentSystem or "x86_64-linux") == "x86_64-linux") {
+            nixpkgs.hostPlatform = lib.mkDefault hostSystem;
+            nixpkgs.buildPlatform = lib.mkDefault "x86_64-linux";
+          })
         ] ++ extraModules ++ [
           ./cluster/${name}/configuration.nix
           # hermes: the service user runs builds/evals too (cron jobs,
