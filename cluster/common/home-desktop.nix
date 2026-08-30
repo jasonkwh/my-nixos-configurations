@@ -73,6 +73,18 @@
       k9s
       kubelogin
       kustomize
+      # cloud/devops toolchains — same reason; nothing on the Pi needs them.
+      grpc
+      percona-toolkit
+      act
+      eksctl
+      azure-cli
+      awscli2
+      ssm-session-manager-plugin
+      awsebcli
+      terraform
+      kubernetes-helm
+      helmfile
       libreoffice-qt
       zoom-us
       brave

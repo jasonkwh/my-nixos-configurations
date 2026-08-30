@@ -156,7 +156,6 @@
       pigz
       pixz
       graphviz
-      tilt
       lazygit
       tree
       openssl
@@ -176,17 +175,7 @@
       php84Extensions.grpc
       php84Extensions.protobuf
       php84Packages.composer
-      grpc
-      percona-toolkit
-      act
-      eksctl
-      azure-cli
-      awscli2
-      ssm-session-manager-plugin
-      awsebcli
-      terraform
-      kubernetes-helm
-      helmfile
+      tilt
       # migrated from system packages
       git
       vim
