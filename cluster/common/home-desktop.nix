@@ -66,6 +66,13 @@
   home.packages = with pkgs;
     [
       gh
+      # k8s toolchain — desktop only; kept out of home-headless so ARM
+      # images don't build kubectl for aarch64 (bcm2710a1 image, 2026-08-31).
+      kubectl
+      kubectx
+      k9s
+      kubelogin
+      kustomize
       libreoffice-qt
       zoom-us
       brave
@@ -75,6 +82,12 @@
       ollama
       podman-compose
     ];
+
+  # kc=kubectl alias rides along with the k8s tools (zsh itself is
+  # configured in home-headless.nix).
+  programs.zsh.shellAliases = lib.mkIf config.programs.zsh.enable {
+    kc = "kubectl";
+  };
 
   # Automatically run podman system migrate after home-manager activation
   home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''

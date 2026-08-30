@@ -118,7 +118,6 @@
       enable = true;
       shellAliases = {
         ll = "ls -lh --color=auto";
-        kc = "kubectl";
         python = "python3";
         vi = "nvim";
         neofetch = "fastfetch";
@@ -158,19 +157,10 @@
       pixz
       graphviz
       tilt
-      percona-toolkit
-      kubectl
-      kubectx
-      k9s
-      kubelogin
-      kustomize
       lazygit
-      act
       tree
-      eksctl
       openssl
       cloc
-      azure-cli
       yamllint
       yq
       img2pdf
@@ -187,6 +177,10 @@
       php84Extensions.protobuf
       php84Packages.composer
       grpc
+      percona-toolkit
+      act
+      eksctl
+      azure-cli
       awscli2
       ssm-session-manager-plugin
       awsebcli
