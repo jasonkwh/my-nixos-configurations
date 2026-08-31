@@ -78,19 +78,20 @@ live:
 
 jasonkwh-live: live
 
-# SD-card image for a host (e.g. `make image jasonkwh-bcm2711`).
-# Cross-built natively on x86 (no QEMU); flash the
+# SD-card image: make image HOST=jasonkwh-bcm2711
+# (HOST= avoids make treating the host as a second goal and triggering a
+# pointless sudo rebuild.)  Cross-built natively on x86 (no QEMU); flash the
 # resulting .img.zst to a card: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
-# Build a host SD-card image (e.g. `make image jasonkwh-bcm2711`).
 # Prompts once for the machine password: ~/.secrets is sealed with it and
 # baked into the image (ciphertext), and it becomes the login password of
 # both jasonkwh and root on the board.  SECRETS_SKIP=1 builds without.
+IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS),$(filter-out image,$(MAKECMDGOALS))))
 image:
-	@test -n "$(filter-out image,$(MAKECMDGOALS))" || { echo 'usage: make image jasonkwh-<host>'; exit 1; }
+	@test -n "$(IMG_HOST)" || { echo 'usage: make image HOST=jasonkwh-<host>'; exit 1; }
 	@if [ -n "$(SECRETS_SKIP)" ]; then \
 	  echo 'image: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
 	  nix build --accept-flake-config \
-	    .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card; \
+	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	elif [ -d /home/jasonkwh/.secrets ]; then \
 	  tar -cf /tmp/.shengos-seal.$$$${RANDOM} -C /home/jasonkwh .secrets; \
 	  printf 'Machine password (board login/sudo for jasonkwh + root): '; \
@@ -100,12 +101,12 @@ image:
 	  rm -f /tmp/.shengos-seal.*; \
 	  SECRETS_ENC=/tmp/shengos-secrets.tar.enc SECRETS_PASS=$$IMG_PASS \
 	    nix build --accept-flake-config \
-	    .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card; \
+	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	  rm -f /tmp/shengos-secrets.tar.enc; \
 	else \
 	  echo 'image: no ~/.secrets — building without baked secrets'; \
 	  nix build --accept-flake-config \
-	    .#nixosConfigurations.$(filter-out image,$(MAKECMDGOALS)).config.system.build.images.sd-card; \
+	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	fi
 	@printf '\nImage: ls result/*.img.zst\n'
 
