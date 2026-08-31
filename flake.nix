@@ -136,6 +136,16 @@
             nixpkgs.hostPlatform = lib.mkDefault hostSystem;
             nixpkgs.buildPlatform = lib.mkDefault "x86_64-linux";
           })
+          # tree-sitter cross-build: bindgen's clang needs the aarch64 target.
+          (lib.mkIf (hostSystem == "aarch64-linux") {
+            nixpkgs.overlays = [
+              (final: prev: {
+                tree-sitter = prev.tree-sitter.overrideAttrs (old: {
+                  BINDGEN_EXTRA_CLANG_ARGS = "--target=aarch64-unknown-linux-gnu";
+                });
+              })
+            ];
+          })
         ] ++ extraModules ++ [
           ./cluster/${name}/configuration.nix
           # hermes: the service user runs builds/evals too (cron jobs,
