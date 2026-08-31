@@ -147,27 +147,18 @@
 
   fonts.fontconfig.enable = true;
 
-  # CLI toolchains for every host; GUI apps live in ../common/home.nix.
+  # Lean CLI core for every host; dev toolchains and GUI apps live in
+  # ../common/home-desktop.nix so ARM SD images stay small.
   home.packages = with pkgs;
     [
-      # utilities
       tmux
-      pigz
-      pixz
-      graphviz
-      lazygit
       tree
       openssl
-      cloc
       yq
-
-      # programming
       neovim
-      # migrated from system packages
       git
       vim
       wget
-
       gcc
       cmake
       gnumake

@@ -62,18 +62,16 @@
     configFile."baloofilerc"."Basic Settings"."Indexing-Enabled" = false;
   };
 
-  # GUI apps shared by desktop hosts (several have no aarch64 build, e.g. zoom-us).
+  # Desktop-only packages: k8s/cloud/dev toolchains and language stacks
+  # live here (not home-headless) so ARM SD images stay lean.
   home.packages = with pkgs;
     [
       gh
-      # k8s toolchain — desktop only; kept out of home-headless so ARM
-      # images don't build kubectl for aarch64 (bcm2710a1 image, 2026-08-31).
       kubectl
       kubectx
       k9s
       kubelogin
       kustomize
-      # cloud/devops toolchains — same reason; nothing on the Pi needs them.
       grpc
       percona-toolkit
       act
@@ -85,7 +83,11 @@
       terraform
       kubernetes-helm
       helmfile
-      # language toolchains — desktop only, keep ARM images lean.
+      pigz
+      pixz
+      graphviz
+      lazygit
+      cloc
       yamllint
       img2pdf
       go_1_26
@@ -108,8 +110,8 @@
       podman-compose
     ];
 
-  # kc/python aliases ride along with the tools they point at (zsh itself
-  # is configured in home-headless.nix).
+  # Aliases ride along with the tools they point at (zsh is configured
+  # in home-headless.nix).
   programs.zsh.shellAliases = lib.mkIf config.programs.zsh.enable {
     kc = "kubectl";
     python = "python3";
