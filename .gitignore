@@ -33,3 +33,6 @@ result-*
 
 # SSH private keys (first-boot etc.) — NEVER commit
 assets/secrets/
+
+# sealed secrets ciphertext (meow live / image)
+*.tar.enc
