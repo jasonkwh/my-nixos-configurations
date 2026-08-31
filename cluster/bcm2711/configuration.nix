@@ -14,9 +14,6 @@
     ];
   };
 
-  # No KVM on this ARM board (x86 hosts keep the common default).
-  nix.settings.system-features = lib.mkForce [ "nixos-test" "big-parallel" ];
-
   # 4GB RAM + SD card — compressed RAM swap gives headroom under memory
   # spikes while avoiding swap-on-SD writes.
   zramSwap = {
@@ -27,11 +24,6 @@
   boot.kernel.sysctl."vm.swappiness" = 10;
 
   time.timeZone = "Australia/Melbourne";
-
-  # SD card trim is unreliable/pointless here (cheap cards + zram + vfat boot).
-  services.fstrim.enable = lib.mkForce false;
-
-
 
   # Pi boots via Broadcom firmware + extlinux, no UEFI — override the
   # systemd-boot/EFI defaults from common (which are for the x86 hosts).
@@ -51,5 +43,6 @@
       "${pkgs.path}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
       ../common/sd-image-secrets.nix
     ];
+    image.baseName = "shengos-bcm2711";
   };
 }

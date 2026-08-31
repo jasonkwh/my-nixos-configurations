@@ -1,7 +1,7 @@
 # Imported only when a host sets isHeadless = true in flake.nix.
 # Strips desktop/GUI/heavy bits so small boards (e.g. RPi 4B)
 # spend their RAM and CPU on headless services instead of Plasma.
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 {
   # Desktop stack off.
@@ -34,4 +34,26 @@
 
   # No container runtime on small boards.
   virtualisation.podman.enable = lib.mkForce false;
+
+  # No KVM on ARM boards (x86 hosts keep the common default).
+  nix.settings.system-features = lib.mkForce [ "nixos-test" "big-parallel" ];
+
+  # SD card trim is unreliable/pointless on cheap cards (zram swap too).
+  services.fstrim.enable = lib.mkForce false;
+
+  # SD image rootfs is sized to contents; grow to fill the card on first boot.
+  systemd.services.sd-resize = {
+    description = "Grow root partition and filesystem to fill the SD card";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "local-fs.target" ];
+    unitConfig.ConditionPathExists = "/dev/mmcblk0";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = [
+        "${pkgs.cloud-utils}/bin/growpart /dev/mmcblk0 2"
+        "/run/current-system/sw/bin/resize2fs /dev/mmcblk0p2"
+      ];
+    };
+  };
 }

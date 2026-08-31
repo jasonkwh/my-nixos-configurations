@@ -25,8 +25,6 @@
 
   time.timeZone = "Australia/Melbourne";
 
-  services.fstrim.enable = lib.mkForce false;
-
   # Pi boots via Broadcom firmware + extlinux, no UEFI — override the
   # systemd-boot/EFI defaults from common (which are for the x86 hosts).
   # grub.enable=false is also required: without a nixos-hardware module doing
@@ -48,5 +46,6 @@
       "${pkgs.path}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
       ../common/sd-image-secrets.nix
     ];
+    image.baseName = "shengos-bcm2710a1";
   };
 }
