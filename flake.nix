@@ -141,8 +141,32 @@
             nixpkgs.overlays = [
               (final: prev: {
                 tree-sitter = prev.tree-sitter.overrideAttrs (old: {
-                  BINDGEN_EXTRA_CLANG_ARGS = "--target=aarch64-unknown-linux-gnu";
+                  # rust-bindgen-hook overwrites BINDGEN_EXTRA_CLANG_ARGS in
+                  # postHook, so re-append the target flag in preBuild.
+                  preBuild = (old.preBuild or "") + lib.optionalString
+                    (prev.stdenv.buildPlatform != prev.stdenv.hostPlatform) ''
+                    export BINDGEN_EXTRA_CLANG_ARGS="$BINDGEN_EXTRA_CLANG_ARGS --target=${prev.stdenv.hostPlatform.config}"
+                  '';
                 });
+                # neovim cross build: codegen lua (LUA_GEN_PRG) must load the
+                # aarch64 libnlua0.so, so run aarch64 luajit under qemu
+                # (upstream #38076, host-side nlua0 unsupported).
+                neovim-unwrapped = prev.neovim-unwrapped.overrideAttrs (old:
+                  lib.optionalAttrs
+                    (prev.stdenv.buildPlatform != prev.stdenv.hostPlatform)
+                    {
+                      # wrapper script (created in preConfigure) so cmake gets
+                      # a single executable path.
+                      cmakeFlags = old.cmakeFlags ++ [
+                        (lib.cmakeFeature "LUA_GEN_PRG" "/build/qemu-luajit")
+                      ];
+                      preConfigure = (old.preConfigure or "") + ''
+                        printf '#!/bin/sh\nexec %s %s/bin/luajit "$@"\n' \
+                          "${prev.stdenv.hostPlatform.emulator prev.buildPackages}" \
+                          "${prev.luajit}" > /build/qemu-luajit
+                        chmod +x /build/qemu-luajit
+                      '';
+                    });
               })
             ];
           })
