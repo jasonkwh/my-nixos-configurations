@@ -15,6 +15,9 @@
   i18n.inputMethod.enable = lib.mkForce false;
   services.printing.enable = lib.mkForce false;
 
+  # fwupd-efi cross-build broken on aarch64
+  services.fwupd.enable = lib.mkForce false;
+
   # GUI programs and gaming stack off (steam, gamemode).
   programs.steam.enable = lib.mkForce false;
   programs.gamemode.enable = lib.mkForce false;
