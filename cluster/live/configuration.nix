@@ -296,12 +296,14 @@ in
   boot.kernelParams = [ "radeon.si_support=0" "amdgpu.si_support=1" "amdgpu.dc=1" "amdgpu.dpm=0" "intel_iommu=off" ];
   services.mbpfan = {
     enable = true;
-    minFanSpeed = 900;
-    maxFanSpeed = 6200;
-    lowTemp = 50;
-    highTemp = 55;
-    maxTemp = 65;
-    pollingInterval = 1;
+    settings.general = {
+      min_fan1_speed = 900;
+      max_fan1_speed = 6200;
+      low_temp = 50;
+      high_temp = 55;
+      max_temp = 65;
+      polling_interval = 1;
+    };
   };
   boot.extraModulePackages = [
     # BCM4360 (14e4:43a0) Wi-Fi: only the out-of-tree broadcom-wl driver.
