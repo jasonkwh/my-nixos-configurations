@@ -22,8 +22,15 @@
   programs.steam.enable = lib.mkForce false;
   programs.gamemode.enable = lib.mkForce false;
 
-  # Graphics acceleration not needed headless; saves firmware/DRM bloat.
-  hardware.graphics.enable = lib.mkForce false;
+  # Graphics off entirely: enable=false alone doesn't stop mesa being pulled
+  # in via extraPackages/enable32Bit, which forces the huge cross-LLVM+mesa
+  # build into the SD-image closure.
+  hardware.graphics = lib.mkForce {
+    enable = false;
+    enable32Bit = false;
+    extraPackages = [ ];
+    extraPackages32 = [ ];
+  };
 
   # No container runtime on small boards.
   virtualisation.podman.enable = lib.mkForce false;
