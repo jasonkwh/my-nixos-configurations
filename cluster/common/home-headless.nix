@@ -52,8 +52,7 @@
     fastfetch = {
       enable = true;
       settings = {
-        # Defining settings replaces Fastfetch's built-in default configuration,
-        # so declare the information modules explicitly as well as the logo.
+        # Settings replace the built-in defaults, so redeclare all modules.
         modules = [
           "title"
           "separator"
@@ -103,7 +102,6 @@
 
     himalaya.enable = true;
 
-    # basic configuration of git, please change to your own
     git = {
       enable = true;
       settings = {
@@ -129,7 +127,6 @@
         [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
         command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 
-        # Load secrets from files if they exist
         [[ -f ~/.secrets/github-pat ]] && export CR_PAT="$(< ~/.secrets/github-pat)"
       '';
       zplug = {
@@ -167,10 +164,7 @@
       nixVersions.latest
     ];
 
-  # The state version is required and should stay at the version you
-  # originally installed.
   home.stateVersion = "24.11";
 
-  # Let home Manager install and manage itself.
   programs.home-manager.enable = true;
 }

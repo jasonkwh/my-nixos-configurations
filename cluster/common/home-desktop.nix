@@ -8,26 +8,19 @@
 }:
 
 {
-  # Cursor startup flags (equivalent to "Preferences: Configure Runtime Arguments"):
-  # - enable-crash-reporter=false: skip Sentry crash-reporter background process
-  # - disable-hardware-acceleration=true: avoid Electron GPU crashes while keeping sandboxing enabled
+  # Skip Cursor's Sentry crash-reporter and Electron GPU crashes.
   home.file.".config/Cursor/argv.json".text = builtins.toJSON {
     "disable-hardware-acceleration" = true;
     "enable-crash-reporter" = false;
     "enable-proposed-api" = [];
   };
 
-  # Silence Qt Multimedia startup noise (e.g. Dolphin):
-  # "qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library".
-  # QtMultimedia dlopens libpipewire-0.3 on init; on NixOS the default
-  # dlopen search path can't see it, so it logs a warning. PipeWire
-  # itself runs fine (pipewire-pulse handles audio); this is pure noise.
+  # QtMultimedia dlopens libpipewire-0.3, invisible on NixOS; harmless noise.
   home.file.".config/QtProject/qtlogging.ini".text = ''
     [Rules]
     qt.multimedia.symbolsresolver=false
   '';
 
-  # KWallet-only setup: keep Secret Service API enabled (desktop hosts only).
   home.file.".config/kwalletrc".text = ''
     [org.freedesktop.secrets]
     apiEnabled=true
@@ -35,19 +28,16 @@
 
   xdg.autostart.enable = true;
 
-  # KDE Plasma configuration (using plasma-manager).
   programs.plasma = {
     enable = true;
 
-    # Use Breeze Dark theme
     workspace = {
       wallpaper = ../../assets/wallpapers/DSCF4098.JPG;
       lookAndFeel = "org.kde.breezedark.desktop";
       colorScheme = "BreezeDark";
     };
 
-    # Have KWin launch Fcitx5 as the Plasma Wayland virtual keyboard.
-    # This is required for Fcitx5's native Wayland input-method frontend.
+    # Required for Fcitx5's native Wayland input-method frontend.
     configFile."kwinrc"."Wayland" = {
       InputMethod = {
         shellExpand = true;
@@ -56,9 +46,7 @@
       VirtualKeyboardEnabled = true;
     };
 
-    # Disable Baloo file indexer — it spins at ~40% CPU while indexing
-    # dev workspaces. KDE search (Dolphin, KRunner) still works for filenames
-    # via locate/fd; only full-text content search is disabled.
+    # Baloo spins at ~40% CPU indexing dev workspaces.
     configFile."baloofilerc"."Basic Settings"."Indexing-Enabled" = false;
   };
 
@@ -117,7 +105,6 @@
     python = "python3";
   };
 
-  # Automatically run podman system migrate after home-manager activation
   home.activation.podmanMigrate = config.lib.dag.entryAfter [ "writeBoundary" ] ''
     if command -v podman &> /dev/null; then
       ${pkgs.podman}/bin/podman system migrate 2>/dev/null || true
