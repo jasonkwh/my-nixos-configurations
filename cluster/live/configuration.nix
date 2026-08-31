@@ -202,11 +202,9 @@ in
 
   nixpkgs.config.allowUnfree = true;
   # broadcom_sta (BCM4360 Wi-Fi, Mac Pro 2013) is EOL upstream; the only
-  # driver for this chip. Known-risky, accepted deliberately. Name taken
-  # dynamically so kernel bumps don't break eval.
-  nixpkgs.config.permittedInsecurePackages = [
-    (lib.getName config.boot.kernelPackages.broadcom_sta)
-  ];
+  # driver for this chip. Known-risky, accepted deliberately. Predicate
+  # matches by pname so kernel bumps don't break eval.
+  nixpkgs.config.allowInsecurePredicate = pkg: lib.getName pkg == "broadcom-sta";
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   networking.networkmanager.enable = true;
   i18n.defaultLocale = "en_AU.UTF-8";
