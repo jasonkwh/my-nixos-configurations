@@ -306,7 +306,9 @@
 
   # List services that you want to enable:
 
-  security.pam.services.sddm.enableKwallet = true;
+  # KWallet PAM unlock — desktop only; headless boards don't run a
+  # display manager, and pulling kwallet-pam drags in the KDE stack.
+  security.pam.services.sddm.kwallet.enable = lib.mkIf (!isHeadless) true;
 
   services = {
     tailscale.enable = true;
