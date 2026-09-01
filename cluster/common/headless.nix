@@ -1,9 +1,18 @@
 # Imported only when a host sets isHeadless = true in flake.nix.
 # Strips desktop/GUI/heavy bits so small boards (e.g. RPi 4B)
 # spend their RAM and CPU on headless services instead of Plasma.
-{ lib, pkgs, ... }:
+{ lib, pkgs, config, name, ... }:
 
 {
+  image.modules.sd-card = lib.mkForce {
+    imports = [
+      "${pkgs.path}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+      ./sd-image-secrets.nix
+    ];
+    image.baseName =
+      "shengos-${name}-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.system}";
+  };
+
   # Desktop stack off.
   services.displayManager.sddm.enable = lib.mkForce false;
   services.desktopManager.plasma6.enable = lib.mkForce false;

@@ -109,6 +109,7 @@
       mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
+          inherit name;
           inherit hermesPeerHosts;
           inherit hostDefs;
           # Syncthing device ids for all fleet members that sync, from hostDefs.

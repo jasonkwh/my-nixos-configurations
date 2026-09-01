@@ -33,16 +33,4 @@
     generic-extlinux-compatible.enable = true;
   };
 
-  # Secrets are baked into the SD image at build time (make image sets
-  # SECRETS_SRC); this module only applies inside the sd-card image variant.
-  # Import the sd-card module directly instead of relying on image.modules
-  # defaults — the default path probes pkgs.targetPlatform (renamed alias,
-  # eval warning on every image build).
-  image.modules.sd-card = lib.mkForce {
-    imports = [
-      "${pkgs.path}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-      ../common/sd-image-secrets.nix
-    ];
-    image.baseName = "shengos-bcm2711";
-  };
 }
