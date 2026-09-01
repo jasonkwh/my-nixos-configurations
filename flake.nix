@@ -47,7 +47,7 @@
         home-manager.extraSpecialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
         };
-        home-manager.sharedModules = [
+        home-manager.sharedModules = lib.mkIf (!isHeadless) [
           plasma-manager.homeModules.plasma-manager
         ];
       };
