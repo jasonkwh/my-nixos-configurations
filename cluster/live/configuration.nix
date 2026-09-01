@@ -74,21 +74,9 @@ let
     let src = builtins.getEnv "SECRETS_ENC";
     in lib.optionalString (src != "") src;
 
-  # Branding substitutions for Calamares' branding.desc.  Each entry matches
-  # by leading key (whitespace-tolerant) so upstream formatting drift does not
-  # silently skip a replacement; every substitution is asserted afterwards.
-  brandingSubstitutions = [
-    { key = "componentName"; value = "shengos"; }
-    { key = "shortProductName"; value = "ShengOS"; }
-    { key = "versionedName"; value = "ShengOS"; }
-    { key = "shortVersionedName"; value = "ShengOS"; }
-    { key = "bootloaderEntryName"; value = "ShengOS"; }
-    { key = "productUrl"; value = "https://github.com/jasonkwh"; }
-    { key = "productIcon"; value = "\"shengos.png\""; }
-    { key = "productLogo"; value = "\"shengos.png\""; }
-    { key = "productWelcome"; value = "\"shengos.png\""; }
-  ];
-
+  # Branding substitutions are DISABLED: scripted edits of branding.desc kept
+  # breaking YAML (keys eaten, then indentation dropped). Upstream nixos
+  # branding.desc ships as-is; only the logo is added. Fix via overlay later.
   liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
     mkdir -p "$out/share/backgrounds/shengos"
     cp ${../../assets/wallpapers/DSCF4098.JPG} \
@@ -140,19 +128,6 @@ let
             && lib.hasInfix "branding: shengos" result
             && ! lib.hasInfix "branding: nixos" result;
           result;
-        # sed anchors on the key at line start; a plain Nix replaceStrings
-        # would also rewrite the key token itself (broke branding.desc once).
-        brandingSed = lib.concatMapStringsSep "\n"
-          ({ key, value }: ''
-            sed -i -E 's|^[[:space:]]*(${key}):[[:space:]]*.*$|\1: ${value}|' \
-              $out/share/calamares/branding/shengos/branding.desc
-            grep -qF '${key}: ${value}' \
-              $out/share/calamares/branding/shengos/branding.desc || {
-              echo "branding substitution failed for ${key}" >&2
-              exit 1
-            }
-          '')
-          brandingSubstitutions;
       in
       base.overrideAttrs (old: {
         postInstall = (old.postInstall or "") + ''
@@ -165,8 +140,6 @@ ${usersConf}
 USERS_EOF
 
           mv $out/share/calamares/branding/nixos $out/share/calamares/branding/shengos
-          ${brandingSed}
-          cp ${../../assets/logos/logo.png} $out/share/calamares/branding/shengos/shengos.png
 
           cat > $out/etc/calamares/modules/copy-shengos-config.conf <<'COPY_EOF'
 dontChroot: false
