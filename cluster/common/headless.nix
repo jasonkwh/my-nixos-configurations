@@ -64,18 +64,27 @@
   };
 
   # SD image rootfs is sized to contents; grow to fill the card on first boot.
+  # Device detected at runtime — Pi 4B enumerates its card as mmcblk1.
   systemd.services.sd-resize = {
     description = "Grow root partition and filesystem to fill the SD card";
     wantedBy = [ "multi-user.target" ];
     after = [ "local-fs.target" ];
-    unitConfig.ConditionPathExists = "/dev/mmcblk0";
+    path = [ pkgs.cloud-utils pkgs.util-linux ];
+    script = ''
+      ROOT_SRC="$(findmnt -nro SOURCE /)"
+      ROOT_DEV="$(basename "$ROOT_SRC")"          # e.g. mmcblk0p2 / mmcblk1p2
+      DISK="''${ROOT_DEV%p[0-9]*}"                # e.g. mmcblk0
+      PART="''${ROOT_DEV##*p}"                    # e.g. 2
+      [ -e "/dev/$DISK" ] || { echo "sd-resize: /dev/$DISK missing"; exit 1; }
+      if ! growpart "/dev/$DISK" "$PART"; then
+        # growpart exit 1 = partition already full size, not an error
+        [ $? -eq 1 ] || exit 1
+      fi
+      resize2fs "$ROOT_SRC"
+    '';
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = [
-        "${pkgs.cloud-utils}/bin/growpart /dev/mmcblk0 2"
-        "/run/current-system/sw/bin/resize2fs /dev/mmcblk0p2"
-      ];
     };
   };
 }
