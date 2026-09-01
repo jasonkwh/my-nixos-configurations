@@ -71,7 +71,7 @@
     after = [ "local-fs.target" ];
     path = [ pkgs.cloud-utils pkgs.util-linux ];
     script = ''
-      ROOT_SRC="$(findmnt -nro SOURCE /)"
+      ROOT_SRC="$(readlink -f "$(findmnt -nro SOURCE /)")"  # resolve by-label symlink
       ROOT_DEV="$(basename "$ROOT_SRC")"          # e.g. mmcblk0p2 / mmcblk1p2
       DISK="''${ROOT_DEV%p[0-9]*}"                # e.g. mmcblk0
       PART="''${ROOT_DEV##*p}"                    # e.g. 2
