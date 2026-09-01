@@ -99,8 +99,10 @@ image:
 	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
 	    -in /tmp/.shengos-seal.$$$${RANDOM} -out /tmp/shengos-secrets.tar.enc -pass env:SEAL_PASS; \
 	  rm -f /tmp/.shengos-seal.*; \
+	  # --impure: SECRETS_* are read via builtins.getEnv at eval time; without
+	  # it pure eval returns empty and the image silently bakes no secrets.
 	  SECRETS_ENC=/tmp/shengos-secrets.tar.enc SECRETS_PASS=$$IMG_PASS \
-	    nix build --accept-flake-config \
+	    nix build --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	  rm -f /tmp/shengos-secrets.tar.enc; \
 	else \
