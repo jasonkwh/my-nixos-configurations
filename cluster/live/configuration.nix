@@ -9,13 +9,11 @@ let
 
   copyRepo = pkgs.writeShellScriptBin "copy-shengos-config" ''
     set -eu
-    id "${username}" >/dev/null
-    target=${homeDirectory}/Documents/my-nixos-configurations
+    target=/mnt${homeDirectory}/Documents/my-nixos-configurations
     mkdir -p "$(dirname "$target")"
     rm -rf "$target"
     cp -R --no-preserve=ownership \
       ${repoBundle}/share/my-nixos-configurations "$target"
-    chown -R ${username}:users "$target"
     chmod -R u+rwX,go+rX "$target"
     grep -q experimental-features /mnt/etc/nix/nix.conf 2>/dev/null || \
       echo "experimental-features = nix-command flakes" >> /mnt/etc/nix/nix.conf
@@ -32,14 +30,13 @@ let
   # over Tailscale afterwards (docs/install.md).
   installSecrets = pkgs.writeShellScriptBin "install-shengos-secrets" ''
     set -eu
-    id "${username}" >/dev/null
     encfile=""
     for f in /run/media/system-iso/shengos-secrets.tar.enc \
              /iso/shengos-secrets.tar.enc \
              /run/media/*/*/shengos-secrets.tar.enc /media/*/*/shengos-secrets.tar.enc; do
       if [ -f "$f" ]; then encfile="$f"; break; fi
     done
-    target=${homeDirectory}/.secrets
+    target=/mnt${homeDirectory}/.secrets
     if [ -z "$encfile" ]; then
       echo "install-shengos-secrets: no shengos-secrets.tar.enc on install medium; skipping"
       exit 0
@@ -54,7 +51,6 @@ let
       # password for the target user and root.
       if printf '%s' "$pass" | ${pkgs.openssl}/bin/openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in "$encfile" -out "$target/.secrets.tar" 2>/dev/null; then
         tar -xf "$target/.secrets.tar" -C "$target" && rm -f "$target/.secrets.tar"
-        chown -R ${username}:users "$target"
         chmod 700 "$target"
         chmod 600 "$target"/.secrets/* 2>/dev/null || true
         # Provision login passwords: the decrypted-in password becomes both
