@@ -73,9 +73,8 @@
         (lib.mapAttrsToList mkBuilder builders);
   };
 
-  networking.wireless.enable = lib.mkIf isHeadless true;
-
   networking = {
+    wireless.enable = lib.mkIf isHeadless true;
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
     # Headless boards take wlan0 away from NetworkManager (wpa_supplicant
     # owns it via common/wifi-home.nix); NM keeps eth0 and the desktops.
@@ -551,7 +550,7 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.11"; # Did you read the comment?
 
-  system.activationScripts.flathub-remote = ''
+  system.activationScripts.flathub-remote = lib.mkIf config.services.flatpak.enable ''
     ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >&2
   '';
 

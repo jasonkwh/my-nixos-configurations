@@ -50,6 +50,21 @@
   # SD card trim is unreliable/pointless on cheap cards (zram swap too).
   services.fstrim.enable = lib.mkForce false;
 
+  # Broadcom firmware + extlinux boot, no UEFI (all Pi boards).
+  boot.loader = lib.mkForce {
+    grub.enable = false;
+    systemd-boot.enable = false;
+    efi.canTouchEfiVariables = false;
+    generic-extlinux-compatible.enable = true;
+  };
+
+  # Shared zram profile; swappiness stays low since swap is compressed RAM.
+  boot.kernel.sysctl."vm.swappiness" = 10;
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+  };
+
   # SD image rootfs is sized to contents; grow to fill the card on first boot.
   systemd.services.sd-resize = {
     description = "Grow root partition and filesystem to fill the SD card";

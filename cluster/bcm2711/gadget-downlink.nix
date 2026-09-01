@@ -74,7 +74,6 @@ in
     enable = true;
     internalInterfaces = [ "usb0" ];
     externalInterface = "wlan0";
-    forwardPorts = [ ];
   };
   boot.kernel.sysctl."net.ipv4.ip_forward" = lib.mkForce 1;
   networking.firewall.trustedInterfaces = [ "usb0" ];

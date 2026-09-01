@@ -35,11 +35,6 @@
       email = "jasonkwh@gmail.com";
       homeDirectory = "/home/${username}";
 
-      # Hermes agent-to-agent peers: every NixOS host in the fleet gets a
-      # bot_peers entry pointing at every other host (api_server on :8642).
-      # Filled in inside the outputs attrset below, once nixosConfigurations
-      # is available.
-
       # Home Manager entry point shared verbatim by every host (and the Live
       # image). cluster/common/home.nix is a pure router: every host gets
       # home-headless core; isLaptop/isHeadless flags (set per-host below)

@@ -22,7 +22,6 @@ in
 
     graphics.extraPackages = with pkgs; [
       # VA-API and VDPAU for hardware video decode/encode (mpv, ffmpeg, browser video)
-      mesa
       libva-utils
       rocmPackages.clr.icd
     ];

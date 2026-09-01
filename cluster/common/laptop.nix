@@ -8,11 +8,6 @@
     steam-hardware.enable = true;
   };
 
-  environment.systemPackages = with pkgs; [
-    # Hardware probing tools.
-    pciutils
-  ];
-
   boot = {
     kernelPackages = pkgs.linuxPackages;
 
