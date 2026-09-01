@@ -30,9 +30,33 @@ let
   # over Tailscale afterwards (docs/install.md).
   installSecrets = pkgs.writeShellScriptBin "install-shengos-secrets" ''
     set -eu
+    # kdialog needs a display; calamares runs as root so the env is usually
+    # stripped. Pull DISPLAY/WAYLAND_DISPLAY + XAUTHORITY from any running
+    # user session before trying to prompt.
+    if [ -z "''${DISPLAY:-}" ] && [ -z "''${WAYLAND_DISPLAY:-}" ]; then
+      for p in /run/user/*/; do
+        uid=$(basename "$p")
+        for pid in $(ls /proc | grep -E '^[0-9]+$'); do
+          if [ "$(awk '/^Uid:/{print $2}' /proc/$pid/status 2>/dev/null)" = "$uid" ]; then
+            for v in DISPLAY WAYLAND_DISPLAY XAUTHORITY; do
+              val=$(tr '\0' '\n' < /proc/$pid/environ 2>/dev/null | grep "^$v=" | cut -d= -f2-)
+              [ -n "$val" ] && export "$v=$val" && break 2
+            done
+          fi
+        done
+        [ -n "''${DISPLAY:-}" ] && break
+      done
+    fi
+    if [ -z "''${DISPLAY:-}" ] && [ -z "''${WAYLAND_DISPLAY:-}" ]; then
+      echo "install-shengos-secrets: no display for kdialog; cannot prompt for password" >&2
+      exit 1
+    fi
     encfile=""
-    for f in /run/media/system-iso/shengos-secrets.tar.enc \
+    for f in /run/booted-system/shengos-secrets.tar.enc \
+             /run/booted-system/sw/shengos-secrets.tar.enc \
+             /run/current-system/shengos-secrets.tar.enc \
              /iso/shengos-secrets.tar.enc \
+             /run/media/system-iso/shengos-secrets.tar.enc \
              /run/media/*/*/shengos-secrets.tar.enc /media/*/*/shengos-secrets.tar.enc; do
       if [ -f "$f" ]; then encfile="$f"; break; fi
     done
