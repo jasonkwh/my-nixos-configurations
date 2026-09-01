@@ -15,7 +15,8 @@ CONN="$(nmcli -t -f NAME,TYPE connection show --active | grep ':802-11-wireless'
 [ -n "$CONN" ] || { echo "no active wireless connection" >&2; exit 1; }
 
 SSID="$(nmcli -g 802-11-wireless.ssid connection show "$CONN" | head -1)"
-PSK="$(nmcli -s -g 802-11-wireless-security.psk connection show "$CONN")"
+# nmcli can return several lines (duplicate profiles); take the first
+PSK="$(nmcli -s -g 802-11-wireless-security.psk connection show "$CONN" | head -1)"
 [ -n "$SSID" ] && [ -n "$PSK" ] || { echo "no ssid/psk on $CONN" >&2; exit 1; }
 
 umask 177
