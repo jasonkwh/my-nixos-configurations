@@ -140,9 +140,18 @@ let
             && lib.hasInfix "branding: shengos" result
             && ! lib.hasInfix "branding: nixos" result;
           result;
-        brandingDesc = lib.foldl
-          (acc: { key, value }: builtins.replaceStrings [ key ] [ value ] acc)
-          (builtins.readFile "${base}/share/calamares/branding/nixos/branding.desc")
+        # sed anchors on the key at line start; a plain Nix replaceStrings
+        # would also rewrite the key token itself (broke branding.desc once).
+        brandingSed = lib.concatMapStringsSep "\n"
+          ({ key, value }: ''
+            sed -i -E 's|^[[:space:]]*(${key}):[[:space:]]*.*$|\1: ${value}|' \
+              $out/share/calamares/branding/shengos/branding.desc
+            grep -qF '${key}: ${value}' \
+              $out/share/calamares/branding/shengos/branding.desc || {
+              echo "branding substitution failed for ${key}" >&2
+              exit 1
+            }
+          '')
           brandingSubstitutions;
       in
       base.overrideAttrs (old: {
@@ -156,9 +165,7 @@ ${usersConf}
 USERS_EOF
 
           mv $out/share/calamares/branding/nixos $out/share/calamares/branding/shengos
-          cat > $out/share/calamares/branding/shengos/branding.desc <<'BRANDING_EOF'
-${brandingDesc}
-BRANDING_EOF
+          ${brandingSed}
           cp ${../../assets/logos/logo.png} $out/share/calamares/branding/shengos/shengos.png
 
           cat > $out/etc/calamares/modules/copy-shengos-config.conf <<'COPY_EOF'
