@@ -21,12 +21,14 @@ PSK="$(nmcli -s -g 802-11-wireless-security.psk connection show "$CONN" | head -
 
 umask 177
 {
-  printf 'ssid_home=%q\n' "$SSID"
-  printf 'psk_home=%q\n' "$PSK"
+  # Raw values, no %q: consumers (wpa ext:, systemd EnvironmentFile) parse
+  # literally and do not do shell backslash-unescape.
+  printf 'ssid_home=%s\n' "$SSID"
+  printf 'psk_home=%s\n' "$PSK"
   if [ -n "${TS_AUTH_KEY:-}" ]; then
-    printf 'ts_auth_key=%q\n' "$TS_AUTH_KEY"
+    printf 'ts_auth_key=%s\n' "$TS_AUTH_KEY"
   elif [ -t 0 ]; then
-    printf 'ts_auth_key=%q\n' "$(read -rp 'Tailscale auth key (empty to skip): ' k; echo "$k")"
+    printf 'ts_auth_key=%s\n' "$(read -rp 'Tailscale auth key (empty to skip): ' k; echo "$k")"
   fi
 } > "$OUT"
 chmod 600 "$OUT"
