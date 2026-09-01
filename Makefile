@@ -86,6 +86,8 @@ jasonkwh-live: live
 # baked into the image (ciphertext), and it becomes the login password of
 # both jasonkwh and root on the board.  SECRETS_SKIP=1 builds without.
 IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS),$(filter-out image,$(MAKECMDGOALS))))
+# --impure on nix build: SECRETS_* enter via builtins.getEnv at eval time;
+# pure eval returns empty and the image silently bakes no secrets.
 image:
 	@test -n "$(IMG_HOST)" || { echo 'usage: make image HOST=jasonkwh-<host>'; exit 1; }
 	@if [ -n "$(SECRETS_SKIP)" ]; then \
@@ -99,8 +101,6 @@ image:
 	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
 	    -in /tmp/.shengos-seal.$$$${RANDOM} -out /tmp/shengos-secrets.tar.enc -pass env:SEAL_PASS; \
 	  rm -f /tmp/.shengos-seal.*; \
-	  # --impure: SECRETS_* are read via builtins.getEnv at eval time; without
-	  # it pure eval returns empty and the image silently bakes no secrets.
 	  SECRETS_ENC=/tmp/shengos-secrets.tar.enc SECRETS_PASS=$$IMG_PASS \
 	    nix build --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
