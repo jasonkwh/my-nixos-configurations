@@ -20,8 +20,6 @@
   services.packagekit.enable = lib.mkForce false;
   services.flatpak.enable = lib.mkForce false;
 
-  # No desktop, no input method, no printing by default on the board.
-  i18n.inputMethod.enable = lib.mkForce false;
   services.printing.enable = lib.mkForce false;
 
   # fwupd-efi cross-build broken on aarch64

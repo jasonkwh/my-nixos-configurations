@@ -46,8 +46,6 @@ in
       discardPolicy = "both";
     }
   ];
-  # Build aarch64 (bcm2711 SD image) on this x86 host via QEMU emulation:
-  # enabled centrally in flake.nix mkHost for x86 non-headless hosts.
 
   services = {
     xserver.videoDrivers = [ "modesetting" ];

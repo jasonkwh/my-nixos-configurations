@@ -149,9 +149,6 @@ let
     result;
 in
 {
-  imports = [
-  ];
-
   home-manager.users.${username} = {
     home = {
       inherit username homeDirectory;
@@ -320,20 +317,22 @@ in
   # Do not install a bootloader to the USB user's firmware variables.
   boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
 
-  # Keep the image identifiable as a Live USB rather than as either laptop.
-  image.fileName = lib.mkForce "shengos-live-${config.system.nixos.release}-${system}.iso";
-  isoImage.volumeID = "SHENGOS_LIVE";
-  image.baseName = lib.mkForce "shengos-live-${config.system.nixos.release}-${system}";
-
-  # Bake the sealed secrets ciphertext into the ISO filesystem itself, so a
-  # single USB stick carries everything.  Ciphertext only — unlocking needs
-  # the target user's login password (install-shengos-secrets above).
-  isoImage.contents = lib.optionals (sealedSecrets != "") [
-    {
-      source = sealedSecrets;
-      target = "/shengos-secrets.tar.enc";
-    }
-  ];
+  # Live USB image identity + optional sealed secrets ciphertext baked into
+  # the ISO (unlocking needs the target user's login password — see
+  # install-shengos-secrets above).
+  image = lib.mkForce {
+    fileName = "shengos-live-${config.system.nixos.release}-${system}.iso";
+    baseName = "shengos-live-${config.system.nixos.release}-${system}";
+  };
+  isoImage = {
+    volumeID = "SHENGOS_LIVE";
+    contents = lib.optionals (sealedSecrets != "") [
+      {
+        source = sealedSecrets;
+        target = "/shengos-secrets.tar.enc";
+      }
+    ];
+  };
 
   # A portable troubleshooting/install USB should not prompt for a sudo
   # password.  The normal installed systems keep their existing policy.

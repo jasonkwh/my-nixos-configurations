@@ -95,12 +95,6 @@
     ];
   };
 
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
   # Select internationalisation properties.
   i18n = {
     defaultLocale = "en_AU.UTF-8";
@@ -117,8 +111,8 @@
       LC_TIME = "en_AU.UTF-8";
     };
 
-    # Chinese Pinyin input through Fcitx5, shared by both laptops.
-    inputMethod = {
+    # Chinese Pinyin input through Fcitx5, desktop only.
+    inputMethod = lib.mkIf (!isHeadless) {
       enable = true;
       type = "fcitx5";
       fcitx5 = {
@@ -132,11 +126,6 @@
     };
   };
 
-  # Use this for the kssshaskpass
-  # programs.ssh.askPassword = lib.mkForce "${pkgs.plasma5Packages.ksshaskpass}/bin/ksshaskpass";
-  # or this for seahorse
-  # programs.ssh.askPassword = lib.mkForce "${pkgs.gnome.seahorse}/libexec/seahorse/ssh-askpass";
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users = {
     ${username} = {
@@ -149,9 +138,6 @@
       subGidRanges = [{ startGid = 100000; count = 65536; }];
     };
   };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
 
   nixpkgs.config = {
   # Allow unfree packages
@@ -228,15 +214,6 @@
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true;
     };
-    # virtualbox = {
-    #   host = {
-    #     enable = true;
-    #     enableExtensionPack = true;
-    #   };
-    #   guest = {
-    #     enable = true;
-    #   };
-    # };
   };
 
   fonts = {
@@ -270,15 +247,6 @@
     options = "--delete-older-than 1w";
   };
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-
   programs = {
     dconf = {
       enable = true;
@@ -302,8 +270,6 @@
     # Steam client, available on every machine in the fleet.
     steam.enable = true;
   };
-
-  # List services that you want to enable:
 
   # KWallet PAM unlock — desktop only; headless boards don't run a
   # display manager, and pulling kwallet-pam drags in the KDE stack.
