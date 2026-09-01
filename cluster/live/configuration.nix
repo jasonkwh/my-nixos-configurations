@@ -205,8 +205,6 @@ in
   # The Calamares shellprocess runs this after nixos-install and before the
   # target filesystem is unmounted.  The repository is therefore guaranteed
   # to be present in the installed user's Documents directory.
-  # Upstream graphical-base puts firefox in defaultPackages; ISO doesn't need it.
-  environment.defaultPackages = lib.mkForce (with pkgs; [ gparted vim nano mesa-demos ]);
   environment.systemPackages = with pkgs; [
     copyRepo
     installSecrets
