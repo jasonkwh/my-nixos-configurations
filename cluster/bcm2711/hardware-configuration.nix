@@ -11,6 +11,16 @@
     fsType = "ext4";
   };
 
+  # all-hardware profile (via sd-image.nix) lists dw-hdmi for Rockchip; rpi kernel has no such module, so modprobe fails and the image build dies.
+  boot.initrd.availableKernelModules = lib.mkForce [
+    "ahci" "ata_piix" "autofs" "efivarfs" "ehci_hcd" "ehci_pci" "ext2" "ext4"
+    "hid_apple" "hid_cherry" "hid_corsair" "hid_generic" "hid_lenovo"
+    "hid_logitech_dj" "hid_logitech_hidpp" "hid_microsoft" "hid_roccat"
+    "mmc_block" "nvme" "ohci_hcd" "ohci_pci" "pata_marvell" "pcie-brcmstb"
+    "reset-raspberrypi" "sata_nv" "sata_sis" "sata_uli" "sata_via" "sd_mod"
+    "sr_mod" "uhci_hcd" "usb-storage" "usbhid" "vc4" "xhci_hcd" "xhci_pci"
+  ];
+
   fileSystems."/boot/firmware" = {
     device = "/dev/disk/by-label/FIRMWARE";
     fsType = "vfat";
