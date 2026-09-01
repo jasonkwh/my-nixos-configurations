@@ -89,60 +89,94 @@ let
     { key = "productWelcome"; value = "\"shengos.png\""; }
   ];
 
-  sedExpr = lib.concatMapStringsSep "\n"
-    ({ key, value }: ''
-      sed -i -E 's|^[[:space:]]*(${key}):[[:space:]]*.*$|\1: ${value}|' "$out/branding.desc"
-      grep -qF '${key}: ${value}' "$out/branding.desc" || {
-        echo "branding substitution failed for ${key}" >&2
-        exit 1
-      }
-    '')
-    brandingSubstitutions;
-
-  shengosBranding = pkgs.runCommand "shengos-calamares-branding" { } ''
-    cp -R ${pkgs.calamares-nixos-extensions}/share/calamares/branding/nixos "$out"
-    chmod -R u+w "$out"
-    ${sedExpr}
-    cp ${../../assets/logos/logo.png} "$out/shengos.png"
-  '';
-
-  calamaresUsers =
-    let
-      # Single-user system: loginName/fullName/hostname are locked presets.
-      # The password is NOT set on this page — install-shengos-secrets
-      # provisions it from the seal unlock — so the password fields are
-      # hidden and root password prompting is disabled.
-      result = builtins.replaceStrings
-        [ "hostname:\n" "setRootPassword: true" ]
-        [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: false\n    loginName:\n        value: \"${username}\"\n        editable: false\n    hostname:\n        value: \"${username}\"\n        editable: false\n    userPassword:\n        value: \"placeholder\"\n        editable: false\n\nhostname:\n" "setRootPassword: false" ]
-        (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/modules/users.conf");
-    in
-    assert lib.hasInfix "loginName:" result
-      && lib.hasInfix "presets:" result
-      && lib.hasInfix "editable: false" result
-      && lib.hasInfix "setRootPassword: false" result;
-    result;
-
   liveWallpaper = pkgs.runCommand "shengos-live-wallpaper" { } ''
     mkdir -p "$out/share/backgrounds/shengos"
     cp ${../../assets/wallpapers/DSCF4098.JPG} \
       "$out/share/backgrounds/shengos/DSCF4098.JPG"
   '';
 
-  calamaresSettings =
-    let
-      result = builtins.replaceStrings
-        [ "- module:   nixos\n  weight:   48\n" "  - nixos\n  - users\n  - umount\n" "branding: nixos" ]
-        [ "- module:   nixos\n  weight:   48\n- id:       copy-shengos-config\n  module:   shellprocess\n  config:   copy-shengos-config.conf\n- id:       install-shengos-secrets\n  module:   shellprocess\n  config:   install-shengos-secrets.conf\n"
-          "  - nixos\n  - users\n  - copy-shengos-config\n  - install-shengos-secrets\n  - umount\n"
-          "branding: shengos" ]
-        (builtins.readFile "${pkgs.calamares-nixos-extensions}/etc/calamares/settings.conf");
-    in
-    assert lib.hasInfix "copy-shengos-config.conf" result
-      && lib.hasInfix "install-shengos-secrets.conf" result
-      && lib.hasInfix "branding: shengos" result
-      && ! lib.hasInfix "branding: nixos" result;
-    result;
+  # ShengOS customizations must live INSIDE calamares-nixos-extensions:
+  # the calamares-nixos wrapper prefixes this package's etc/ into
+  # XDG_CONFIG_DIRS, so upstream conf files shadow anything in /etc/calamares.
+  # Everything (read + transform + write) happens inside the overlay below;
+  # using `pkgs.calamares-nixos-extensions` out here would recurse through
+  # the overlay itself.
+  calamaresOverlay = final: prev: {
+    calamares-nixos-extensions =
+      let
+        base = prev.calamares-nixos-extensions;
+        usersConf =
+          let
+            # Single-user system: loginName/fullName/hostname are locked
+            # presets. The password is NOT set on this page —
+            # install-shengos-secrets provisions it from the seal unlock —
+            # so the password fields are hidden and root password prompting
+            # is disabled.
+            result = builtins.replaceStrings
+              [ "hostname:\n" "setRootPassword: true" ]
+              [ "presets:\n    fullName:\n        value: \"${fullName}\"\n        editable: false\n    loginName:\n        value: \"${username}\"\n        editable: false\n    hostname:\n        value: \"${username}\"\n        editable: false\n    userPassword:\n        value: \"placeholder\"\n        editable: false\n\nhostname:\n" "setRootPassword: false" ]
+              (builtins.readFile "${base}/etc/calamares/modules/users.conf");
+          in
+          assert lib.hasInfix "loginName:" result
+            && lib.hasInfix "presets:" result
+            && lib.hasInfix "editable: false" result
+            && lib.hasInfix "setRootPassword: false" result;
+          result;
+        settingsConf =
+          let
+            # splice our two jobs between "users" and "umount" in the exec list
+            execParts = lib.splitString "  - umount\n"
+              (builtins.readFile "${base}/etc/calamares/settings.conf");
+            exec = assert lib.length execParts == 2;
+              builtins.concatStringsSep
+                "  - copy-shengos-config\n  - install-shengos-secrets\n  - umount\n"
+                execParts;
+            result = builtins.replaceStrings
+              [ "- module:   nixos\n  weight:   48\n" "branding: nixos" ]
+              [ "- module:   nixos\n  weight:   48\n- id:       copy-shengos-config\n  module:   shellprocess\n  config:   copy-shengos-config.conf\n- id:       install-shengos-secrets\n  module:   shellprocess\n  config:   install-shengos-secrets.conf\n" "branding: shengos" ]
+              exec;
+          in
+          assert lib.hasInfix "install-shengos-secrets.conf" result
+            && lib.hasInfix "branding: shengos" result
+            && ! lib.hasInfix "branding: nixos" result;
+          result;
+        brandingDesc = lib.foldl
+          (acc: { key, value }: builtins.replaceStrings [ key ] [ value ] acc)
+          (builtins.readFile "${base}/share/calamares/branding/nixos/branding.desc")
+          brandingSubstitutions;
+      in
+      base.overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          cat > $out/etc/calamares/settings.conf <<'SETTINGS_EOF'
+${settingsConf}
+SETTINGS_EOF
+
+          cat > $out/etc/calamares/modules/users.conf <<'USERS_EOF'
+${usersConf}
+USERS_EOF
+
+          mv $out/share/calamares/branding/nixos $out/share/calamares/branding/shengos
+          cat > $out/share/calamares/branding/shengos/branding.desc <<'BRANDING_EOF'
+${brandingDesc}
+BRANDING_EOF
+          cp ${../../assets/logos/logo.png} $out/share/calamares/branding/shengos/shengos.png
+
+          cat > $out/etc/calamares/modules/copy-shengos-config.conf <<'COPY_EOF'
+dontChroot: false
+script:
+  - command: ${copyRepo}/bin/copy-shengos-config
+    timeout: 120
+COPY_EOF
+          cat > $out/etc/calamares/modules/install-shengos-secrets.conf <<'SECRETS_EOF'
+dontChroot: false
+script:
+  - command: ${installSecrets}/bin/install-shengos-secrets
+    timeout: 60
+SECRETS_EOF
+        '';
+      });
+  };
+
 in
 {
   home-manager.users.${username} = {
@@ -247,21 +281,10 @@ in
       };
     };
   };
-  environment.etc."calamares/settings.conf".text = calamaresSettings;
-  environment.etc."calamares/modules/users.conf".text = calamaresUsers;
-  environment.etc."calamares/branding/shengos".source = shengosBranding;
-  environment.etc."calamares/modules/copy-shengos-config.conf".text = ''
-    dontChroot: false
-    script:
-      - command: ${copyRepo}/bin/copy-shengos-config
-        timeout: 120
-  '';
-  environment.etc."calamares/modules/install-shengos-secrets.conf".text = ''
-    dontChroot: false
-    script:
-      - command: ${installSecrets}/bin/install-shengos-secrets
-        timeout: 60
-  '';
+
+  # Swap the extensions package for our customized one so calamares-nixos's
+  # wrapper (XDG_CONFIG_DIRS prefix) picks up ShengOS confs.
+  nixpkgs.overlays = [ calamaresOverlay ];
 
   networking.hostName = "jasonkwh-live";
   time.timeZone = "Australia/Melbourne";
