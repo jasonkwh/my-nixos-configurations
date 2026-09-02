@@ -1,36 +1,40 @@
-# Headless Wi-Fi bring-up from the fleet secrets file.
-#
-# The image is cross-built on the x86 laptops (make image ...). This module
-# wires networking.wireless to a secretsFile holding the build host's current
-# credentials, written by cluster/misc/export-headless-env.sh into
-# ~/.secrets/headless-env (keys: ssid_home / psk_home). The PSK therefore
-# never enters the flake, git, or the image — the board reads it at runtime
-# like every other fleet secret. First boot on the home Wi-Fi needs no
-# interaction.
-#
-# Refresh path: after changing the home Wi-Fi password, re-run
-# export-headless-env.sh on a laptop, rsync ~/.secrets to the board, rebuild.
+# Headless Wi-Fi bring-up from the fleet secrets file. NetworkManager creates
+# its persistent connection at boot from ssid_home and psk_home, keeping both
+# values out of the Nix store. Re-running this service refreshes the profile
+# after replacing ~/.secrets/headless-env.
 {
-  config,
-  lib,
   pkgs,
   username,
   ...
 }:
 
 {
-  networking.wireless = {
-    enable = true;
-    # Secrets (psk_home) come from the env-style secrets file, never from
-    # this flake. The file holds:  ssid_home=...  psk_home=...
-    secretsFile = "/home/${username}/.secrets/headless-env";
-    networks = {
-      # The SSID itself is also a secret (ssid_home) so the home network name
-      # stays out of git; wpa_supplicant ext: works for any field.
-      "@ssid_home@" = {
-        # 2.4GHz band — Zero 2 W / Pi 4B radios are 2.4GHz-only anyway.
-        pskRaw = "ext:psk_home";
-      };
+  systemd.services.wifi-home = {
+    description = "Provision home Wi-Fi from headless-env";
+    wantedBy = [ "network-online.target" ];
+    before = [ "network-online.target" ];
+    after = [ "NetworkManager.service" ];
+    wants = [ "NetworkManager.service" ];
+    path = [ pkgs.networkmanager ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      EnvironmentFile = "-/home/${username}/.secrets/headless-env";
     };
+    script = ''
+      if [ -z "''${ssid_home:-}" ] || [ -z "''${psk_home:-}" ]; then
+        echo "wifi-home: no ssid_home/psk_home in headless-env; skipping"
+        exit 0
+      fi
+
+      nmcli connection delete wifi-home >/dev/null 2>&1 || true
+      nmcli connection add type wifi ifname wlan0 con-name wifi-home \
+        ssid "$ssid_home"
+      nmcli connection modify wifi-home \
+        wifi-sec.key-mgmt wpa-psk \
+        wifi-sec.psk "$psk_home" \
+        connection.autoconnect yes
+      nmcli connection up wifi-home
+    '';
   };
 }

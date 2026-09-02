@@ -2,7 +2,8 @@
 # Build a headless-env secrets file from the build host's live state:
 #   - ssid_home / psk_home : active NetworkManager Wi-Fi
 #   - ts_auth_key          : Tailscale auth key (prompted; generate in the
-#     admin console as reusable=off, ephemeral=on, pre-approved, tag:fleet)
+#     admin console as reusable=on, ephemeral=on, pre-approved, tag:fleet
+#     when the same file will enrol multiple boards)
 # Consumed by cluster/common/wifi-home.nix and tailscale-enrol.nix on
 # headless boards via LoadCredential/environment file injection.
 # Run on a laptop, then rsync ~/.secrets to the board with the fleet secrets.

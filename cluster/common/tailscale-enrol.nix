@@ -3,8 +3,9 @@
 # Problem: a headless board (bcm2711, bcm2710a1, ...) boots with no screen or
 # keyboard; `tailscale up` normally needs one interactive auth.
 #
-# Solution: a one-time Tailscale auth key (admin console: reusable=off,
-# ephemeral=on, pre-approved, tag:fleet) is stored in the fleet secrets file
+# Solution: a Tailscale auth key (admin console: reusable=on when shared by
+# multiple boards, ephemeral=on, pre-approved, tag:fleet) is stored in the
+# fleet secrets file
 # ~/.secrets/headless-env (key: ts_auth_key) by
 # cluster/misc/export-headless-env.sh — same file as the Wi-Fi credentials,
 # same rsync-at-flash workflow as hermes-env. At boot a oneshot service
@@ -32,9 +33,10 @@
           echo "tailscale-enrol: already enrolled"
           exit 0
         fi
-        if [ -n "''${TS_AUTH_KEY:-}" ]; then
+        AUTH_KEY="''${TS_AUTH_KEY:-''${ts_auth_key:-}}"
+        if [ -n "$AUTH_KEY" ]; then
           exec ${config.services.tailscale.package}/bin/tailscale up \
-            --auth-key="$TS_AUTH_KEY" --hostname="$(cat /etc/hostname)"
+            --auth-key="$AUTH_KEY" --hostname="$(cat /etc/hostname)"
         fi
         echo "tailscale-enrol: not enrolled and no ts_auth_key in headless-env; skipping"
       '';

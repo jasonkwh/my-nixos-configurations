@@ -74,11 +74,7 @@
   };
 
   networking = {
-    wireless.enable = lib.mkIf isHeadless true;
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
-    # Headless boards take wlan0 away from NetworkManager (wpa_supplicant
-    # owns it via common/wifi-home.nix); NM keeps eth0 and the desktops.
-    networkmanager.unmanaged = lib.mkIf isHeadless [ "wlan0" ];
     networkmanager = {
       enable = true; # Enable networking
       dns = "none";

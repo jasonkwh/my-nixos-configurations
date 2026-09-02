@@ -111,7 +111,7 @@ image:
 	  SEAL_TAR=$$(mktemp /tmp/.shengos-seal.XXXXXX); \
 	  SEAL_ENC=$$(mktemp /tmp/shengos-secrets.XXXXXX.tar.enc); \
 	  trap 'rm -f "$$SEAL_TAR" "$$SEAL_ENC"' EXIT; \
-	  tar -cf "$$SEAL_TAR" -C /home/jasonkwh .secrets; \
+	  tar -cf "$$SEAL_TAR" -C /home/jasonkwh/.secrets .; \
 	  printf 'Machine password (board login/sudo for jasonkwh + root): '; \
 	  read -rs IMG_PASS; echo; \
 	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
