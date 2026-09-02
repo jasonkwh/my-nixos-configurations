@@ -30,13 +30,14 @@
       EnvironmentFile = "-/home/${username}/.secrets/headless-env";
       ExecStart = pkgs.writeShellScript "ts-enrol" ''
         if ${config.services.tailscale.package}/bin/tailscale status --peers=false >/dev/null 2>&1; then
-          echo "tailscale-enrol: already enrolled"
+          ${config.services.tailscale.package}/bin/tailscale set --ssh
+          echo "tailscale-enrol: already enrolled; Tailscale SSH enabled"
           exit 0
         fi
         AUTH_KEY="''${TS_AUTH_KEY:-''${ts_auth_key:-}}"
         if [ -n "$AUTH_KEY" ]; then
           exec ${config.services.tailscale.package}/bin/tailscale up \
-            --auth-key="$AUTH_KEY" --hostname="$(cat /etc/hostname)"
+            --auth-key="$AUTH_KEY" --hostname="$(cat /etc/hostname)" --ssh
         fi
         echo "tailscale-enrol: not enrolled and no ts_auth_key in headless-env; skipping"
       '';
