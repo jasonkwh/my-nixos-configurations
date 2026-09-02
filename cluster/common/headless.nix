@@ -76,10 +76,10 @@
       DISK="''${ROOT_DEV%p[0-9]*}"                # e.g. mmcblk0
       PART="''${ROOT_DEV##*p}"                    # e.g. 2
       [ -e "/dev/$DISK" ] || { echo "sd-resize: /dev/$DISK missing"; exit 1; }
-      if ! growpart "/dev/$DISK" "$PART"; then
-        # growpart exit 1 = partition already full size, not an error
-        [ $? -eq 1 ] || exit 1
-      fi
+      GROW_STATUS=0
+      growpart "/dev/$DISK" "$PART" || GROW_STATUS=$?
+      # growpart exit 1 = partition already full size, not an error
+      [ "$GROW_STATUS" -le 1 ] || exit "$GROW_STATUS"
       resize2fs "$ROOT_SRC"
     '';
     serviceConfig = {
