@@ -45,8 +45,8 @@ ShengOS supports one Live USB profile and any number of machines sharing a commo
 |---------|----------|-------|
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
-| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card; USB host for the `bcm2710a1` gadget link |
-| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless thin client — zram-only swap, SD card; networked to the Pi 4 over one USB cable (g_ether, `cluster/bcm2710a1/usb-gadget.nix`) |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card |
+| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless thin client — zram-only swap, SD card |
 | **`jasonkwh-live`** | n/a | Graphical Calamares installer — auto-copies this repo to the target, flakes ready out of the box, autologin. Includes Mac Pro 2013 (trashcan) hardware support |
 
 ### Distributed build pool

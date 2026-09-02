@@ -218,12 +218,8 @@ For the Tailscale key: generate an **auth key** in the admin console with
    `devices` lists), commit, pull on the other machines, rebuild them.
 6. **Build and switch on the board**: `make upgrade`.
 
-Gadget-link note: the `bcm2710a1` host has no nixos-hardware module, so its SD
-image uses the generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is
-included). When cabled to the Pi 4, its
-micro-USB OTG port provides both power and Ethernet (g_ether → `usb0`,
-10.55.0.2/24 via the Pi 4's DHCP/NAT — see `cluster/bcm2710a1/usb-gadget.nix`
-and `cluster/bcm2711/gadget-downlink.nix`).
+The `bcm2710a1` host has no nixos-hardware module, so its SD image uses the
+generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is included).
 
 The Pi boots via Broadcom firmware + extlinux (`boot.loader.generic-extlinux-compatible`),
 not UEFI — its `cluster/bcm2711/configuration.nix` overrides the common
