@@ -32,7 +32,7 @@ help:
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
-	sudo /run/current-system/sw/bin/nixos-rebuild $(1) --flake $$(pwd)/#$(2)
+	sudo /run/current-system/sw/bin/nixos-rebuild $(1) $(REBUILD_BUILDERS) --flake $$(pwd)/#$(2)
 endef
 
 # `make build` alone → upgrade current host
@@ -88,11 +88,20 @@ jasonkwh-live: live
 IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS),$(filter-out image,$(MAKECMDGOALS))))
 # --impure on nix build: SECRETS_* enter via builtins.getEnv at eval time;
 # pure eval returns empty and the image silently bakes no secrets.
+# Probe flake builders (from hostDefs.isBuilder — no hardcoding) with a short
+# TCP check; only reachable hosts go into --builders so an offline peer never
+# stalls the build on SSH timeout. Empty list = local-only.
+REMOTE_BUILDERS = $(shell bash cluster/misc/remote-builders.sh)
+BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
+# Same probe for nixos-rebuild: --builders is a nix.conf-style key, supported
+# as a CLI option on rebuild too.
+REBUILD_BUILDERS := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
+
 image:
 	@test -n "$(IMG_HOST)" || { echo 'usage: make image HOST=jasonkwh-<host>'; exit 1; }
 	@if [ -n "$(SECRETS_SKIP)" ]; then \
 	  echo 'image: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
-	  nix build --accept-flake-config \
+	  nix build $(BUILDERS_FLAG) --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	elif [ -d /home/jasonkwh/.secrets ]; then \
 	  tar -cf /tmp/.shengos-seal.$$$${RANDOM} -C /home/jasonkwh .secrets; \
@@ -101,13 +110,17 @@ image:
 	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
 	    -in /tmp/.shengos-seal.$$$${RANDOM} -out /tmp/shengos-secrets.tar.enc -pass env:SEAL_PASS; \
 	  rm -f /tmp/.shengos-seal.*; \
-	  SECRETS_ENC=/tmp/shengos-secrets.tar.enc SECRETS_PASS=$$IMG_PASS \
-	    nix build --impure --accept-flake-config \
+	  # --builders '': drop to let remote builders help once SECRETS_ENC is a store path
+	  # nix store add-file: bake the ciphertext as a store input so the build
+	  # sandbox can read it (a bare /tmp path is invisible in the sandbox).
+	  SEAL_PATH=$(nix store add-file /tmp/shengos-secrets.tar.enc) \
+	  SECRETS_ENC=$SEAL_PATH SECRETS_PASS=$$IMG_PASS \
+	    nix build $(BUILDERS_FLAG) --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	  rm -f /tmp/shengos-secrets.tar.enc; \
 	else \
 	  echo 'image: no ~/.secrets — building without baked secrets'; \
-	  nix build --accept-flake-config \
+	  nix build $(BUILDERS_FLAG) --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	fi
 	@printf '\nImage: ls result/*.img.zst\n'
