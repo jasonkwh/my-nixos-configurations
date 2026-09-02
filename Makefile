@@ -79,9 +79,9 @@ live:
 jasonkwh-live: live
 
 # SD-card image: make image HOST=jasonkwh-bcm2711
-# (HOST= avoids make treating the host as a second goal and triggering a
-# pointless sudo rebuild.)  Cross-built natively on x86 (no QEMU); flash the
-# resulting .img.zst to a card: zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
+# `make image jasonkwh-bcm2711` is also supported. Cross-built natively on
+# x86 (no QEMU); flash the resulting .img.zst to a card:
+# zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
 # Prompts once for the machine password: ~/.secrets is sealed with it and
 # baked into the image (ciphertext), and it becomes the login password of
 # both jasonkwh and root on the board.  SECRETS_SKIP=1 builds without.
@@ -97,6 +97,9 @@ BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--build
 # as a CLI option on rebuild too.
 REBUILD_BUILDERS := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
 
+# The encrypted archive must first become a store input: build sandboxes
+# cannot read a bare /tmp path. Dollar signs are doubled for Make so command
+# substitution and shell variables reach the shell unchanged.
 image:
 	@test -n "$(IMG_HOST)" || { echo 'usage: make image HOST=jasonkwh-<host>'; exit 1; }
 	@if [ -n "$(SECRETS_SKIP)" ]; then \
@@ -110,11 +113,8 @@ image:
 	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
 	    -in /tmp/.shengos-seal.$$$${RANDOM} -out /tmp/shengos-secrets.tar.enc -pass env:SEAL_PASS; \
 	  rm -f /tmp/.shengos-seal.*; \
-	  # --builders '': drop to let remote builders help once SECRETS_ENC is a store path
-	  # nix store add-file: bake the ciphertext as a store input so the build
-	  # sandbox can read it (a bare /tmp path is invisible in the sandbox).
-	  SEAL_PATH=$(nix store add-file /tmp/shengos-secrets.tar.enc) \
-	  SECRETS_ENC=$SEAL_PATH SECRETS_PASS=$$IMG_PASS \
+	  SEAL_PATH=$$(nix store add-file /tmp/shengos-secrets.tar.enc) && \
+	  SECRETS_ENC=$$SEAL_PATH SECRETS_PASS=$$IMG_PASS \
 	    nix build $(BUILDERS_FLAG) --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	  rm -f /tmp/shengos-secrets.tar.enc; \
@@ -123,7 +123,7 @@ image:
 	  nix build $(BUILDERS_FLAG) --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	fi
-	@printf '\nImage: ls result/*.img.zst\n'
+	@printf '\nImage: ls result/sd-image/*.img.zst\n'
 
 # One-time bootstrap for services.syncthing: generate the device identity
 # before the first `make upgrade`, so the real device ID can be pasted into
@@ -140,4 +140,4 @@ headless-env:
 	bash cluster/misc/export-headless-env.sh
 
 $(HOSTS):
-	$(call nixos-rebuild,switch,$@)
+	$(if $(filter image,$(MAKECMDGOALS)),@:,$(call nixos-rebuild,switch,$@))

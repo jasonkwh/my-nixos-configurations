@@ -190,8 +190,8 @@ For the Tailscale key: generate an **auth key** in the admin console with
    ```bash
    make image jasonkwh-bcm2711      # Pi 4B
    make image jasonkwh-bcm2710a1    # bcm2710a1
-   zstd -d result/*.img.zst
-   sudo dd if=result/*.img of=/dev/sdX bs=4M status=progress
+   zstd -d result/sd-image/*.img.zst
+   sudo dd if=result/sd-image/*.img of=/dev/sdX bs=4M status=progress
    ```
 
 2. **First boot**: insert the card, power on. Wi-Fi and Tailscale enrolment
