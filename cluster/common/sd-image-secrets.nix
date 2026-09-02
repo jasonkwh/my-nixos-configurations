@@ -53,7 +53,8 @@ let
 
   secretsSetup = lib.optionalString (secretsEnc != "") ''
     mkdir -p ./files/home/${username}/.secrets
-    ${lib.getExe' pkgs.openssl "openssl"} enc -d -aes-256-cbc -pbkdf2 -iter 600000 \
+    SECRETS_PASS=${lib.escapeShellArg secretsPass} \
+      ${lib.getExe' pkgs.openssl "openssl"} enc -d -aes-256-cbc -pbkdf2 -iter 600000 \
       -in ${secretsEncPath} -out ./files/.secrets.tar -pass env:SECRETS_PASS
     tar -xf ./files/.secrets.tar -C ./files/home/${username}/.secrets
     rm -f ./files/.secrets.tar
