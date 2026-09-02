@@ -102,22 +102,25 @@ REBUILD_BUILDERS := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--bu
 # substitution and shell variables reach the shell unchanged.
 image:
 	@test -n "$(IMG_HOST)" || { echo 'usage: make image HOST=jasonkwh-<host>'; exit 1; }
-	@if [ -n "$(SECRETS_SKIP)" ]; then \
+	@set -e; \
+	if [ -n "$(SECRETS_SKIP)" ]; then \
 	  echo 'image: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
 	  nix build $(BUILDERS_FLAG) --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	elif [ -d /home/jasonkwh/.secrets ]; then \
-	  tar -cf /tmp/.shengos-seal.$$$${RANDOM} -C /home/jasonkwh .secrets; \
+	  SEAL_TAR=$$(mktemp /tmp/.shengos-seal.XXXXXX); \
+	  SEAL_ENC=$$(mktemp /tmp/shengos-secrets.XXXXXX.tar.enc); \
+	  trap 'rm -f "$$SEAL_TAR" "$$SEAL_ENC"' EXIT; \
+	  tar -cf "$$SEAL_TAR" -C /home/jasonkwh .secrets; \
 	  printf 'Machine password (board login/sudo for jasonkwh + root): '; \
 	  read -rs IMG_PASS; echo; \
 	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
-	    -in /tmp/.shengos-seal.$$$${RANDOM} -out /tmp/shengos-secrets.tar.enc -pass env:SEAL_PASS; \
-	  rm -f /tmp/.shengos-seal.*; \
-	  SEAL_PATH=$$(nix store add-file /tmp/shengos-secrets.tar.enc) && \
+	    -in "$$SEAL_TAR" -out "$$SEAL_ENC" -pass env:SEAL_PASS; \
+	  rm -f "$$SEAL_TAR"; \
+	  SEAL_PATH=$$(nix store add-file "$$SEAL_ENC"); \
 	  SECRETS_ENC=$$SEAL_PATH SECRETS_PASS=$$IMG_PASS \
 	    nix build $(BUILDERS_FLAG) --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
-	  rm -f /tmp/shengos-secrets.tar.enc; \
 	else \
 	  echo 'image: no ~/.secrets — building without baked secrets'; \
 	  nix build $(BUILDERS_FLAG) --accept-flake-config \

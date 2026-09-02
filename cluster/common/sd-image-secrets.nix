@@ -26,6 +26,11 @@ let
   secretsPass = builtins.getEnv "SECRETS_PASS";
   secretsSrc = builtins.getEnv "SECRETS_SRC";
 
+  # getEnv returns a context-free string. Restore store-path context so this
+  # file is a declared derivation input and is copied to remote builders.
+  secretsEncPath =
+    if secretsEnc != "" then builtins.storePath secretsEnc else null;
+
   repoBundle = pkgs.runCommand "my-nixos-configurations-bundle" { } ''
     mkdir -p "$out/share"
     cp -R ${../..} "$out/share/my-nixos-configurations"
@@ -49,7 +54,7 @@ let
   secretsSetup = lib.optionalString (secretsEnc != "") ''
     mkdir -p ./files/home/${username}/.secrets
     ${lib.getExe' pkgs.openssl "openssl"} enc -d -aes-256-cbc -pbkdf2 -iter 600000 \
-      -in ${secretsEnc} -out ./files/.secrets.tar -pass env:SECRETS_PASS
+      -in ${secretsEncPath} -out ./files/.secrets.tar -pass env:SECRETS_PASS
     tar -xf ./files/.secrets.tar -C ./files/home/${username}/.secrets
     rm -f ./files/.secrets.tar
     chown -R 1000:100 ./files/home/${username}/.secrets
