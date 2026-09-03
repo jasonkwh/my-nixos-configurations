@@ -1,6 +1,7 @@
 # Headless-safe core: shared by all hosts; headless boards import only this.
 {
   config,
+  osConfig,
   pkgs,
   lib,
   username,
@@ -10,6 +11,9 @@
   ...
 }:
 
+let
+  enableHermes = osConfig.services.hermes-agent.enable;
+in
 {
   targets.genericLinux.enable = true;
 
@@ -30,7 +34,7 @@
     '';
   };
 
-  accounts.email.accounts.gmail = {
+  accounts.email.accounts.gmail = lib.mkIf enableHermes {
     primary = true;
     address = email;
     realName = fullName;
@@ -100,7 +104,7 @@
       };
     };
 
-    himalaya.enable = true;
+    himalaya.enable = enableHermes;
 
     git = {
       enable = true;

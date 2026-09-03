@@ -155,18 +155,20 @@
       mkdir -p $out/share/pixmaps
       cp ${../../assets/logos/logo.png} $out/share/pixmaps/shengos.png
     '')
-    (writeShellScriptBin "brave-debug" ''
-      exec ${brave}/bin/brave \
-        --remote-debugging-port=9222 \
-        --user-data-dir=''${BRAVE_DEBUG_DIR:-$HOME/.hermes/brave-debug} \
-        ''${BRAVE_DEBUG_EXTRA_ARGS:-} "$@"
-    '')
     (writeShellScriptBin "meow" ''
       exec ${gnumake}/bin/make -C ${homeDirectory}/Documents/my-nixos-configurations "$@"
     '')
     tcpdump
     pciutils
     smartmontools
+    ]
+    ++ lib.optionals config.services.hermes-agent.enable [
+      (writeShellScriptBin "brave-debug" ''
+        exec ${brave}/bin/brave \
+          --remote-debugging-port=9222 \
+          --user-data-dir=''${BRAVE_DEBUG_DIR:-$HOME/.hermes/brave-debug} \
+          ''${BRAVE_DEBUG_EXTRA_ARGS:-} "$@"
+      '')
     ]
     ++ lib.optionals (!isHeadless) [ wineWow64Packages.full winetricks kdePackages.partitionmanager ]
     ++ [
@@ -516,7 +518,7 @@
     ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo >&2
   '';
 
-  system.activationScripts.hermes-config-access = {
+  system.activationScripts.hermes-config-access = lib.mkIf config.services.hermes-agent.enable {
     deps = [ "users" ];
     text = ''
       config_dir=${lib.escapeShellArg "${homeDirectory}/Documents/my-nixos-configurations"}
@@ -553,7 +555,7 @@
   # Deploy ShengOS's personality (SOUL.md) into Hermes' HERMES_HOME so the
   # agent comes up as 小升升 on every host.  Owned by hermes, read-only it is
   # not overwritten by Hermes' own seed logic on rebuild.
-  system.activationScripts.hermes-soul-md = {
+  system.activationScripts.hermes-soul-md = lib.mkIf config.services.hermes-agent.enable {
     deps = [ "users" ];
     text = ''
       install -o hermes -g hermes -m 0640 \
