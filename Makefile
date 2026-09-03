@@ -30,7 +30,7 @@ help:
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
-	sudo /run/current-system/sw/bin/nixos-rebuild $(1) $(REBUILD_BUILDERS) --flake $$(pwd)/#$(2)
+	sudo /run/current-system/sw/bin/nixos-rebuild $(1) --impure $(REBUILD_BUILDERS) --flake $$(pwd)/#$(2)
 endef
 
 # `make build` alone → upgrade current host
