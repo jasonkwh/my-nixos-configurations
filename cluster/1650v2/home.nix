@@ -1,10 +1,5 @@
-# Per-host extras for the trashcan (gaming/emulation + fleet node).
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [
-    retroarch-full
-    steam
-    mangohud
-  ];
+  home.packages = with pkgs; [ ];
 }
