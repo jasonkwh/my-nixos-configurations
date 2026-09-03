@@ -69,11 +69,17 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # Probe flake builders (from hostDefs.isBuilder — no hardcoding) with a short
 # TCP check; only reachable hosts go into --builders so an offline peer never
 # stalls the build on SSH timeout. Empty list = local-only.
-REMOTE_BUILDERS = $(shell bash cluster/misc/remote-builders.sh)
+# Only evaluate the flake and probe builders for targets that can actually
+# build. Doing this unconditionally delays even lightweight targets such as
+# `update` and `syncthing-init`, especially on slower boards.
+BUILDER_TARGETS := upgrade boot build gc image $(HOSTS)
+ifneq ($(filter $(BUILDER_TARGETS),$(MAKECMDGOALS)),)
+REMOTE_BUILDERS := $(shell bash cluster/misc/remote-builders.sh)
 BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
 # Same probe for nixos-rebuild: --builders is a nix.conf-style key, supported
 # as a CLI option on rebuild too.
 REBUILD_BUILDERS := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
+endif
 
 # The encrypted archive must first become a store input: build sandboxes
 # cannot read a bare /tmp path. Dollar signs are doubled for Make so command
