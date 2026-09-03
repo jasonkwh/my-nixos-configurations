@@ -45,7 +45,7 @@ ShengOS supports any number of machines sharing a common base, keeping hardware-
 |---------|----------|-------|
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
-| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D-series · 32GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
+| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x 2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card |
 | **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless thin client — zram-only swap, SD card |
 
