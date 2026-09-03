@@ -7,6 +7,7 @@
 # `make image` (Makefile) prompts once for the machine password and sets:
 #   SECRETS_ENC   — ~/.secrets sealed with that password (AES-256)
 #   SECRETS_PASS  — the same password (eval-time, for decrypt + hashing)
+#   REPO_GIT_ARCHIVE — .git metadata omitted by Nix's flake source filtering
 # Populate time then:
 #   - decrypts the seal into /home/<username>/.secrets
 #   - bakes the repo bundle into ~/Documents/my-nixos-configurations
@@ -25,11 +26,14 @@ let
   secretsEnc = builtins.getEnv "SECRETS_ENC";
   secretsPass = builtins.getEnv "SECRETS_PASS";
   secretsSrc = builtins.getEnv "SECRETS_SRC";
+  repoGitArchive = builtins.getEnv "REPO_GIT_ARCHIVE";
 
   # getEnv returns a context-free string. Restore store-path context so this
   # file is a declared derivation input and is copied to remote builders.
   secretsEncPath =
     if secretsEnc != "" then builtins.storePath secretsEnc else null;
+  repoGitArchivePath =
+    if repoGitArchive != "" then builtins.storePath repoGitArchive else null;
 
   repoBundle = pkgs.runCommand "my-nixos-configurations-bundle" { } ''
     mkdir -p "$out/share"
@@ -63,11 +67,16 @@ let
     chmod 600 ./files/home/${username}/.secrets/* 2>/dev/null || true
     echo "sd-image: secrets baked into /home/${username}/.secrets"
 
+  '';
+
+  repoSetup = lib.optionalString (repoGitArchive != "") ''
     mkdir -p ./files/home/${username}/Documents
     cp -R ${repoBundle}/share/my-nixos-configurations ./files/home/${username}/Documents/
+    tar -xf ${repoGitArchivePath} \
+      -C ./files/home/${username}/Documents/my-nixos-configurations
     chown -R 1000:100 ./files/home/${username}/Documents/my-nixos-configurations
     chmod -R u+rwX,go+rX ./files/home/${username}/Documents/my-nixos-configurations
-    echo "sd-image: repo baked into /home/${username}/Documents/my-nixos-configurations"
+    echo "sd-image: git repo baked into /home/${username}/Documents/my-nixos-configurations"
   '';
 
   legacyPlaintext = lib.optionalString (secretsEnc == "" && secretsSrc != "") ''
@@ -80,8 +89,9 @@ let
   '';
 in
 {
-  sdImage.populateRootCommands = lib.mkIf (secretsEnc != "" || secretsSrc != "") (lib.mkAfter ''
+  sdImage.populateRootCommands = lib.mkIf (secretsEnc != "" || secretsSrc != "" || repoGitArchive != "") (lib.mkAfter ''
     ${secretsSetup}
+    ${repoSetup}
     ${legacyPlaintext}
   '');
 

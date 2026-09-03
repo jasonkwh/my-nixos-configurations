@@ -64,8 +64,9 @@ gc:
 # baked into the image (ciphertext), and it becomes the login password of
 # both jasonkwh and root on the board.  SECRETS_SKIP=1 builds without.
 IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS),$(filter-out image,$(MAKECMDGOALS))))
-# --impure on nix build: SECRETS_* enter via builtins.getEnv at eval time;
-# pure eval returns empty and the image silently bakes no secrets.
+# --impure on nix build: SECRETS_* and REPO_GIT_ARCHIVE enter via
+# builtins.getEnv at eval time. Nix filters .git from flake sources, so the
+# image recipe adds it to the store separately and the image restores it.
 # Probe flake builders (from hostDefs.isBuilder — no hardcoding) with a short
 # TCP check; only reachable hosts go into --builders so an offline peer never
 # stalls the build on SSH timeout. Empty list = local-only.
@@ -88,14 +89,18 @@ endif
 image:
 	@test -n "$(IMG_HOST)" || { echo 'usage: make image HOST=jasonkwh-<host>'; exit 1; }
 	@set -e; \
+	test -e .git || { echo 'image: current directory is not a Git worktree'; exit 1; }; \
+	GIT_TAR=$$(mktemp /tmp/shengos-git.XXXXXX.tar); \
+	trap 'rm -f "$$GIT_TAR" "$$SEAL_TAR" "$$SEAL_ENC"' EXIT; \
+	tar -cf "$$GIT_TAR" .git; \
+	GIT_PATH=$$(nix store add-file "$$GIT_TAR"); \
 	if [ -n "$(SECRETS_SKIP)" ]; then \
 	  echo 'image: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
-	  nix build $(BUILDERS_FLAG) --accept-flake-config \
+	  REPO_GIT_ARCHIVE=$$GIT_PATH nix build $(BUILDERS_FLAG) --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	elif [ -d /home/jasonkwh/.secrets ]; then \
 	  SEAL_TAR=$$(mktemp /tmp/.shengos-seal.XXXXXX); \
 	  SEAL_ENC=$$(mktemp /tmp/shengos-secrets.XXXXXX.tar.enc); \
-	  trap 'rm -f "$$SEAL_TAR" "$$SEAL_ENC"' EXIT; \
 	  tar -cf "$$SEAL_TAR" -C /home/jasonkwh/.secrets .; \
 	  printf 'Machine password (board login/sudo for jasonkwh + root): '; \
 	  read -rs IMG_PASS; echo; \
@@ -103,12 +108,12 @@ image:
 	    -in "$$SEAL_TAR" -out "$$SEAL_ENC" -pass env:SEAL_PASS; \
 	  rm -f "$$SEAL_TAR"; \
 	  SEAL_PATH=$$(nix store add-file "$$SEAL_ENC"); \
-	  SECRETS_ENC=$$SEAL_PATH SECRETS_PASS=$$IMG_PASS \
+	  SECRETS_ENC=$$SEAL_PATH SECRETS_PASS=$$IMG_PASS REPO_GIT_ARCHIVE=$$GIT_PATH \
 	    nix build $(BUILDERS_FLAG) --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	else \
 	  echo 'image: no ~/.secrets — building without baked secrets'; \
-	  nix build $(BUILDERS_FLAG) --accept-flake-config \
+	  REPO_GIT_ARCHIVE=$$GIT_PATH nix build $(BUILDERS_FLAG) --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
 	fi
 	@printf '\nImage: ls result/sd-image/*.img.zst\n'
