@@ -29,7 +29,7 @@ This document explains how to install ShengOS on a brand-new machine and restore
 
 Set neither flag for a regular x86 desktop. Home Manager file selection is automatic: `cluster/common/home.nix` routes the shared CLI core plus desktop/laptop layers based on these flags — only put machine-specific packages in the copied `cluster/<host>/home.nix`.
 
-2. Commit and push. The host's `hardware-configuration.nix` is generated on real hardware during install (Step 2) and committed afterwards — until then this host cannot eval, which is expected.
+2. Commit and push. During install the host falls back to `/etc/nixos/hardware-configuration.nix` (generated in Step 2 below); once the repo copy lands in `cluster/<new-hostname>/` it takes priority. Impure eval only (`--impure`) until then.
 
 ## Step 2: Boot the minimal ISO and install
 
@@ -43,7 +43,7 @@ sudo mount /dev/sda2 /mnt && sudo mkdir -p /mnt/boot && sudo mount /dev/sda1 /mn
 sudo nixos-generate-config --root /mnt
 ```
 
-3. Replace the generated `/mnt/etc/nixos/hardware-configuration.nix` into the repo: copy it out (USB/`curl` via a gist), put it in `cluster/<new-hostname>/`, commit and push from an existing machine.
+3. Optional but recommended: copy the generated `/mnt/etc/nixos/hardware-configuration.nix` into the repo at `cluster/<new-hostname>/`, commit and push from an existing machine. Until then the flake falls back to `/etc/nixos/hardware-configuration.nix` automatically, so install works either way.
 4. Install straight from the GitHub flake:
 
 ```bash

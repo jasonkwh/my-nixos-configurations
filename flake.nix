@@ -118,10 +118,12 @@
           syncthingDevices = builtins.mapAttrs
             (_: def: { id = def.syncthingId; })
             (lib.filterAttrs (_: def: def ? syncthingId) hostDefs);
-          # Each machine pulls its own cluster/<name>/hardware-configuration.nix,
-          # imported in cluster/common/configuration.nix. Generated on real
-          # hardware (nixos-generate-config) and committed before first install.
-          hardwareConfig = ./cluster/${name}/hardware-configuration.nix;
+          # Prefer the repo copy, fall back to /etc/nixos on first boot
+          # (before nixos-generate-config output has been committed).
+          hardwareConfig =
+            if builtins.pathExists (./cluster/${name}/hardware-configuration.nix)
+            then ./cluster/${name}/hardware-configuration.nix
+            else /etc/nixos/hardware-configuration.nix;
         };
         modules = [
           { nixpkgs.hostPlatform = hostSystem; }
