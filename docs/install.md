@@ -24,6 +24,7 @@ This document explains how to install ShengOS on a brand-new machine and restore
   hostSystem = "x86_64-linux";   # or "aarch64-linux" for ARM boards
   isLaptop = true;               # laptops only: lid/Wayland/battery extras
   isHeadless = true;             # boards only: strips Plasma/GUI/Steam/GPU
+  syncthingId = "<device-id>";    # omit until the real ID is available
   # isHermesWhatsappGateway = true; # optional; exactly one fleet host
 };
 ```
@@ -73,7 +74,7 @@ git clone https://github.com/jasonkwh/my-nixos-configurations.git ~/Documents/my
 
 Hermes' memories and skills folders sync across the fleet via Syncthing. Each
 device has a unique device ID that must be registered in
-`cluster/common/configuration.nix` — a fresh machine is not known to the fleet
+`flake.nix` under its `hostDefs` entry — a fresh machine is not known to the fleet
 until you complete this step:
 
 1. Generate the device identity and print the new machine's device ID:
@@ -83,14 +84,13 @@ until you complete this step:
    make syncthing-init    # idempotent; needs sudo once (chown to hermes)
    ```
 
-2. Paste the printed ID into `cluster/common/configuration.nix` under
-   `services.syncthing.settings.devices."jasonkwh-<hostname>".id`, commit, and
-   pull on the other machines.
+2. Paste the printed ID into the host's `syncthingId` in `flake.nix` under
+   `hostDefs`, commit, and pull on the other machines.
 3. Rebuild both machines (`make upgrade`). Verify pairing:
 
    ```bash
-   systemctl status syncthing-hermes
-   sudo journalctl -u syncthing-hermes | grep -i 'established\|connected'
+   systemctl status syncthing
+   sudo journalctl -u syncthing | grep -i 'established\|connected'
    ```
 
 Device IDs are public-key fingerprints — safe to commit to GitHub. The private
@@ -142,8 +142,8 @@ cd ~/Documents/my-nixos-configurations
 make syncthing-init    # pre-generates identity and prints the device ID
 ```
 
-then paste it into `cluster/common/configuration.nix` under
-`services.syncthing.settings.devices` (see Step 4 of this guide). Device IDs
+then paste it into that host's `syncthingId` in `flake.nix` under `hostDefs`
+(see Step 4 of this guide). Device IDs
 are public-key fingerprints and are safe to commit to GitHub; the private key
 stays in `/var/lib/syncthing-hermes/.config/syncthing/`.
 
@@ -238,13 +238,16 @@ For the Tailscale key: generate an **auth key** in the admin console with
    make syncthing-init    # prints this machine's device ID
    ```
 
-5. **Register everywhere**: paste the device ID into
-   `cluster/common/configuration.nix` (`syncthingDevices` map + both folder
-   `devices` lists), commit, pull on the other machines, rebuild them.
+5. **Register everywhere**: paste the device ID into the board's
+   `syncthingId` in `flake.nix` under `hostDefs`; the fleet device and folder
+   lists are derived automatically. Commit, pull on the other machines, and
+   rebuild them.
 6. **Build and switch on the board**: `make upgrade`.
 
 The `bcm2710a1` host has no nixos-hardware module, so its SD image uses the
 generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is included).
+It keeps Hermes disabled to fit its 512MB RAM, but runs Syncthing as an
+explicitly provisioned `hermes` system user to provide a backup replica.
 
 The Pi boots via Broadcom firmware + extlinux (`boot.loader.generic-extlinux-compatible`),
 not UEFI — its `cluster/bcm2711/configuration.nix` overrides the common

@@ -31,7 +31,7 @@ The entire system — desktop, applications, development tools, services, and se
 - **Reproducible builds** — `flake.lock` pins every dependency; switch machines freely.
 - **Distributed builds** — every x86_64/aarch64 Linux host declared with `buildSpeed`/`maxBuildJobs` in `flake.nix`'s `hostDefs` automatically joins the fleet builder pool: local jobs fill first, overflow spills to peers over Tailscale SSH. Add a machine, add two numbers — it's in the pool.
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
-- **Headless boards** — single-board computers (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`) run a stripped, headless profile: no desktop/Steam/GPU stack, zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
+- **Headless boards** — single-board computers (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`) run a stripped, headless profile: no desktop/Steam/GPU stack, shared CLI tools (including `gh`), zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
 - **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep the fleet in lockstep.
 - **Flake install** — boot the official NixOS minimal ISO and `nixos-install --flake github:jasonkwh/my-nixos-configurations#<host>`: no custom image to build, config comes straight from GitHub. See [docs/install.md](docs/install.md).
@@ -48,7 +48,7 @@ ShengOS supports any number of machines sharing a common base, keeping hardware-
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
 | **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x 2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway — no desktop, zram, SD card |
-| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless thin client — zram-only swap, SD card |
+| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled, zram-only swap, SD card |
 
 ### Distributed build pool
 
@@ -105,7 +105,7 @@ local to that host and must be paired there.
 | `meow image <hostname>` | Build an SD-card image for a host, e.g. `meow image jasonkwh-bcm2711` → `result/*.img.zst` |
 | `meow headless-env` | Export the build host's Wi-Fi credentials (+ optional Tailscale auth key) into `~/.secrets/headless-env` for headless boards |
 | `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
-| `meow syncthing-init` | One-time bootstrap of Syncthing identity on a new machine; prints the device ID to register in `cluster/common/configuration.nix` |
+| `meow syncthing-init` | One-time bootstrap of Syncthing identity on a new machine; prints the device ID to register in `flake.nix`'s `hostDefs` |
 
 `upgrade` defaults to the machine's hostname; pass `HOST=` or name a host directly to target a specific machine.
 

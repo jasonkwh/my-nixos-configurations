@@ -120,11 +120,11 @@ image:
 
 # One-time bootstrap for services.syncthing: generate the device identity
 # before the first `make upgrade`, so the real device ID can be pasted into
-# cluster/common/configuration.nix. Safe to re-run (idempotent).
+# the host's `syncthingId` in flake.nix. Safe to re-run (idempotent).
 syncthing-init:
 	sudo nix run nixpkgs#syncthing -- generate --home=/var/lib/syncthing-hermes/.config/syncthing
 	sudo chown -R hermes:hermes /var/lib/syncthing-hermes
-	@printf '\n^^^ Device ID for $(HOST) is on the "Calculated device ID" line above — paste it into configuration.nix\n'
+	@printf '\n^^^ Device ID for $(HOST) is on the "Calculated device ID" line above — paste it into flake.nix hostDefs\n'
 
 # Export the build host's live Wi-Fi credentials (and optionally a Tailscale
 # auth key) into ~/.secrets/headless-env, read by wifi-home.nix /
