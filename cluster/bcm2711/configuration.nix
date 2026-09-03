@@ -13,6 +13,10 @@
     ];
   };
 
+  # The nixos-hardware Pi 4 module replaces the generic SD-image firmware
+  # population step, so explicitly include U-Boot and point config.txt at it.
+  hardware.raspberry-pi.firmware.uboot.enable = true;
+
   zramSwap.memoryPercent = 50;
 
   time.timeZone = "Australia/Melbourne";
