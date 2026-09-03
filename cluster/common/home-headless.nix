@@ -158,6 +158,7 @@ in
       yq
       neovim
       git
+      gh
       vim
       wget
       gcc

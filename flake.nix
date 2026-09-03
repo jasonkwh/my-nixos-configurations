@@ -94,12 +94,11 @@
           name = "bcm2710a1";
           hostSystem = "aarch64-linux";
           isHeadless = true;
-          # No nixos-hardware module exists for Zero 2 W; generic aarch64.
+          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };
         "jasonkwh-1650v2" = {
           name = "1650v2";
           hostSystem = "x86_64-linux";
-          # MacPro6,1 trashcan: desktop, not a laptop; not headless (KDE).
           isLaptop = false;
           syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };

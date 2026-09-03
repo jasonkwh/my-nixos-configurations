@@ -54,7 +54,6 @@
   # live here (not home-headless) so ARM SD images stay lean.
   home.packages = with pkgs;
     [
-      gh
       kubectl
       kubectx
       k9s

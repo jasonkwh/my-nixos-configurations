@@ -14,9 +14,9 @@
     ];
   };
 
-  # Keep this 512MB edge node lean; heavier fleet services run elsewhere.
+  # Keep this 512MB edge node lean; Syncthing remains enabled so it can
+  # provide another backup replica for the fleet.
   services.hermes-agent.enable = lib.mkForce false;
-  services.syncthing.enable = lib.mkForce false;
 
   # 512MB RAM — zram is the only swap.
   zramSwap.memoryPercent = 100;
