@@ -94,7 +94,7 @@
           hostSystem = "aarch64-linux";
           isHeadless = true;
           # No nixos-hardware module exists for Zero 2 W; generic aarch64.
-          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
+          syncthingId = "7XLNJVF-6MG6KFI-RV7D3DD-2XQ7YLT-M37RPTU-4CJSW3K-KQQXYAX-CUI3KAQ";
         };
         "jasonkwh-1650v2" = {
           name = "1650v2";
