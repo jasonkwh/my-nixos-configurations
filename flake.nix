@@ -87,7 +87,7 @@
           buildSpeed = 3;
           maxBuildJobs = 4;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
-          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
+          syncthingId = "3HVJKXT-JBAOZME-7IO7IXE-ZVA3RPU-NVZ37PL-G26C3V7-JFAETLE-ZOFKBAB";
         };
         "jasonkwh-bcm2710a1" = {
           name = "bcm2710a1";
