@@ -72,6 +72,7 @@ let
   repoSetup = lib.optionalString (repoGitArchive != "") ''
     mkdir -p ./files/home/${username}/Documents
     cp -R ${repoBundle}/share/my-nixos-configurations ./files/home/${username}/Documents/
+    chmod -R u+rwX ./files/home/${username}/Documents/my-nixos-configurations
     tar -xf ${repoGitArchivePath} \
       -C ./files/home/${username}/Documents/my-nixos-configurations
     chown -R 1000:100 ./files/home/${username}/Documents/my-nixos-configurations
