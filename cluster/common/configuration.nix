@@ -160,7 +160,6 @@
     '')
     tcpdump
     pciutils
-    smartmontools
     ]
     ++ lib.optionals config.services.hermes-agent.enable [
       (writeShellScriptBin "brave-debug" ''
@@ -170,7 +169,12 @@
           ''${BRAVE_DEBUG_EXTRA_ARGS:-} "$@"
       '')
     ]
-    ++ lib.optionals (!isHeadless) [ wineWow64Packages.full winetricks kdePackages.partitionmanager ]
+    ++ lib.optionals (!isHeadless) [
+      smartmontools
+      wineWow64Packages.full
+      winetricks
+      kdePackages.partitionmanager
+    ]
     ++ [
     htop
     direnv
