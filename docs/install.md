@@ -24,10 +24,19 @@ This document explains how to install ShengOS on a brand-new machine and restore
   hostSystem = "x86_64-linux";   # or "aarch64-linux" for ARM boards
   isLaptop = true;               # laptops only: lid/Wayland/battery extras
   isHeadless = true;             # boards only: strips Plasma/GUI/Steam/GPU
+  # isHermesWhatsappGateway = true; # optional; exactly one fleet host
 };
 ```
 
-Set neither flag for a regular x86 desktop. Home Manager file selection is automatic: `cluster/common/home.nix` routes the shared CLI core plus desktop/laptop layers based on these flags — only put machine-specific packages in the copied `cluster/<host>/home.nix`.
+Set neither class flag for a regular x86 desktop. Home Manager file selection
+is automatic: `cluster/common/home.nix` routes the shared CLI core plus
+desktop/laptop layers based on these flags — only put machine-specific
+packages in the copied `cluster/<host>/home.nix`.
+
+`isHermesWhatsappGateway` is separate from the host class. Set it on exactly
+one Hermes-enabled host to add `WHATSAPP_ENABLED=true`; leave it absent
+everywhere else. A host with Hermes disabled cannot activate WhatsApp even if
+the flag is accidentally set.
 
 2. Commit and push. During install the host falls back to `/etc/nixos/hardware-configuration.nix` (generated in Step 2 below); once the repo copy lands in `cluster/<new-hostname>/` it takes priority. Impure eval only (`--impure`) until then.
 
@@ -143,6 +152,15 @@ No. Syncthing only exchanges data between devices that have each other's device
 ID registered. A fresh node pairs with an empty/unknown state only after you
 complete the pairing step above; both folders also use trashcan versioning
 (14-day retention) as a safety net against accidental overwrites.
+
+### Q: How do I move the Hermes WhatsApp gateway to another host?
+Move `isHermesWhatsappGateway = true` to the target host in `flake.nix`. Rebuild
+the old gateway first so its WhatsApp bridge stops, then rebuild the new
+gateway; this avoids both bridges running simultaneously during the change.
+
+The Baileys WhatsApp session is host-local and is deliberately not synchronized
+by Syncthing. Pair WhatsApp on the new gateway with `hermes whatsapp` if that
+host does not already have a valid session.
 
 ### Q: How do distributed builds work?
 Any host declaring `buildSpeed` and `maxBuildJobs` in `flake.nix`'s `hostDefs`

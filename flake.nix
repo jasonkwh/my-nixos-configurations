@@ -83,6 +83,7 @@
           name = "bcm2711";
           hostSystem = "aarch64-linux";
           isHeadless = true;
+          isHermesWhatsappGateway = true;
           isBuilder = true;
           buildSpeed = 3;
           maxBuildJobs = 4;
@@ -106,7 +107,7 @@
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, isHermesWhatsappGateway ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
           inherit name;
@@ -129,6 +130,10 @@
           inputs.hermes-agent.nixosModules.default
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
+          ({ config, ... }:
+            lib.mkIf (isHermesWhatsappGateway && config.services.hermes-agent.enable) {
+              services.hermes-agent.environment.WHATSAPP_ENABLED = "true";
+            })
           # Only x86 non-headless hosts get aarch64 QEMU emulation
           # (bcm2711 SD image builds). ARM/headless hosts never do.
           (lib.mkIf (hostSystem == "x86_64-linux" && !isHeadless) {

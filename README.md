@@ -35,7 +35,8 @@ The entire system — desktop, applications, development tools, services, and se
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
 - **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep the fleet in lockstep.
 - **Flake install** — boot the official NixOS minimal ISO and `nixos-install --flake github:jasonkwh/my-nixos-configurations#<host>`: no custom image to build, config comes straight from GitHub. See [docs/install.md](docs/install.md).
-- **Private assistant** — Hermes Agent with a personal companion. See [小升升](#personal-assistant-小升升).
+- **Private assistant** — Hermes Agent with a personal companion; one designated
+  fleet host owns the WhatsApp gateway. See [小升升](#personal-assistant-小升升).
 
 ## Machine profiles
 
@@ -46,7 +47,7 @@ ShengOS supports any number of machines sharing a common base, keeping hardware-
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
 | **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x 2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
-| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway — no desktop, zram, SD card |
 | **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless thin client — zram-only swap, SD card |
 
 ### Distributed build pool
@@ -60,7 +61,18 @@ user via `nix.settings.trusted-users`. To extend the pool to a new
 architecture (e.g. `aarch64-darwin` via a Linux VM builder), add the system
 string to the per-arch list in `cluster/common/configuration.nix`.
 
-Host classes are selected via `mkHost` flags in `flake.nix`: `hostSystem` (per-host architecture), `isLaptop`, `isHeadless` — setting neither flag means a desktop machine. Home Manager layers route through `cluster/common/home.nix`: every host gets the shared CLI core (`home-headless.nix`), non-headless hosts add `home-desktop.nix` (Plasma/GUI), and laptops additionally get `home-laptop.nix`; machine-specific packages live in `cluster/<host>/home.nix`. System-level headless stripping remains `cluster/common/headless.nix`. x86 non-headless hosts can cross-build aarch64 images via QEMU binfmt emulation.
+Host classes are selected via `mkHost` flags in `flake.nix`: `hostSystem`
+(per-host architecture), `isLaptop`, and `isHeadless` — setting neither class
+flag means a desktop machine. `isHermesWhatsappGateway = true` designates the
+single WhatsApp gateway and enables WhatsApp only when Hermes itself is
+enabled; currently this is `jasonkwh-bcm2711`. Do not set it on more than one
+host. Home Manager layers route through `cluster/common/home.nix`: every host
+gets the shared CLI core (`home-headless.nix`), non-headless hosts add
+`home-desktop.nix` (Plasma/GUI), and laptops additionally get
+`home-laptop.nix`; machine-specific packages live in
+`cluster/<host>/home.nix`. System-level headless stripping remains
+`cluster/common/headless.nix`. x86 non-headless hosts can cross-build aarch64
+images via QEMU binfmt emulation.
 
 ## Quick start
 
@@ -75,7 +87,12 @@ See [Command reference](#command-reference) for the full list, or [docs/install.
 
 ## Personal assistant (小升升)
 
-ShengOS ships with a personal AI assistant — **小升升** — a private companion that lives on the machine, answers to its owner, and looks after them day to day. She runs entirely from the flake, boots on every host, and stays in sync between laptops via Tailscale and Syncthing. No cloud, no telemetry — just your own machine.
+ShengOS ships with a personal AI assistant — **小升升** — a private companion
+that lives on the machine, answers to its owner, and looks after them day to
+day. She runs from the flake on Hermes-enabled hosts, and memories and skills
+stay in sync via Tailscale and Syncthing. WhatsApp is intentionally active on
+only the host marked `isHermesWhatsappGateway`; its Baileys session remains
+local to that host and must be paired there.
 
 ## Command reference
 
