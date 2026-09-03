@@ -74,7 +74,8 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # `update` and `syncthing-init`, especially on slower boards.
 BUILDER_TARGETS := upgrade boot build gc image $(HOSTS)
 ifneq ($(filter $(BUILDER_TARGETS),$(MAKECMDGOALS)),)
-REMOTE_BUILDERS := $(shell bash cluster/misc/remote-builders.sh)
+BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
+REMOTE_BUILDERS := $(shell bash cluster/misc/remote-builders.sh '$(BUILDER_HOST)')
 BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
 # Same probe for nixos-rebuild: --builders is a nix.conf-style key, supported
 # as a CLI option on rebuild too.
