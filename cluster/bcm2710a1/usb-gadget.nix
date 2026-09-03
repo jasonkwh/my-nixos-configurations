@@ -50,4 +50,10 @@
       prefixLength = 24;
     }
   ];
+  networking.interfaces.usb0.useDHCP = false;
+  networking.networkmanager.unmanaged = [ "interface-name:usb0" ];
+  networking.defaultGateway = {
+    address = "10.55.0.1";
+    interface = "usb0";
+  };
 }
