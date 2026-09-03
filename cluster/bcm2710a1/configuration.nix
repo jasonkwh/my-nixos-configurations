@@ -18,6 +18,19 @@
   # provide another backup replica for the fleet.
   services.hermes-agent.enable = lib.mkForce false;
 
+  # Hermes normally creates this account, but the agent is disabled here.
+  # Syncthing still uses it so synced files retain consistent ownership.
+  users.groups.hermes = { };
+  users.users.hermes = {
+    isSystemUser = true;
+    group = "hermes";
+    home = "/var/lib/hermes";
+    createHome = true;
+  };
+  systemd.tmpfiles.rules = [
+    "d /var/lib/syncthing-hermes 0700 hermes hermes -"
+  ];
+
   # 512MB RAM — zram is the only swap.
   zramSwap.memoryPercent = 100;
 
