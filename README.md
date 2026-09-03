@@ -102,7 +102,6 @@ cluster/             # Per-host & shared NixOS config
                      #   home.nix — HM entry point routing home-headless/-desktop/-laptop
   misc/              #   Non-module assets: SOUL.md (Hermes personality),
                      #   export-headless-env.sh (Wi-Fi/Tailscale secret exporter)
-  live/              #   Minimal ISO — installer for new fleet nodes
   7520u/             #   AMD Ryzen 5 7520U host
   7300u/             #   Intel Core i5-7300U host
   1650v2/            #   Mac Pro 2013 (trashcan) — emulation/retro gaming
