@@ -2,39 +2,24 @@
 
 This document explains how to install ShengOS on a brand-new machine and restore a full development environment. Two paths:
 
-- **x86 laptop/desktop** — install from the Live USB, then follow Steps 2–6.
-- **ARM board / headless node (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`)** — skip the Live USB; see "Headless board path" at the end.
+- **x86 laptop/desktop** — install from the official NixOS minimal ISO directly against the GitHub flake, then follow Steps 2–6.
+- **ARM board / headless node (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`)** — skip the ISO; see "Headless board path" at the end.
 
 **Core principle:** use an existing machine as the source of truth, and copy secrets over an encrypted channel (Tailscale) — never a plaintext USB stick.
 
 ## Prerequisites
 
-- A ShengOS Live USB built with `make live`
-- Network connectivity on the target machine
-- An already-configured machine (e.g. `jasonkwh-7520u`) acting as the source for configuration and secrets
+- The official NixOS minimal ISO (download from nixos.org, written to a USB stick — no custom image to build)
+- Network connectivity on the target machine (Ethernet preferred; see the Mac Pro FAQ for Wi-Fi caveats)
+- The target host already registered in the flake (see Step 1)
+- An already-configured machine (e.g. `jasonkwh-7520u`) acting as the source for secrets
 
-## Step 1: Boot from the Live USB and install
+## Step 1: Register the host in the flake (on an existing machine, before install)
 
-1. Boot from the Live USB to reach the graphical Calamares installer.
-2. **The username must be `jasonkwh`** (pre-filled in the Calamares UI). The entire configuration repository hard-codes `/home/jasonkwh` and the username — a custom username is **not** supported.
-3. After installation, Calamares runs a copy script that places this repository in the user's `~/Documents/`. The script also enables the `nix-command` and `flakes` experimental features in the installed system, so the first rebuild works out of the box.
-
-## Step 2: First boot — update the repository
-
-The `~/Documents/my-nixos-configurations` directory exists after install, but is a snapshot from when the Live USB was built (possibly outdated). Update it first:
-
-```bash
-cd ~/Documents/my-nixos-configurations
-git pull origin main    # fetch the latest configuration
-```
-
-## Step 3: Add the new machine's host configuration
-
-1. Copy an existing host (e.g. `cluster/7520u/`) to `cluster/<new-hostname>/` and adjust as needed.
-2. Register the host in `flake.nix` under `nixosConfigurations`:
+1. Copy an existing host (e.g. `cluster/7520u/`) to `cluster/<new-hostname>/` and adjust as needed. Add the host to `hostDefs` in `flake.nix`:
 
 ```nix
-"jasonkwh-<new-hostname>" = mkHost {
+"jasonkwh-<new-hostname>" = {
   name = "<new-hostname>";
   hostSystem = "x86_64-linux";   # or "aarch64-linux" for ARM boards
   isLaptop = true;               # laptops only: lid/Wayland/battery extras
@@ -44,18 +29,38 @@ git pull origin main    # fetch the latest configuration
 
 Set neither flag for a regular x86 desktop. Home Manager file selection is automatic: `cluster/common/home.nix` routes the shared CLI core plus desktop/laptop layers based on these flags — only put machine-specific packages in the copied `cluster/<host>/home.nix`.
 
-> Each host's `hardware-configuration.nix` lives in the repo at `cluster/<host>/` and is picked up automatically by `mkHost` — do not regenerate it for fun. A leftover `/etc/nixos/` directory on installed machines is a stale legacy copy: never edit it.
+2. Commit and push. The host's `hardware-configuration.nix` is generated on real hardware during install (Step 2) and committed afterwards — until then this host cannot eval, which is expected.
 
-## Step 4: Build and switch
+## Step 2: Boot the minimal ISO and install
 
-Use the bundled `meow` wrapper (`meow` is an alias for the Makefile, which calls `nixos-rebuild switch`):
+1. Boot the official NixOS minimal ISO, connect to the network.
+2. Partition and mount the target disk (UEFI: ESP + root), e.g.:
 
 ```bash
-cd ~/Documents/my-nixos-configurations
-./meow build <new-hostname>    # or: make <new-hostname>
+sudo parted /dev/sda -- mklabel gpt mkpart ESP fat32 1MiB 512MiB set 1 esp on mkpart primary 512MiB 100%
+sudo mkfs.fat -F32 /dev/sda1 && sudo mkfs.ext4 /dev/sda2
+sudo mount /dev/sda2 /mnt && sudo mkdir -p /mnt/boot && sudo mount /dev/sda1 /mnt/boot
+sudo nixos-generate-config --root /mnt
 ```
 
-## Step 5: Pair Syncthing (fleet file sync)
+3. Replace the generated `/mnt/etc/nixos/hardware-configuration.nix` into the repo: copy it out (USB/`curl` via a gist), put it in `cluster/<new-hostname>/`, commit and push from an existing machine.
+4. Install straight from the GitHub flake:
+
+```bash
+sudo nixos-install --flake github:jasonkwh/my-nixos-configurations#jasonkwh-<new-hostname>
+```
+
+5. Set the user password (`passwd` inside the installed system via `sudo nixos-enter` or on first boot) and reboot.
+
+## Step 3: First boot — clone the repo
+
+```bash
+git clone https://github.com/jasonkwh/my-nixos-configurations.git ~/Documents/my-nixos-configurations
+```
+
+(On fresh installs the repo is not pre-copied; cloning it directly is the source of truth.)
+
+## Step 4: Pair Syncthing (fleet file sync)
 
 Hermes' memories and skills folders sync across the fleet via Syncthing. Each
 device has a unique device ID that must be registered in
@@ -83,7 +88,7 @@ Device IDs are public-key fingerprints — safe to commit to GitHub. The private
 key lives in `/var/lib/syncthing-hermes/.config/syncthing/` and never leaves
 the machine.
 
-## Step 6: Verify
+## Step 5: Verify
 
 ```bash
 hostname          # should print the new hostname
@@ -129,7 +134,7 @@ make syncthing-init    # pre-generates identity and prints the device ID
 ```
 
 then paste it into `cluster/common/configuration.nix` under
-`services.syncthing.settings.devices` (see Step 5 of this guide). Device IDs
+`services.syncthing.settings.devices` (see Step 4 of this guide). Device IDs
 are public-key fingerprints and are safe to commit to GitHub; the private key
 stays in `/var/lib/syncthing-hermes/.config/syncthing/`.
 
@@ -149,27 +154,29 @@ in `hostDefs`; to add a whole new architecture, extend the per-arch list in
 `cluster/common/configuration.nix`.
 
 ### Q: Installing on a Mac Pro 2013 (trashcan)?
-Supported via the standard Live USB path. The Live image already carries the
-hardware fixes this machine needs (added to `cluster/live/configuration.nix`):
+Registered as `jasonkwh-1650v2` in this repo — `cluster/1650v2/configuration.nix`
+carries the hardware fixes (from the
+[Debian wiki page for MacPro6,1](https://wiki.debian.org/InstallingDebianOn/Apple/MacPro/6-1)):
 
 - **Graphics**: FirePro D300/D700 (GCN1) via modern amdgpu — kernel params
-  `radeon.si_support=0 amdgpu.si_support=1 amdgpu.dc=1`.
-- **Stability**: `intel_iommu=off` — without it the machine crashes randomly
-  (hinted by the [Debian wiki page for MacPro6,1](https://wiki.debian.org/InstallingDebianOn/Apple/MacPro/6-1)).
+  `radeon.si_support=0 amdgpu.si_support=1 amdgpu.dc=1 amdgpu.dpm=0`.
+- **Stability**: `intel_iommu=off` — without it the machine crashes randomly.
+- **Fans**: mbpfan drives the Apple SMC fan curve; without it the twin fans
+  misbehave (constant loud or insufficient cooling).
 - **Wi-Fi**: BCM4360 (14e4:43a0) only works with the out-of-tree
   `broadcom_sta` driver, accepted as a deliberately permitted insecure
   package. **Plug in Ethernet anyway** — the Wi-Fi driver is known to be
   flaky in the community, and Ethernet is the reliable path for install.
 
-When you create the permanent `cluster/macpro/` host config, mirror these
-settings there (the Live USB only covers the install phase) and decide the
-bootloader variant then: GRUB with standard NVRAM entries is the default, but
-Mac firmware occasionally drops NVRAM entries — if boot becomes unreliable,
-switch to `boot.loader.grub.efiInstallAsRemovable = true`.
+Install via the minimal ISO path (Step 2). Bootloader note: GRUB with
+standard NVRAM entries is the default, but Mac firmware occasionally drops
+NVRAM entries — if boot becomes unreliable, switch to
+`boot.loader.grub.efiInstallAsRemovable = true`.
 
 ## Headless board path (jasonkwh-bcm2711 / jasonkwh-bcm2710a1)
 
-Boards without a desktop are installed from an SD card image, not the Live USB.
+Boards without a desktop are installed from an SD card image, not the minimal
+ISO.
 Examples: `jasonkwh-bcm2711` (Pi 4B, 4GB) and `jasonkwh-bcm2710a1` (BCM2710A1,
 512MB). Headless boards get their Wi-Fi credentials and Tailscale auth key from
 `~/.secrets/headless-env` on the build host — create it first:

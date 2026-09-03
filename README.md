@@ -34,20 +34,20 @@ The entire system — desktop, applications, development tools, services, and se
 - **Headless boards** — single-board computers (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`) run a stripped, headless profile: no desktop/Steam/GPU stack, zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
 - **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep the fleet in lockstep.
-- **One-USB install** — boot the Live USB, click through Calamares, and land on a full ShengOS machine: the config repo is copied over automatically and flakes work from the first rebuild. The Live image carries hardware support for Mac Pro 2013 (trashcan): FirePro D-series via amdgpu DC, `intel_iommu=off` crash fix, and BCM4360 Wi-Fi (broadcom_sta).
+- **Flake install** — boot the official NixOS minimal ISO and `nixos-install --flake github:jasonkwh/my-nixos-configurations#<host>`: no custom image to build, config comes straight from GitHub. See [docs/install.md](docs/install.md).
 - **Private assistant** — Hermes Agent with a personal companion. See [小升升](#personal-assistant-小升升).
 
 ## Machine profiles
 
-ShengOS supports one Live USB profile and any number of machines sharing a common base, keeping hardware-specific configuration scoped per-host. Both x86_64-linux and aarch64-linux (ARM boards) are supported:
+ShengOS supports any number of machines sharing a common base, keeping hardware-specific configuration scoped per-host. Both x86_64-linux and aarch64-linux (ARM boards) are supported:
 
 | Profile | Hardware | Notes |
 |---------|----------|-------|
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
+| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D-series · 32GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes node — no desktop, zram, SD card |
 | **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless thin client — zram-only swap, SD card |
-| **`jasonkwh-live`** | n/a | Graphical Calamares installer — auto-copies this repo to the target, flakes ready out of the box, autologin. Includes Mac Pro 2013 (trashcan) hardware support |
 
 ### Distributed build pool
 
@@ -85,7 +85,6 @@ ShengOS ships with a personal AI assistant — **小升升** — a private compa
 | `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
 | `meow update` | Refresh flake inputs (`nix flake update`) |
 | `meow gc` | Delete old generations + refresh bootloader |
-| `meow live` | Build the graphical Live USB ISO |
 | `meow image <hostname>` | Build an SD-card image for a host, e.g. `meow image jasonkwh-bcm2711` → `result/*.img.zst` |
 | `meow headless-env` | Export the build host's Wi-Fi credentials (+ optional Tailscale auth key) into `~/.secrets/headless-env` for headless boards |
 | `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
@@ -107,7 +106,7 @@ cluster/             # Per-host & shared NixOS config
   7300u/             #   Intel Core i5-7300U host
   bcm2711/           #   Raspberry Pi 4B headless host (aarch64)
   bcm2710a1/         #   BCM2710A1 headless host (aarch64)
-  live/              #   Live USB installer profile (hardware-neutral, Mac Pro 2013 ready)
+
 docs/                # Guides (install, troubleshooting, …)
 assets/              # Logos, wallpapers
 version.yaml         # Current release version (auto-bumped by CI)

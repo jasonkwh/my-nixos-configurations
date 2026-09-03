@@ -96,7 +96,13 @@
           # No nixos-hardware module exists for Zero 2 W; generic aarch64.
           syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };
-        "jasonkwh-live" = null; # live USB: not a fleet peer, handled below
+        "jasonkwh-1650v2" = {
+          name = "1650v2";
+          hostSystem = "x86_64-linux";
+          # MacPro6,1 trashcan: desktop, not a laptop; not headless (KDE).
+          isLaptop = false;
+          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
+        };
       };
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
@@ -113,7 +119,8 @@
             (_: def: { id = def.syncthingId; })
             (lib.filterAttrs (_: def: def ? syncthingId) hostDefs);
           # Each machine pulls its own cluster/<name>/hardware-configuration.nix,
-          # imported in cluster/common/configuration.nix.
+          # imported in cluster/common/configuration.nix. Generated on real
+          # hardware (nixos-generate-config) and committed before first install.
           hardwareConfig = ./cluster/${name}/hardware-configuration.nix;
         };
         modules = [
@@ -179,29 +186,11 @@
         ];
       };
 
-      liveUsb = nixpkgs.lib.nixosSystem {
-        specialArgs = {
-          inherit username fullName email homeDirectory;
-          system = "x86_64-linux";
-        };
-        modules = [
-          { nixpkgs.hostPlatform = "x86_64-linux"; }
-          "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares-plasma6.nix"
-          ./cluster/live/configuration.nix
-          {
-            nix.settings.trusted-users = [ username ];
-          }
-          home-manager.nixosModules.home-manager
-          (homeManagerModule { }) # live supports both laptop and desktop
-        ];
-      };
-
     in
     {
       nixosConfigurations = builtins.mapAttrs
-        (hostName: def: if def == null then liveUsb else mkHost (def // { inherit hostName; }))
+        (hostName: def: mkHost (def // { inherit hostName; }))
         hostDefs;
 
-      packages.x86_64-linux.shengos-live-iso = liveUsb.config.system.build.isoImage;
     };
 }

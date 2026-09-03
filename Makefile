@@ -6,16 +6,15 @@
 #   make build jasonkwh-7520u   # same (build is a no-op when a host is named)
 #   make update                 # update flake inputs
 #   make gc                     # delete old generations + refresh bootloader
-#   make live                   # build the graphical Live USB ISO
-#   make jasonkwh-live          # alias for make live
+
 #   make syncthing-init         # one-time: pre-generate syncthing identity + print device ID
 #   make headless-env           # export Wi-Fi/Tailscale secrets for headless boards (~/.secrets/headless-env)
 
-HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-bcm2711 jasonkwh-bcm2710a1
+HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
 HOST  ?= $(shell hostname)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
-.PHONY: help upgrade boot build update gc live jasonkwh-live image syncthing-init headless-env $(HOSTS)
+.PHONY: help upgrade boot build update gc image syncthing-init headless-env $(HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -26,8 +25,7 @@ help:
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
-		'make live                build the graphical Live USB ISO' \
-		'make jasonkwh-live       alias for make live' \
+
 		'make image <host>        build that host SD-card image (e.g. jasonkwh-bcm2711)' \
 		'make $(HOSTS)  upgrade that host'
 
@@ -57,26 +55,6 @@ gc:
 	NCG=/run/current-system/sw/bin/nix-collect-garbage; \
 	sudo "$$NCG" -d
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
-
-live:
-	@if [ -n "$(SECRETS_SKIP)" ]; then \
-	  echo 'live: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
-	  SECRETS_ENC= nix build --accept-flake-config .#shengos-live-iso; \
-	elif [ -d /home/jasonkwh/.secrets ]; then \
-	  echo 'live: sealing ~/.secrets and baking it into the ISO (ciphertext)'; \
-	  tar -cf /tmp/.shengos-seal.$$$${RANDOM} -C /home/jasonkwh .secrets; \
-	  printf 'Seal password (the new machine'\''s login password): '; \
-	  read -rs SEAL_PASS; echo; \
-	  SEAL_PASS=$$SEAL_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
-	    -in /tmp/.shengos-seal.$$$${RANDOM} -out shengos-secrets.tar.enc -pass env:SEAL_PASS; \
-	  rm -f /tmp/.shengos-seal.*; \
-	  SECRETS_ENC=$$(pwd)/shengos-secrets.tar.enc nix build --accept-flake-config .#shengos-live-iso; \
-	else \
-	  echo 'live: no ~/.secrets — building without baked secrets'; \
-	  nix build --accept-flake-config .#shengos-live-iso; \
-	fi
-
-jasonkwh-live: live
 
 # SD-card image: make image HOST=jasonkwh-bcm2711
 # `make image jasonkwh-bcm2711` is also supported. Cross-built natively on
