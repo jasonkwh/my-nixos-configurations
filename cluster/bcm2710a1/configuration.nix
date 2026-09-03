@@ -4,6 +4,7 @@
 {
   imports = [
     ../common/configuration.nix
+    ./usb-gadget.nix
   ];
 
   home-manager.users.${username} = {
