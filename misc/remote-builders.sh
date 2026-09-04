@@ -1,11 +1,16 @@
 # Print reachable remote builders (ssh://user@host ...) for make's --builders.
-# Builder list comes from the flake (hostDefs.isBuilder), not hardcoded.
+# /etc/nix/machines is generated from hostDefs by nix.buildMachines, so use
+# the active topology without evaluating the entire flake a second time.
 set -u
-repo="$(cd "$(dirname "$0")/.." && pwd)"
 target="${1:-$(hostname)}"
-hosts=$(nix eval --impure --raw --expr \
-  "(builtins.getFlake (toString $repo)).fleetBuilderHosts.${target}" \
-  --apply 'builtins.concatStringsSep " "' 2>/dev/null) || exit 0
-for h in $hosts; do
-  nc -z -w 2 "${h%%.*}" 22 >/dev/null 2>&1 && printf '%s ' "ssh://jasonkwh@$h"
-done
+machines=/etc/nix/machines
+
+[ -r "$machines" ] || exit 0
+while read -r builder _; do
+  [ -n "$builder" ] || continue
+  endpoint="${builder#*://}"
+  host="${endpoint#*@}"
+  host="${host%%:*}"
+  [ "${host%%.*}" = "$target" ] && continue
+  nc -z -w 2 "$host" 22 >/dev/null 2>&1 && printf '%s ' "$builder"
+done < "$machines"
