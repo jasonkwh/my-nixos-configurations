@@ -79,6 +79,14 @@
           maxBuildJobs = 4;
           syncthingId = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
         };
+        "jasonkwh-2450m" = {
+          name = "2450m";
+          hostSystem = "x86_64-linux";
+          isLaptop = true;
+          isBuilder = true;
+          buildSpeed = 1;
+          maxBuildJobs = 4;
+        };
         "jasonkwh-bcm2711" = {
           name = "bcm2711";
           hostSystem = "aarch64-linux";
