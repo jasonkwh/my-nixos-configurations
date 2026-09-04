@@ -69,7 +69,7 @@
     description = "Grow root partition and filesystem to fill the SD card";
     wantedBy = [ "multi-user.target" ];
     after = [ "local-fs.target" ];
-    path = [ pkgs.cloud-utils pkgs.util-linux ];
+    path = [ pkgs.cloud-utils pkgs.util-linux pkgs.e2fsprogs ];
     script = ''
       ROOT_SRC="$(readlink -f "$(findmnt -nro SOURCE /)")"  # resolve by-label symlink
       ROOT_DEV="$(basename "$ROOT_SRC")"          # e.g. mmcblk0p2 / mmcblk1p2
