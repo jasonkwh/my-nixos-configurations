@@ -58,7 +58,9 @@ Builders are derived from `hostDefs` in `flake.nix`: any host declaring
 `isBuilder = true` joins the pool for its architecture. `buildSpeed` provides
 relative scheduling weight and `maxBuildJobs` limits concurrency. Each client
 uses reachable, same-architecture peers except itself. Authentication uses
-Tailscale SSH, and `jasonkwh` is trusted by the remote Nix daemon.
+Tailscale SSH, and `jasonkwh` is trusted by the remote Nix daemon. Upgrade
+commands probe the active generation's `/etc/nix/machines`, avoiding a second
+flake evaluation; builder-topology changes take effect after activation.
 
 `mkHost` uses `hostSystem`, `isLaptop`, and `isHeadless` to select system and
 Home Manager layers. Setting neither class flag creates a desktop host.
