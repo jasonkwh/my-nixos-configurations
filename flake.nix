@@ -159,6 +159,9 @@
                   ${pkgs.coreutils}/bin/cp -r "$bridge_src"/. "$bridge_dst"/
                   chown -R hermes:hermes "$bridge_dst"
                 fi
+                # Store files are 0444; npm needs to write package-lock.json here.
+                ${pkgs.coreutils}/bin/chmod -R u+w "$bridge_dst"
+                chown -R hermes:hermes "$bridge_dst"
               '';
             })
           # Only x86 non-headless hosts get aarch64 QEMU emulation
