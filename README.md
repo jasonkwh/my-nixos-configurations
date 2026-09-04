@@ -105,8 +105,11 @@ Rebuilding the 512MB BCM2710A1 from the board itself (`upgrade`, `boot`, `gc`,
 or naming the host) streams the working tree to the BCM2711 over Tailscale
 SSH. The BCM2711 fetches inputs, evaluates and builds; only the finished
 system closure comes back for local activation, because evaluating the
-configuration on the board exhausts its RAM and zram. The BCM2711 must
-therefore be online and reachable as `jasonkwh-bcm2711.tail0c0276.ts.net`.
+configuration on the board exhausts its RAM and zram. The command checks that
+the BCM2711 is reachable first and stops with an explanation if it is not;
+`NO_OFFLOAD=1` forces the slow local path anyway. The board also refuses to
+rebuild any *other* host, which it can neither evaluate nor meaningfully
+activate.
 
 ## Repository layout
 
