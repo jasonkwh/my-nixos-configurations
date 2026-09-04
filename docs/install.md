@@ -238,12 +238,7 @@ For the Tailscale key: generate an **auth key** in the admin console with
    `jasonkwh-bcm2711.tail0c0276.ts.net` over Tailscale SSH. The BCM2711
    fetches inputs, evaluates, and builds so the Zero 2 W never has to hold a
    full evaluation in its 512MB. The finished closure is copied back and
-   activated locally, so BCM2711 must be online first; the command says so
-   plainly if it is not, and `NO_OFFLOAD=1` overrides it at the cost of a very
-   slow local build. Because that board is built elsewhere, its
-   `cluster/bcm2710a1/hardware-configuration.nix` must stay committed — the
-   flake refuses to fall back to `/etc/nixos` for it, which on the builder
-   would be the wrong machine's hardware.
+   activated locally, so BCM2711 must be online first.
 
 The `bcm2710a1` host has no nixos-hardware module, so its SD image uses the
 generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is included).
