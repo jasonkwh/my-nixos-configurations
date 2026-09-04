@@ -10,7 +10,7 @@
 #   make syncthing-init         # one-time: pre-generate syncthing identity + print device ID
 #   make headless-env           # export Wi-Fi/Tailscale secrets for headless boards (~/.secrets/headless-env)
 
-HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
+HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
 LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))

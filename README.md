@@ -48,6 +48,7 @@ ShengOS supports any number of machines sharing a common base, keeping hardware-
 |---------|----------|-------|
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
+| **`jasonkwh-2450m`** | Intel Core i5-2450M · Intel HD Graphics 3000 + AMD Radeon HD 6630M · 16GB | Sony VAIO CB — legacy BIOS/MBR, retro gaming via PRIME offload |
 | **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x 2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway — no desktop, zram, SD card |
 | **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled, zram-only swap, SD card |
@@ -121,6 +122,7 @@ cluster/             # Per-host & shared NixOS config
                      #   home.nix — HM entry point routing home-headless/-desktop/-laptop
   7520u/             #   AMD Ryzen 5 7520U host
   7300u/             #   Intel Core i5-7300U host
+  2450m/             #   Sony VAIO CB (i5-2450M) — legacy BIOS/MBR host
   1650v2/            #   Mac Pro 2013 (trashcan) — emulation/retro gaming
   bcm2711/           #   Raspberry Pi 4B headless host (aarch64)
   bcm2710a1/         #   BCM2710A1 headless host (aarch64)
