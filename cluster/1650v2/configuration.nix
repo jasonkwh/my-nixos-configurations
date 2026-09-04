@@ -43,9 +43,5 @@
 
   hardware.cpu.intel.updateMicrocode = true;
 
-  networking.useDHCP = false;
-  networking.interfaces.enp2s0.useDHCP = lib.mkDefault true;
-  networking.interfaces.wlp3s0.useDHCP = lib.mkDefault true;
-
   zramSwap.enable = true;
 }
