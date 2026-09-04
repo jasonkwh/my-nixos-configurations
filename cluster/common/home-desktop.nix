@@ -46,6 +46,52 @@
       VirtualKeyboardEnabled = true;
     };
 
+    # Declared bottom panel, mirroring the existing 7520u layout; only
+    # difference is pinning dolphin explicitly instead of preferred://filemanager.
+    panels = [
+      {
+        screen = 0;
+        location = "bottom";
+        height = 44;
+        alignment = "center";
+        hiding = "none";
+        lengthMode = "fit";
+        widgets = [
+          {
+            name = "org.kde.plasma.kickoff";
+            config = {
+              "General".systemFavorites = "suspend\\,hibernate\\,reboot\\,shutdown";
+            };
+          }
+          {
+            name = "org.kde.plasma.pager";
+          }
+          {
+            name = "org.kde.plasma.icontasks";
+            config = {
+              "General".launchers =
+                "applications:brave-browser.desktop,applications:org.kde.dolphin.desktop,applications:org.kde.konsole.desktop";
+            };
+          }
+          {
+            name = "org.kde.plasma.marginsseparator";
+          }
+          {
+            name = "org.kde.plasma.systemtray";
+          }
+          {
+            name = "org.kde.plasma.digitalclock";
+            config = {
+              "Appearance".fontWeight = 400;
+            };
+          }
+          {
+            name = "org.kde.plasma.showdesktop";
+          }
+        ];
+      }
+    ];
+
     # Baloo spins at ~40% CPU indexing dev workspaces.
     configFile."baloofilerc"."Basic Settings"."Indexing-Enabled" = false;
   };
