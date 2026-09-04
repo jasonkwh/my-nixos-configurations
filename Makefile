@@ -42,18 +42,21 @@ endef
 # `make build jasonkwh-7520u` → host target does the work; build is a no-op
 ifeq ($(EXPLICIT_HOST),)
 ifneq ($(AUTO_OFFLOAD),)
-# Low-memory path: archive the current flake to bcm2711, perform evaluation
-# and building there, copy the finished closure back, then activate locally.
+# Low-memory path: stream the source tree to bcm2711 without invoking Nix
+# locally, perform evaluation and building there, copy the finished closure
+# back, then activate locally.
 upgrade build:
 	@set -eu; \
-	echo "Archiving current flake to $(OFFLOAD_HOST)..."; \
-	FLAKE_PATH=$$(nix flake archive --json --to '$(OFFLOAD_STORE)' "$$(pwd)" \
-	  | yq -r '.path'); \
-	test -n "$$FLAKE_PATH" -a "$$FLAKE_PATH" != null; \
-	echo "Evaluating and building $(HOST) on $(OFFLOAD_HOST)..."; \
-	SYSTEM_PATH=$$(ssh '$(OFFLOAD_SSH)' \
-	  "nix build --impure --accept-flake-config --no-link --print-out-paths \
-	    '$$FLAKE_PATH#nixosConfigurations.$(HOST).config.system.build.toplevel'"); \
+	echo "Streaming configuration to $(OFFLOAD_HOST)..."; \
+	SYSTEM_PATH=$$(tar --exclude='./.git' --exclude='./result' -cf - . \
+	  | ssh '$(OFFLOAD_SSH)' \
+	    "set -eu; \
+	     rm -rf '/tmp/shengos-upgrade-$(HOST)'; \
+	     mkdir -p '/tmp/shengos-upgrade-$(HOST)'; \
+	     trap 'rm -rf /tmp/shengos-upgrade-$(HOST)' EXIT; \
+	     tar -xf - -C '/tmp/shengos-upgrade-$(HOST)'; \
+	     nix build --impure --accept-flake-config --no-link --print-out-paths \
+	       '/tmp/shengos-upgrade-$(HOST)#nixosConfigurations.$(HOST).config.system.build.toplevel'"); \
 	test -n "$$SYSTEM_PATH"; \
 	echo "Copying the finished system back to $(HOST)..."; \
 	nix copy --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
