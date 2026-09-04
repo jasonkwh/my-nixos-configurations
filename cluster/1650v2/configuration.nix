@@ -41,10 +41,7 @@
 
   services.xserver.videoDrivers = [ "amdgpu" "radeon" "modesetting" ];
 
-  hardware.enableRedistributableFirmware = true;
   hardware.cpu.intel.updateMicrocode = true;
-
-  services.tailscale.enable = true;
 
   networking.useDHCP = false;
   networking.interfaces.enp2s0.useDHCP = lib.mkDefault true;
