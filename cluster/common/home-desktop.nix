@@ -55,7 +55,7 @@
         height = 44;
         alignment = "center";
         hiding = "none";
-        lengthMode = "fit";
+        lengthMode = "fill";
         widgets = [
           {
             name = "org.kde.plasma.kickoff";
