@@ -34,5 +34,16 @@
   # 512MB RAM — zram is the only swap.
   zramSwap.memoryPercent = 100;
 
+  # Avoid running several derivations and compiler workers concurrently on
+  # 512MB. The default "auto" setting starts four jobs, which pushes this
+  # board into sustained zram/SD-card thrashing and is slower in practice.
+  nix.settings = {
+    max-jobs = lib.mkForce 1;
+    cores = lib.mkForce 2;
+    # Per-path optimisation adds extra reads and writes to every store import.
+    # Deduplication is less valuable than write latency on this small SD node.
+    auto-optimise-store = lib.mkForce false;
+  };
+
   time.timeZone = "Australia/Melbourne";
 }

@@ -94,6 +94,7 @@
           name = "bcm2710a1";
           hostSystem = "aarch64-linux";
           isHeadless = true;
+          syncthingId = "GXTKLBM-LRAL3TP-KDWRB2S-PSWCIIY-5AL77HX-LIRAK2G-PL6HIPH-AXTVBQ5";
         };
         "jasonkwh-1650v2" = {
           name = "1650v2";
@@ -101,6 +102,21 @@
           isLaptop = false;
         };
       };
+
+      # Lightweight metadata for Make's reachability probe. Reading this
+      # output avoids evaluating an entire NixOS + Home Manager configuration
+      # before nixos-rebuild performs the real evaluation.
+      builderHosts = builtins.mapAttrs
+        (targetHost: targetDef:
+          builtins.map
+            (host: "${host}.tail0c0276.ts.net")
+            (builtins.attrNames (lib.filterAttrs
+              (host: def:
+                def.isBuilder or false
+                && host != targetHost
+                && def.hostSystem == targetDef.hostSystem)
+              hostDefs)))
+        hostDefs;
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
@@ -191,6 +207,8 @@
 
     in
     {
+      fleetBuilderHosts = builderHosts;
+
       nixosConfigurations = builtins.mapAttrs
         (hostName: def: mkHost (def // { inherit hostName; }))
         hostDefs;
