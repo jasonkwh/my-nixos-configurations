@@ -128,7 +128,7 @@ REQUESTED_BUILDER_TARGETS := $(filter-out upgrade build,$(REQUESTED_BUILDER_TARG
 endif
 ifneq ($(REQUESTED_BUILDER_TARGETS),)
 BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
-REMOTE_BUILDERS := $(shell bash remote-builders.sh '$(BUILDER_HOST)')
+REMOTE_BUILDERS := $(shell bash misc/remote-builders.sh '$(BUILDER_HOST)')
 BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
 # Same probe for nixos-rebuild: --builders is a nix.conf-style key, supported
 # as a CLI option on rebuild too.
@@ -182,7 +182,7 @@ syncthing-init:
 # auth key) into ~/.secrets/headless-env, read by wifi-home.nix /
 # tailscale-enrol.nix on headless boards and baked into SD images.
 headless-env:
-	bash export-headless-env.sh
+	bash misc/export-headless-env.sh
 
 $(HOSTS):
 	$(if $(filter image,$(MAKECMDGOALS)),@:,$(call nixos-rebuild,switch,$@))

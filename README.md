@@ -111,6 +111,8 @@ BCM2711 must therefore be online and reachable as
 
 ```
 flake.nix            # Entry point — inputs, hosts
+misc/                # Non-module assets: SOUL.md, export-headless-env.sh,
+                     # remote-builders.sh
 cluster/             # Per-host & shared NixOS config
   common/            #   Shared across all machines (branding, fonts, services…)
                      #   headless.nix — imported when isHeadless = true
