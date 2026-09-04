@@ -44,6 +44,11 @@ ifneq ($(AUTO_OFFLOAD),)
 # Low-memory path: stream the source tree to bcm2711 without invoking Nix
 # locally, perform evaluation and building there, copy the finished closure
 # back, then activate locally.
+# Activation runs in a transient unit, not in the calling shell: if a restarted
+# unit tears down the SSH session the rebuild was invoked over, switch-to-
+# configuration survives and finishes. A killed run leaves its crash-recovery
+# files (/run/nixos/{restart,start}-list) behind, and every later switch then
+# replays them — restarting those units again regardless of restartIfChanged.
 upgrade build:
 	@set -eu; \
 	echo "Streaming configuration to $(OFFLOAD_HOST)..."; \
@@ -62,7 +67,15 @@ upgrade build:
 	echo "Activating $$SYSTEM_PATH..."; \
 	sudo /run/current-system/sw/bin/nix-env \
 	  --profile /nix/var/nix/profiles/system --set "$$SYSTEM_PATH"; \
-	sudo "$$SYSTEM_PATH/bin/switch-to-configuration" switch
+	sudo /run/current-system/sw/bin/journalctl --unit=shengos-switch \
+	  --follow --lines=0 --no-pager --output=cat & \
+	FOLLOW=$$!; \
+	trap 'kill $$FOLLOW 2>/dev/null || true' EXIT INT TERM; \
+	sudo /run/current-system/sw/bin/systemd-run --collect --wait \
+	  --unit=shengos-switch \
+	  --property=StandardOutput=journal --property=StandardError=journal \
+	  "$$SYSTEM_PATH/bin/switch-to-configuration" switch; \
+	sleep 1
 else
 upgrade build:
 	$(call nixos-rebuild,switch,$(HOST))
