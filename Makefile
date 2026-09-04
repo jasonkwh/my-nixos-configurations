@@ -11,8 +11,13 @@
 #   make headless-env           # export Wi-Fi/Tailscale secrets for headless boards (~/.secrets/headless-env)
 
 HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
-HOST  ?= $(shell hostname)
+LOCAL_HOST := $(shell hostname)
+HOST  ?= $(LOCAL_HOST)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
+AUTO_OFFLOAD := $(and $(filter jasonkwh-bcm2710a1,$(LOCAL_HOST)),$(filter jasonkwh-bcm2710a1,$(HOST)))
+OFFLOAD_HOST ?= jasonkwh-bcm2711
+OFFLOAD_SSH  := jasonkwh@$(OFFLOAD_HOST).tail0c0276.ts.net
+OFFLOAD_STORE := ssh-ng://$(OFFLOAD_SSH)
 
 .PHONY: help upgrade boot build update gc image syncthing-init headless-env $(HOSTS)
 .DEFAULT_GOAL := help
@@ -21,7 +26,7 @@ help:
 	@printf '%s\n' \
 		'HOST=$(HOST)  (override: make upgrade HOST=jasonkwh-7520u)' \
 		'' \
-		'make upgrade             rebuild and activate' \
+		'make upgrade             rebuild and activate (bcm2710a1 uses bcm2711)' \
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
@@ -36,8 +41,30 @@ endef
 # `make build` alone → upgrade current host
 # `make build jasonkwh-7520u` → host target does the work; build is a no-op
 ifeq ($(EXPLICIT_HOST),)
+ifneq ($(AUTO_OFFLOAD),)
+# Low-memory path: archive the current flake to bcm2711, perform evaluation
+# and building there, copy the finished closure back, then activate locally.
+upgrade build:
+	@set -eu; \
+	echo "Archiving current flake to $(OFFLOAD_HOST)..."; \
+	FLAKE_PATH=$$(nix flake archive --json --to '$(OFFLOAD_STORE)' "$$(pwd)" \
+	  | yq -r '.path'); \
+	test -n "$$FLAKE_PATH" -a "$$FLAKE_PATH" != null; \
+	echo "Evaluating and building $(HOST) on $(OFFLOAD_HOST)..."; \
+	SYSTEM_PATH=$$(ssh '$(OFFLOAD_SSH)' \
+	  "nix build --impure --accept-flake-config --no-link --print-out-paths \
+	    '$$FLAKE_PATH#nixosConfigurations.$(HOST).config.system.build.toplevel'"); \
+	test -n "$$SYSTEM_PATH"; \
+	echo "Copying the finished system back to $(HOST)..."; \
+	nix copy --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
+	echo "Activating $$SYSTEM_PATH..."; \
+	sudo /run/current-system/sw/bin/nix-env \
+	  --profile /nix/var/nix/profiles/system --set "$$SYSTEM_PATH"; \
+	sudo "$$SYSTEM_PATH/bin/switch-to-configuration" switch
+else
 upgrade build:
 	$(call nixos-rebuild,switch,$(HOST))
+endif
 else
 build:
 	@:
@@ -74,7 +101,13 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # build. Doing this unconditionally delays even lightweight targets such as
 # `update` and `syncthing-init`, especially on slower boards.
 BUILDER_TARGETS := upgrade boot build gc image $(HOSTS)
-ifneq ($(filter $(BUILDER_TARGETS),$(MAKECMDGOALS)),)
+REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
+ifneq ($(AUTO_OFFLOAD),)
+# The offloaded path performs its own transfer and remote build; even the
+# lightweight local builder probe is unnecessary for upgrade/build.
+REQUESTED_BUILDER_TARGETS := $(filter-out upgrade build,$(REQUESTED_BUILDER_TARGETS))
+endif
+ifneq ($(REQUESTED_BUILDER_TARGETS),)
 BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
 REMOTE_BUILDERS := $(shell bash cluster/misc/remote-builders.sh '$(BUILDER_HOST)')
 BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
