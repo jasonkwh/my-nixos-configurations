@@ -25,6 +25,11 @@
   # Bootloader.
   boot = {
     zfs.forceImportRoot = false; # silence evaluation warning; safer default (26.11+)
+
+    # Fleet-wide kernel: linuxPackages tracks the current kernel.org LTS
+    # (26.05: 6.18, EOL 2027-12).
+    kernelPackages = pkgs.linuxPackages;
+
     loader = {
       systemd-boot = {
         enable = true;

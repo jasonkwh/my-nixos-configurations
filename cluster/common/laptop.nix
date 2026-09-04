@@ -9,8 +9,6 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages;
-
     kernel.sysctl = {
       # Lower swappiness since we use zram; avoids premature disk swap
       "vm.swappiness" = 10;
