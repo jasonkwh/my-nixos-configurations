@@ -94,6 +94,9 @@
           name = "bcm2710a1";
           hostSystem = "aarch64-linux";
           isHeadless = true;
+          # Too little RAM to evaluate itself; the Makefile builds it on
+          # bcm2711, so the /etc/nixos hardware fallback below must not apply.
+          evaluatedRemotely = true;
           syncthingId = "GXTKLBM-LRAL3TP-KDWRB2S-PSWCIIY-5AL77HX-LIRAK2G-PL6HIPH-AXTVBQ5";
         };
         "jasonkwh-1650v2" = {
@@ -120,7 +123,7 @@
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, isHermesWhatsappGateway ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, isHermesWhatsappGateway ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], evaluatedRemotely ? false, hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
           inherit name;
@@ -132,10 +135,14 @@
             (_: def: { id = def.syncthingId; })
             (lib.filterAttrs (_: def: def ? syncthingId) hostDefs);
           # Prefer the repo copy, fall back to /etc/nixos on first boot
-          # (before nixos-generate-config output has been committed).
+          # (before nixos-generate-config output has been committed). Hosts
+          # evaluated on another machine must never take that fallback: it
+          # would silently bake the builder's hardware into their system.
           hardwareConfig =
             if builtins.pathExists (./cluster/${name}/hardware-configuration.nix)
             then ./cluster/${name}/hardware-configuration.nix
+            else if evaluatedRemotely
+            then throw "cluster/${name}/hardware-configuration.nix is missing, and ${name} is built on another machine whose /etc/nixos is not its hardware"
             else /etc/nixos/hardware-configuration.nix;
         };
         modules = [

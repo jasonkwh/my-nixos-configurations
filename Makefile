@@ -15,13 +15,27 @@ LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 TARGET_HOST := $(or $(EXPLICIT_HOST),$(HOST))
-# bcm2710a1 has 512MB: evaluating its own configuration exhausts RAM + zram,
-# so any rebuild of that board, run from that board, goes through bcm2711.
-AUTO_OFFLOAD := $(and $(filter jasonkwh-bcm2710a1,$(LOCAL_HOST)),$(filter jasonkwh-bcm2710a1,$(TARGET_HOST)))
 OFFLOAD_HOST ?= jasonkwh-bcm2711
 OFFLOAD_SSH  := jasonkwh@$(OFFLOAD_HOST).tail0c0276.ts.net
 OFFLOAD_STORE := ssh-ng://$(OFFLOAD_SSH)
-OFFLOAD_TMP := /tmp/shengos-upgrade-$(TARGET_HOST)
+# $$ is the recipe shell's pid: two concurrent runs must not share a source
+# tree, since each one wipes the directory before unpacking into it.
+OFFLOAD_TMP := /tmp/shengos-offload-$(TARGET_HOST).$$$$
+# Indirect GC root on the builder. Without it the closure is unreferenced
+# between the remote build and the copy, so bcm2711's weekly gc can collect it.
+OFFLOAD_LINK := /home/jasonkwh/.shengos-offload-$(TARGET_HOST)
+
+# bcm2710a1 has 512MB: evaluating its own configuration exhausts RAM + zram,
+# so rebuilds of that board, run from that board, go through bcm2711
+# (NO_OFFLOAD=1 forces the slow local path if bcm2711 is gone for good).
+# It equally cannot evaluate another host, and activating another host's
+# system here would be wrong, so those invocations are refused. Every other
+# machine is unconditionally `local` and keeps its previous behaviour.
+ifeq ($(LOCAL_HOST),jasonkwh-bcm2710a1)
+REBUILD_MODE := $(if $(filter jasonkwh-bcm2710a1,$(TARGET_HOST)),$(if $(NO_OFFLOAD),local,offload),refuse)
+else
+REBUILD_MODE := local
+endif
 
 .PHONY: help upgrade boot build update gc image syncthing-init headless-env $(HOSTS)
 .DEFAULT_GOAL := help
@@ -50,32 +64,45 @@ endef
 # because jasonkwh is in nix.settings.trusted-users.
 define offload-rebuild
 	@set -eu; \
+	ssh -o ConnectTimeout=5 -o BatchMode=yes '$(OFFLOAD_SSH)' true 2>/dev/null || { \
+	  echo '$(OFFLOAD_HOST) is unreachable, and $(TARGET_HOST) builds through it.'; \
+	  echo 'Bring it online, or force the slow local path with NO_OFFLOAD=1.'; \
+	  exit 1; \
+	}; \
 	echo "Streaming configuration to $(OFFLOAD_HOST)..."; \
-	SYSTEM_PATH=$$(tar --exclude='./.git' --exclude='./result' -cf - . \
+	SYSTEM_PATH=$$(tar --exclude='./.git' --exclude='./result' --exclude='./result-*' -cf - . \
 	  | ssh '$(OFFLOAD_SSH)' \
 	    "set -eu; \
 	     rm -rf '$(OFFLOAD_TMP)'; \
 	     mkdir -p '$(OFFLOAD_TMP)'; \
 	     trap 'rm -rf $(OFFLOAD_TMP)' EXIT; \
 	     tar -xf - -C '$(OFFLOAD_TMP)'; \
-	     nix build --impure --accept-flake-config --no-link --print-out-paths \
+	     nix build --impure --accept-flake-config --print-out-paths \
+	       --out-link '$(OFFLOAD_LINK)' \
 	       '$(OFFLOAD_TMP)#nixosConfigurations.$(TARGET_HOST).config.system.build.toplevel'"); \
 	test -n "$$SYSTEM_PATH"; \
 	echo "Copying the finished system back to $(TARGET_HOST)..."; \
 	nix copy --no-check-sigs --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
+	ssh '$(OFFLOAD_SSH)' "rm -f '$(OFFLOAD_LINK)'"; \
 	echo "Activating $$SYSTEM_PATH ($(1))..."; \
 	sudo /run/current-system/sw/bin/nix-env \
 	  --profile /nix/var/nix/profiles/system --set "$$SYSTEM_PATH"; \
 	sudo "$$SYSTEM_PATH/bin/switch-to-configuration" $(1)
 endef
 
+define refuse-rebuild
+	@echo 'Refusing to build $(1) on jasonkwh-bcm2710a1: this board cannot'; \
+	echo 'evaluate another host, and activating that system here would be wrong.'; \
+	echo 'Run it from $(1) itself, or from a laptop.'; \
+	exit 1
+endef
+
 # Every rebuild entry point goes through this, so boot/gc/<host> get the same
-# offload treatment as upgrade instead of quietly OOMing on the small board.
-ifneq ($(AUTO_OFFLOAD),)
-rebuild = $(call offload-rebuild,$(1))
-else
-rebuild = $(call nixos-rebuild,$(1),$(2))
-endif
+# treatment as upgrade instead of quietly OOMing on the small board.
+rebuild-local = $(call nixos-rebuild,$(1),$(2))
+rebuild-offload = $(call offload-rebuild,$(1))
+rebuild-refuse = $(call refuse-rebuild,$(2))
+rebuild = $(call rebuild-$(REBUILD_MODE),$(1),$(2))
 
 # `make build` alone → upgrade current host
 # `make build jasonkwh-7520u` → host target does the work; build is a no-op
@@ -119,7 +146,7 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # `update` and `syncthing-init`, especially on slower boards.
 BUILDER_TARGETS := upgrade boot build gc image $(HOSTS)
 REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
-ifneq ($(AUTO_OFFLOAD),)
+ifneq ($(REBUILD_MODE),local)
 # The offloaded path does its own transfer and remote build, so no local
 # nixos-rebuild runs and only `image` still needs the probe.
 REQUESTED_BUILDER_TARGETS := $(filter image,$(REQUESTED_BUILDER_TARGETS))
