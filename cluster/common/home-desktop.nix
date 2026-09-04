@@ -46,6 +46,27 @@
       VirtualKeyboardEnabled = true;
     };
 
+    # Bottom panel; task manager with pinned launchers in that order.
+    panels = [
+      {
+        screen = 0;
+        height = 44;
+        location = "bottom";
+        alignment = "center";
+        hiding = "none";
+        lengthMode = "fit";
+        widgets = [
+          {
+            name = "org.kde.plasma.icontasks";
+            config = {
+              "General".launchers =
+                "applications:brave-browser.desktop,applications:org.kde.dolphin.desktop,applications:org.kde.konsole.desktop";
+            };
+          }
+        ];
+      }
+    ];
+
     # Baloo spins at ~40% CPU indexing dev workspaces.
     configFile."baloofilerc"."Basic Settings"."Indexing-Enabled" = false;
   };
