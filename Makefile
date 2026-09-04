@@ -30,7 +30,6 @@ help:
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
-
 		'make image <host>        build that host SD-card image (e.g. jasonkwh-bcm2711)' \
 		'make $(HOSTS)  upgrade that host'
 
