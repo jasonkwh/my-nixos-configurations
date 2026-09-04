@@ -67,7 +67,7 @@
           isLaptop = true;
           isBuilder = true;
           buildSpeed = 2;
-          maxBuildJobs = 4;
+          maxBuildJobs = 2;
           syncthingId = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
         };
         "jasonkwh-7520u" = {
@@ -94,7 +94,7 @@
           isHermesWhatsappGateway = true;
           isBuilder = true;
           buildSpeed = 3;
-          maxBuildJobs = 4;
+          maxBuildJobs = 2;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
           syncthingId = "3HVJKXT-JBAOZME-7IO7IXE-ZVA3RPU-NVZ37PL-G26C3V7-JFAETLE-ZOFKBAB";
         };
