@@ -1,7 +1,7 @@
 # Laptop-only system configuration.
 # Imported only when the host is created with isLaptop = true in flake.nix;
 # desktop machines (e.g. the Mac Pro trashcan) skip this file entirely.
-{ pkgs, lib, ... }:
+{ lib, ... }:
 
 {
   hardware = {
