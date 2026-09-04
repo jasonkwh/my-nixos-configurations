@@ -1,7 +1,7 @@
 # Print reachable remote builders (ssh://user@host ...) for make's --builders.
 # Builder list comes from the flake (hostDefs.isBuilder), not hardcoded.
 set -u
-repo="$(cd "$(dirname "$0")/../.." && pwd)"
+repo="$(cd "$(dirname "$0")/.." && pwd)"
 target="${1:-$(hostname)}"
 hosts=$(nix eval --impure --raw --expr \
   "(builtins.getFlake (toString $repo)).fleetBuilderHosts.${target}" \
