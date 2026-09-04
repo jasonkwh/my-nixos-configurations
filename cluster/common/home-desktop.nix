@@ -55,6 +55,7 @@
         height = 44;
         alignment = "center";
         hiding = "none";
+        floating = true;
         lengthMode = "fill";
         widgets = [
           {
