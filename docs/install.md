@@ -233,12 +233,12 @@ For the Tailscale key: generate an **auth key** in the admin console with
    rebuild them.
 6. **Build and switch on the board**: `make upgrade`.
 
-   On `jasonkwh-bcm2710a1`, this command — along with `make boot`, `make gc`,
-   and `make jasonkwh-bcm2710a1` — streams the working tree to
-   `jasonkwh-bcm2711.tail0c0276.ts.net` over Tailscale SSH. The BCM2711
-   fetches inputs, evaluates, and builds so the Zero 2 W never has to hold a
-   full evaluation in its 512MB. The finished closure is copied back and
-   activated locally, so BCM2711 must be online first.
+   On `jasonkwh-bcm2710a1`, this command automatically streams the current
+   configuration to `jasonkwh-bcm2711.tail0c0276.ts.net` over Tailscale SSH.
+   The BCM2711 performs input fetching, evaluation, and building so the Zero
+   2 W does not exhaust its 512MB RAM. The completed system closure is copied
+   back and activated locally. Ensure BCM2711 is online and reachable before
+   upgrading BCM2710A1.
 
 The `bcm2710a1` host has no nixos-hardware module, so its SD image uses the
 generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is included).

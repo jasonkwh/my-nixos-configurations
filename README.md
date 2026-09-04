@@ -90,7 +90,7 @@ local to that host and must be paired there.
 
 | Command | Description |
 |---------|-------------|
-| `meow upgrade` | Rebuild + activate the current host (`HOST=` to override) |
+| `meow upgrade` | Rebuild + activate the current host; BCM2710A1 automatically evaluates/builds on BCM2711 |
 | `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
 | `meow update` | Refresh flake inputs (`nix flake update`) |
 | `meow gc` | Delete old generations + refresh bootloader |
@@ -101,12 +101,11 @@ local to that host and must be paired there.
 
 `upgrade` defaults to the machine's hostname; use `HOST=` or a host target to
 select another configuration.
-Rebuilding the 512MB BCM2710A1 from the board itself (`upgrade`, `boot`, `gc`,
-or naming the host) streams the working tree to the BCM2711 over Tailscale
-SSH. The BCM2711 fetches inputs, evaluates and builds; only the finished
-system closure comes back for local activation, because evaluating the
-configuration on the board exhausts its RAM and zram. The BCM2711 must
-therefore be online and reachable as `jasonkwh-bcm2711.tail0c0276.ts.net`.
+On the 512MB BCM2710A1, `upgrade` streams the current configuration to the
+BCM2711 over Tailscale SSH. The BCM2711 fetches inputs, evaluates and builds;
+only the finished system closure is copied back for local activation. The
+BCM2711 must therefore be online and reachable as
+`jasonkwh-bcm2711.tail0c0276.ts.net`.
 
 ## Repository layout
 

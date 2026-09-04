@@ -14,14 +14,10 @@ HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh
 LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
-TARGET_HOST := $(or $(EXPLICIT_HOST),$(HOST))
-# bcm2710a1 has 512MB: evaluating its own configuration exhausts RAM + zram,
-# so any rebuild of that board, run from that board, goes through bcm2711.
-AUTO_OFFLOAD := $(and $(filter jasonkwh-bcm2710a1,$(LOCAL_HOST)),$(filter jasonkwh-bcm2710a1,$(TARGET_HOST)))
+AUTO_OFFLOAD := $(and $(filter jasonkwh-bcm2710a1,$(LOCAL_HOST)),$(filter jasonkwh-bcm2710a1,$(HOST)))
 OFFLOAD_HOST ?= jasonkwh-bcm2711
 OFFLOAD_SSH  := jasonkwh@$(OFFLOAD_HOST).tail0c0276.ts.net
 OFFLOAD_STORE := ssh-ng://$(OFFLOAD_SSH)
-OFFLOAD_TMP := /tmp/shengos-upgrade-$(TARGET_HOST)
 
 .PHONY: help upgrade boot build update gc image syncthing-init headless-env $(HOSTS)
 .DEFAULT_GOAL := help
@@ -34,6 +30,7 @@ help:
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
+
 		'make image <host>        build that host SD-card image (e.g. jasonkwh-bcm2711)' \
 		'make $(HOSTS)  upgrade that host'
 
@@ -41,56 +38,46 @@ define nixos-rebuild
 	sudo /run/current-system/sw/bin/nixos-rebuild $(1) --impure $(REBUILD_BUILDERS) --flake $$(pwd)/#$(2)
 endef
 
+# `make build` alone → upgrade current host
+# `make build jasonkwh-7520u` → host target does the work; build is a no-op
+ifeq ($(EXPLICIT_HOST),)
+ifneq ($(AUTO_OFFLOAD),)
 # Low-memory path: stream the source tree to bcm2711 without invoking Nix
-# locally, evaluate and build there, copy the finished closure back, then
-# activate it here with $(1) (switch or boot). --impure is load-bearing:
-# without it builtins.currentSystem is unavailable and the flake falls back to
-# treating the build as an x86 cross-compile. Paths bcm2711 built itself are
-# unsigned, so the copy needs --no-check-sigs, which the daemon only honours
-# because jasonkwh is in nix.settings.trusted-users.
-define offload-rebuild
+# locally, perform evaluation and building there, copy the finished closure
+# back, then activate locally.
+upgrade build:
 	@set -eu; \
 	echo "Streaming configuration to $(OFFLOAD_HOST)..."; \
 	SYSTEM_PATH=$$(tar --exclude='./.git' --exclude='./result' -cf - . \
 	  | ssh '$(OFFLOAD_SSH)' \
 	    "set -eu; \
-	     rm -rf '$(OFFLOAD_TMP)'; \
-	     mkdir -p '$(OFFLOAD_TMP)'; \
-	     trap 'rm -rf $(OFFLOAD_TMP)' EXIT; \
-	     tar -xf - -C '$(OFFLOAD_TMP)'; \
+	     rm -rf '/tmp/shengos-upgrade-$(HOST)'; \
+	     mkdir -p '/tmp/shengos-upgrade-$(HOST)'; \
+	     trap 'rm -rf /tmp/shengos-upgrade-$(HOST)' EXIT; \
+	     tar -xf - -C '/tmp/shengos-upgrade-$(HOST)'; \
 	     nix build --impure --accept-flake-config --no-link --print-out-paths \
-	       '$(OFFLOAD_TMP)#nixosConfigurations.$(TARGET_HOST).config.system.build.toplevel'"); \
+	       '/tmp/shengos-upgrade-$(HOST)#nixosConfigurations.$(HOST).config.system.build.toplevel'"); \
 	test -n "$$SYSTEM_PATH"; \
-	echo "Copying the finished system back to $(TARGET_HOST)..."; \
-	nix copy --no-check-sigs --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
-	echo "Activating $$SYSTEM_PATH ($(1))..."; \
+	echo "Copying the finished system back to $(HOST)..."; \
+	sudo /run/current-system/sw/bin/nix copy --no-check-sigs \
+	  --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
+	echo "Activating $$SYSTEM_PATH..."; \
 	sudo /run/current-system/sw/bin/nix-env \
 	  --profile /nix/var/nix/profiles/system --set "$$SYSTEM_PATH"; \
-	sudo "$$SYSTEM_PATH/bin/switch-to-configuration" $(1)
-endef
-
-# Every rebuild entry point goes through this, so boot/gc/<host> get the same
-# offload treatment as upgrade instead of quietly OOMing on the small board.
-ifneq ($(AUTO_OFFLOAD),)
-rebuild = $(call offload-rebuild,$(1))
+	sudo "$$SYSTEM_PATH/bin/switch-to-configuration" switch
 else
-rebuild = $(call nixos-rebuild,$(1),$(2))
-endif
-
-# `make build` alone → upgrade current host
-# `make build jasonkwh-7520u` → host target does the work; build is a no-op
-ifeq ($(EXPLICIT_HOST),)
 upgrade build:
-	$(call rebuild,switch,$(HOST))
+	$(call nixos-rebuild,switch,$(HOST))
+endif
 else
 build:
 	@:
 upgrade:
-	$(call rebuild,switch,$(HOST))
+	$(call nixos-rebuild,switch,$(HOST))
 endif
 
 boot:
-	$(call rebuild,boot,$(TARGET_HOST))
+	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
 update:
 	nix flake update
@@ -98,7 +85,7 @@ update:
 gc:
 	NCG=/run/current-system/sw/bin/nix-collect-garbage; \
 	sudo "$$NCG" -d
-	$(call rebuild,boot,$(TARGET_HOST))
+	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
 # SD-card image: make image HOST=jasonkwh-bcm2711
 # `make image jasonkwh-bcm2711` is also supported. Cross-built natively on
@@ -120,9 +107,9 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 BUILDER_TARGETS := upgrade boot build gc image $(HOSTS)
 REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
 ifneq ($(AUTO_OFFLOAD),)
-# The offloaded path does its own transfer and remote build, so no local
-# nixos-rebuild runs and only `image` still needs the probe.
-REQUESTED_BUILDER_TARGETS := $(filter image,$(REQUESTED_BUILDER_TARGETS))
+# The offloaded path performs its own transfer and remote build; even the
+# lightweight local builder probe is unnecessary for upgrade/build.
+REQUESTED_BUILDER_TARGETS := $(filter-out upgrade build,$(REQUESTED_BUILDER_TARGETS))
 endif
 ifneq ($(REQUESTED_BUILDER_TARGETS),)
 BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
@@ -183,4 +170,4 @@ headless-env:
 	bash cluster/misc/export-headless-env.sh
 
 $(HOSTS):
-	$(if $(filter image,$(MAKECMDGOALS)),@:,$(call rebuild,switch,$@))
+	$(if $(filter image,$(MAKECMDGOALS)),@:,$(call nixos-rebuild,switch,$@))
