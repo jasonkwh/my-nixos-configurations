@@ -143,9 +143,23 @@
           inputs.hermes-agent.nixosModules.default
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
-          ({ config, ... }:
+          ({ config, pkgs, ... }:
             lib.mkIf (isHermesWhatsappGateway && config.services.hermes-agent.enable) {
               services.hermes-agent.environment.WHATSAPP_ENABLED = "true";
+              # The pypi wheel doesn't ship the top-level scripts/ dir, so the
+              # WhatsApp bridge.js is missing from the nix package. Seed it into
+              # HERMES_HOME from the pinned hermes-agent source; the adapter's
+              # resolve_whatsapp_bridge_dir() picks up this copy when the
+              # (read-only) install tree lacks it.
+              systemd.services.hermes-agent.preStart = lib.mkAfter ''
+                bridge_src="${inputs.hermes-agent}/scripts/whatsapp-bridge"
+                bridge_dst="/var/lib/hermes/.hermes/scripts/whatsapp-bridge"
+                if [ ! -f "$bridge_dst/bridge.js" ]; then
+                  mkdir -p "$bridge_dst"
+                  ${pkgs.coreutils}/bin/cp -r "$bridge_src"/. "$bridge_dst"/
+                  chown -R hermes:hermes "$bridge_dst"
+                fi
+              '';
             })
           # Only x86 non-headless hosts get aarch64 QEMU emulation
           # (bcm2711 SD image builds). ARM/headless hosts never do.
