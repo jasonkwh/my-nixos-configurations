@@ -49,6 +49,10 @@ ifneq ($(AUTO_OFFLOAD),)
 # configuration survives and finishes. A killed run leaves its crash-recovery
 # files (/run/nixos/{restart,start}-list) behind, and every later switch then
 # replays them — restarting those units again regardless of restartIfChanged.
+# The unit logs to the journal and a follower relays it; --pipe would instead
+# wire the switch to the dying pty and its next write would abort it. Anchor
+# the follower to a timestamp: --lines=0 seeks only once it has opened the
+# journal, by which point the first lines of the switch are already gone.
 upgrade build:
 	@set -eu; \
 	echo "Streaming configuration to $(OFFLOAD_HOST)..."; \
@@ -67,15 +71,15 @@ upgrade build:
 	echo "Activating $$SYSTEM_PATH..."; \
 	sudo /run/current-system/sw/bin/nix-env \
 	  --profile /nix/var/nix/profiles/system --set "$$SYSTEM_PATH"; \
+	SINCE=$$(date '+%Y-%m-%d %H:%M:%S'); \
 	sudo /run/current-system/sw/bin/journalctl --unit=shengos-switch \
-	  --follow --lines=0 --no-pager --output=cat & \
+	  --follow --since="$$SINCE" --no-pager --output=cat & \
 	FOLLOW=$$!; \
-	trap 'kill $$FOLLOW 2>/dev/null || true' EXIT INT TERM; \
+	trap 'sleep 1; kill $$FOLLOW 2>/dev/null || true' EXIT INT TERM; \
 	sudo /run/current-system/sw/bin/systemd-run --collect --wait \
 	  --unit=shengos-switch \
 	  --property=StandardOutput=journal --property=StandardError=journal \
-	  "$$SYSTEM_PATH/bin/switch-to-configuration" switch; \
-	sleep 1
+	  "$$SYSTEM_PATH/bin/switch-to-configuration" switch
 else
 upgrade build:
 	$(call nixos-rebuild,switch,$(HOST))
