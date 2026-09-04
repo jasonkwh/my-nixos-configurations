@@ -572,4 +572,11 @@
   # synced dirs — every dir pull fails with "operation not permitted".
   systemd.services.syncthing.serviceConfig.PrivateUsers = lib.mkForce false;
 
+  # Fleet SSH is Tailscale SSH, so tailscaled itself serves the session a
+  # rebuild runs over. Restarting it during activation kills that session,
+  # and switch-to-configuration dies before starting the units it stopped
+  # (syncthing among them), leaving the host half-switched. The daemon keeps
+  # its old binary until it is restarted deliberately or the host reboots.
+  systemd.services.tailscaled.restartIfChanged = false;
+
 }
