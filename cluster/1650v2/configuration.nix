@@ -42,6 +42,4 @@
   services.xserver.videoDrivers = [ "amdgpu" "radeon" "modesetting" ];
 
   hardware.cpu.intel.updateMicrocode = true;
-
-  zramSwap.enable = true;
 }
