@@ -59,7 +59,8 @@ upgrade build:
 	       '/tmp/shengos-upgrade-$(HOST)#nixosConfigurations.$(HOST).config.system.build.toplevel'"); \
 	test -n "$$SYSTEM_PATH"; \
 	echo "Copying the finished system back to $(HOST)..."; \
-	nix copy --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
+	sudo /run/current-system/sw/bin/nix copy --no-check-sigs \
+	  --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
 	echo "Activating $$SYSTEM_PATH..."; \
 	sudo /run/current-system/sw/bin/nix-env \
 	  --profile /nix/var/nix/profiles/system --set "$$SYSTEM_PATH"; \
