@@ -94,13 +94,11 @@
           name = "bcm2710a1";
           hostSystem = "aarch64-linux";
           isHeadless = true;
-          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };
         "jasonkwh-1650v2" = {
           name = "1650v2";
           hostSystem = "x86_64-linux";
           isLaptop = false;
-          syncthingId = "PLACEHOLDER-REPLACE-WITH-REAL-DEVICE-ID-";
         };
       };
 
