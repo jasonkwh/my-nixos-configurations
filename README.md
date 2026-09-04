@@ -14,7 +14,7 @@
   <a href="#quick-start">Quick start</a>
   ·
   <a href="#machine-profiles">Machines</a>
-  ·  
+  ·
   <a href="#command-reference">Command reference</a>
   ·
   <a href="#versioning">Versioning</a>
@@ -23,13 +23,15 @@
 ---
 
 ShengOS is a personal, reproducible Linux environment built on [NixOS](https://nixos.org/).
-The entire system — desktop, applications, development tools, services, and security settings — is declared as code. Rebuilding the flake produces a complete NixOS generation that can be upgraded, reproduced, or rolled back safely.
+The system—including applications, services, desktop settings, and security
+policy—is declared as code and can be reproduced or rolled back safely.
 
 ## Features
 
 - **Declarative everything** — system, user, and desktop config all live in this repo as code.
 - **Reproducible builds** — `flake.lock` pins every dependency; switch machines freely.
-- **Distributed builds** — every x86_64/aarch64 Linux host declared with `buildSpeed`/`maxBuildJobs` in `flake.nix`'s `hostDefs` automatically joins the fleet builder pool: local jobs fill first, overflow spills to peers over Tailscale SSH. Add a machine, add two numbers — it's in the pool.
+- **Distributed builds** — hosts marked `isBuilder` share same-architecture
+  builds over Tailscale SSH.
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
 - **Headless boards** — single-board computers (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`) run a stripped, headless profile: no desktop/Steam/GPU stack, shared CLI tools (including `gh`), zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
@@ -53,30 +55,20 @@ ShengOS supports any number of machines sharing a common base, keeping hardware-
 ### Distributed build pool
 
 Builders are derived from `hostDefs` in `flake.nix`: any host declaring
-`buildSpeed` (relative weight, e.g. 3 vs 2) and `maxBuildJobs` joins the pool
-for its architecture, and each machine automatically builds against every
-other pooled host (excluding itself). Auth goes through Tailscale SSH — no
-keys to distribute, since fleet machines already trust each other's `jasonkwh`
-user via `nix.settings.trusted-users`. To extend the pool to a new
-architecture (e.g. `aarch64-darwin` via a Linux VM builder), add the system
-string to the per-arch list in `cluster/common/configuration.nix`.
+`isBuilder = true` joins the pool for its architecture. `buildSpeed` provides
+relative scheduling weight and `maxBuildJobs` limits concurrency. Each client
+uses reachable, same-architecture peers except itself. Authentication uses
+Tailscale SSH, and `jasonkwh` is trusted by the remote Nix daemon.
 
-Host classes are selected via `mkHost` flags in `flake.nix`: `hostSystem`
-(per-host architecture), `isLaptop`, and `isHeadless` — setting neither class
-flag means a desktop machine. `isHermesWhatsappGateway = true` designates the
-single WhatsApp gateway and enables WhatsApp only when Hermes itself is
-enabled; currently this is `jasonkwh-bcm2711`. Do not set it on more than one
-host. Home Manager layers route through `cluster/common/home.nix`: every host
-gets the shared CLI core (`home-headless.nix`), non-headless hosts add
-`home-desktop.nix` (Plasma/GUI), and laptops additionally get
-`home-laptop.nix`; machine-specific packages live in
-`cluster/<host>/home.nix`. System-level headless stripping remains
-`cluster/common/headless.nix`. x86 non-headless hosts can cross-build aarch64
-images via QEMU binfmt emulation.
+`mkHost` uses `hostSystem`, `isLaptop`, and `isHeadless` to select system and
+Home Manager layers. Setting neither class flag creates a desktop host.
+`isHermesWhatsappGateway = true` designates the single Hermes-enabled
+WhatsApp gateway, currently `jasonkwh-bcm2711`. x86 desktop hosts can build
+aarch64 SD images through QEMU binfmt emulation.
 
 ## Quick start
 
-The `meow` command is a thin wrapper around the `Makefile`, maintained in this repo. Run from anywhere:
+`meow` wraps this repository's `Makefile` and works from any directory:
 
 ```bash
 meow update          # nix flake update — refresh flake inputs
@@ -98,7 +90,7 @@ local to that host and must be paired there.
 
 | Command | Description |
 |---------|-------------|
-| `meow upgrade` | Rebuild + activate the current host (`HOST=` to override) |
+| `meow upgrade` | Rebuild + activate the current host; BCM2710A1 automatically evaluates/builds on BCM2711 |
 | `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
 | `meow update` | Refresh flake inputs (`nix flake update`) |
 | `meow gc` | Delete old generations + refresh bootloader |
@@ -107,7 +99,13 @@ local to that host and must be paired there.
 | `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
 | `meow syncthing-init` | One-time bootstrap of Syncthing identity on a new machine; prints the device ID to register in `flake.nix`'s `hostDefs` |
 
-`upgrade` defaults to the machine's hostname; pass `HOST=` or name a host directly to target a specific machine.
+`upgrade` defaults to the machine's hostname; use `HOST=` or a host target to
+select another configuration.
+On the 512MB BCM2710A1, `upgrade` streams the current configuration to the
+BCM2711 over Tailscale SSH. The BCM2711 fetches inputs, evaluates and builds;
+only the finished system closure is copied back for local activation. The
+BCM2711 must therefore be online and reachable as
+`jasonkwh-bcm2711.tail0c0276.ts.net`.
 
 ## Repository layout
 

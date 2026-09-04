@@ -1,11 +1,13 @@
 # ShengOS Installation Guide
 
-This document explains how to install ShengOS on a brand-new machine and restore a full development environment. Two paths:
+Choose the path for the target hardware:
 
-- **x86 laptop/desktop** — install from the official NixOS minimal ISO directly against the GitHub flake, then follow Steps 2–6.
-- **ARM board / headless node (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`)** — skip the ISO; see "Headless board path" at the end.
+- **x86 laptop/desktop** — follow Steps 1–5 using the official NixOS minimal ISO.
+- **ARM headless node** — skip the ISO and use the
+  [headless board path](#headless-board-path-jasonkwh-bcm2711--jasonkwh-bcm2710a1).
 
-**Core principle:** use an existing machine as the source of truth, and copy secrets over an encrypted channel (Tailscale) — never a plaintext USB stick.
+Use an existing machine as the source of truth and transfer secrets only over
+an encrypted Tailscale connection.
 
 ## Prerequisites
 
@@ -39,7 +41,9 @@ one Hermes-enabled host to add `WHATSAPP_ENABLED=true`; leave it absent
 everywhere else. A host with Hermes disabled cannot activate WhatsApp even if
 the flag is accidentally set.
 
-2. Commit and push. During install the host falls back to `/etc/nixos/hardware-configuration.nix` (generated in Step 2 below); once the repo copy lands in `cluster/<new-hostname>/` it takes priority. Impure eval only (`--impure`) until then.
+2. Commit and push. During installation, the host falls back to
+   `/etc/nixos/hardware-configuration.nix`, generated in Step 2. A committed
+   `cluster/<new-hostname>/hardware-configuration.nix` takes priority.
 
 ## Step 2: Boot the minimal ISO and install
 
@@ -53,7 +57,10 @@ sudo mount /dev/sda2 /mnt && sudo mkdir -p /mnt/boot && sudo mount /dev/sda1 /mn
 sudo nixos-generate-config --root /mnt
 ```
 
-3. Optional but recommended: copy the generated `/mnt/etc/nixos/hardware-configuration.nix` into the repo at `cluster/<new-hostname>/`, commit and push from an existing machine. Until then the flake falls back to `/etc/nixos/hardware-configuration.nix` automatically, so install works either way.
+3. Recommended: copy
+   `/mnt/etc/nixos/hardware-configuration.nix` to
+   `cluster/<new-hostname>/hardware-configuration.nix`, then commit and push.
+   Until then, the flake uses `/etc/nixos/hardware-configuration.nix`.
 4. Install straight from the GitHub flake:
 
 ```bash
@@ -106,9 +113,6 @@ fastfetch         # check system info and that the branding reads "ShengOS"
 
 ## FAQ
 
-### Q: The final installation step (copying the repository) fails with an error
-The copy script now fails loudly instead of silently leaving a broken state. In almost all cases this means the username is not `jasonkwh` — the script verifies the target user exists before copying. Re-run the installer and make sure the username field is `jasonkwh` (it should be pre-filled).
-
 ### Q: Does the username have to be `jasonkwh`?
 **Yes.** The username and `/home/jasonkwh` path are hard-coded throughout the repository. Custom usernames are not currently supported.
 
@@ -131,21 +135,10 @@ ssh jasonkwh@jasonkwh-7520u     # or any jasonkwh-<host>
 Access is revoked in the Tailscale admin console (expire/remove the device's node key).
 
 ### Q: How does file sync work, and where is the Syncthing device ID?
-Hermes' memories and skills folders sync via **Syncthing**. Devices trust
-each other by device ID — there are no shared secrets to copy.
-
-The device ID is generated on first boot of the syncthing service. On a new
-machine run:
-
-```bash
-cd ~/Documents/my-nixos-configurations
-make syncthing-init    # pre-generates identity and prints the device ID
-```
-
-then paste it into that host's `syncthingId` in `flake.nix` under `hostDefs`
-(see Step 4 of this guide). Device IDs
-are public-key fingerprints and are safe to commit to GitHub; the private key
-stays in `/var/lib/syncthing-hermes/.config/syncthing/`.
+Syncthing pairs devices by public device ID; no shared secret is committed.
+Follow [Step 4](#step-4-pair-syncthing-fleet-file-sync) to generate and
+register the ID. Its private key remains under
+`/var/lib/syncthing-hermes/.config/syncthing/`.
 
 ### Q: The new machine has no memories yet — can it overwrite the old machine's data?
 No. Syncthing only exchanges data between devices that have each other's device
@@ -163,13 +156,10 @@ by Syncthing. Pair WhatsApp on the new gateway with `hermes whatsapp` if that
 host does not already have a valid session.
 
 ### Q: How do distributed builds work?
-Any host declaring `buildSpeed` and `maxBuildJobs` in `flake.nix`'s `hostDefs`
-joins the fleet builder pool (see README "Distributed build pool"). During a
-rebuild, local jobs fill first; overflow derivations are dispatched to pooled
-peers over Tailscale SSH. A peer that is offline is simply skipped — builds
-never hang waiting for it. To add a machine to the pool, set its two numbers
-in `hostDefs`; to add a whole new architecture, extend the per-arch list in
-`cluster/common/configuration.nix`.
+Hosts with `isBuilder = true` in `hostDefs` join the pool for their
+architecture; `buildSpeed` and `maxBuildJobs` tune scheduling. Reachable peers
+are selected through Tailscale SSH. Offline peers are skipped, except that the
+BCM2710A1's low-memory upgrade path explicitly requires BCM2711.
 
 ### Q: Installing on a Mac Pro 2013 (trashcan)?
 Registered as `jasonkwh-1650v2` in this repo — `cluster/1650v2/configuration.nix`
@@ -193,11 +183,10 @@ NVRAM entries — if boot becomes unreliable, switch to
 
 ## Headless board path (jasonkwh-bcm2711 / jasonkwh-bcm2710a1)
 
-Boards without a desktop are installed from an SD card image, not the minimal
-ISO.
-Examples: `jasonkwh-bcm2711` (Pi 4B, 4GB) and `jasonkwh-bcm2710a1` (BCM2710A1,
-512MB). Headless boards get their Wi-Fi credentials and Tailscale auth key from
-`~/.secrets/headless-env` on the build host — create it first:
+Install headless boards from an SD-card image rather than the minimal ISO.
+Supported examples are `jasonkwh-bcm2711` (Pi 4B, 4GB) and
+`jasonkwh-bcm2710a1` (Zero 2 W, 512MB). First create
+`~/.secrets/headless-env` on the build host:
 
 ```bash
 # On a laptop connected to the home Wi-Fi:
@@ -223,8 +212,8 @@ For the Tailscale key: generate an **auth key** in the admin console with
    are automatic — the enrol service reads the baked-in `ts_auth_key` and
    joins the tailnet without interaction. SSH works via Tailscale SSH from
    then on.
-3. **Copy repo + secrets** from an existing machine over Tailscale (only
-   needed if `headless-env` wasn't baked in at image time):
+3. **Copy the repo and secrets if absent** from an existing machine over
+   Tailscale:
 
    ```bash
    rsync -a jasonkwh@<source>:Documents/my-nixos-configurations ~/Documents/
@@ -244,13 +233,19 @@ For the Tailscale key: generate an **auth key** in the admin console with
    rebuild them.
 6. **Build and switch on the board**: `make upgrade`.
 
+   On `jasonkwh-bcm2710a1`, this command automatically streams the current
+   configuration to `jasonkwh-bcm2711.tail0c0276.ts.net` over Tailscale SSH.
+   The BCM2711 performs input fetching, evaluation, and building so the Zero
+   2 W does not exhaust its 512MB RAM. The completed system closure is copied
+   back and activated locally. Ensure BCM2711 is online and reachable before
+   upgrading BCM2710A1.
+
 The `bcm2710a1` host has no nixos-hardware module, so its SD image uses the
 generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is included).
 It keeps Hermes disabled to fit its 512MB RAM, but runs Syncthing as an
 explicitly provisioned `hermes` system user to provide a backup replica.
 
-The Pi boots via Broadcom firmware + extlinux (`boot.loader.generic-extlinux-compatible`),
-not UEFI — its `cluster/bcm2711/configuration.nix` overrides the common
-systemd-boot defaults with `mkForce`. The hardware layout
-(`cluster/bcm2711/hardware-configuration.nix`) is committed to the repo, so a
-freshly flashed card needs no `nixos-generate-config` step.
+Both boards boot through Broadcom firmware and extlinux
+(`boot.loader.generic-extlinux-compatible`), not UEFI. Their committed
+hardware configurations mean a freshly flashed card does not need
+`nixos-generate-config`.
