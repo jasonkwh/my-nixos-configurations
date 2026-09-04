@@ -39,27 +39,30 @@ in
     # this old VAIO PCH — blacklist it (ref: Arch/Fedora 6.16 breakage).
     blacklistedKernelModules = [ "intel_oc_wdt" ];
 
-    # i5-2450M is Ivy Bridge-era (Sandy Bridge stepping); leave the default
+    # i5-2450M is Sandy Bridge (32nm, HD 3000 iGPU); leave the default
     # kernel in place but keep power management conservative.
     kernelParams = [
-      "pcie_aspm.policy=default"
+      # Radeon HD6630M (TeraScale 2) DPM: old vbios on this switchable-graphics
+      # VAIO can mis-clock the dGPU (flicker/blank screen). Start in "battery"
+      # profile for stability; raise to "performance" only while gaming via
+      # /sys/class/drm/card1/device/power_dpm_force_performance_level.
+      "radeon.dpm=1"
     ];
   };
 
   hardware = {
     cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-    graphics = {
-      extraPackages = with pkgs; [
-        # VA-API/VDPAU for the Sandy Bridge iGPU (mpv, browser video)
-        libva-utils
-        intel-vaapi-driver # Sandy Bridge uses the legacy driver
-      ];
-
-      # 32-bit GL for old games (Steam/Wine), rendered on either GPU.
-      enable32Bit = true;
-    };
+    # VA-API for the Sandy Bridge iGPU (32-bit GL & base mesa come from common).
+    graphics.extraPackages = with pkgs; [
+      intel-vaapi-driver # Sandy Bridge uses the legacy driver
+    ];
   };
+
+  # vainfo / GPU diagnostics.
+  environment.systemPackages = with pkgs; [
+    libva-utils
+  ];
 
   # Hybrid graphics: HD3000 iGPU handles the desktop; the Radeon HD6630M
   # (TeraScale 2 — amdgpu does NOT support it, the legacy `radeon` driver
@@ -87,8 +90,6 @@ in
       discardPolicy = "both";
     }
   ];
-
-  services.fstrim.enable = true;
 
   services = {
     # Intel thermal daemon — protects the aging VAIO cooling from hard
