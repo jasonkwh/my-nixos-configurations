@@ -48,12 +48,26 @@ the flag is accidentally set.
 ## Step 2: Boot the minimal ISO and install
 
 1. Boot the official NixOS minimal ISO, connect to the network.
-2. Partition and mount the target disk (UEFI: ESP + root), e.g.:
+2. Partition and mount the target disk, e.g.:
+
+UEFI (GPT: ESP + root):
 
 ```bash
 sudo parted /dev/sda -- mklabel gpt mkpart ESP fat32 1MiB 512MiB set 1 esp on mkpart primary 512MiB 100%
 sudo mkfs.fat -F32 /dev/sda1 && sudo mkfs.ext4 /dev/sda2
 sudo mount /dev/sda2 /mnt && sudo mkdir -p /mnt/boot && sudo mount /dev/sda1 /mnt/boot
+sudo nixos-generate-config --root /mnt
+```
+
+Legacy BIOS (MBR: root only; swap sized ≥ RAM if hibernation is wanted).
+The host's `configuration.nix` must set `boot.loader.grub` with
+`device = "/dev/sda"` and force `systemd-boot.enable = false` — see
+`cluster/2450m/configuration.nix` for a working example:
+
+```bash
+sudo parted /dev/sda -- mklabel msdos mkpart primary ext4 1MiB 100%
+sudo mkfs.ext4 /dev/sda1
+sudo mount /dev/sda1 /mnt
 sudo nixos-generate-config --root /mnt
 ```
 
