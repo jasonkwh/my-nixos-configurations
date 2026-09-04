@@ -70,10 +70,6 @@ in
     options = [ "noatime" "compress=zstd" ];
   };
 
-  programs = {
-    wireshark.enable = true;
-  };
-
   services = {
     xserver.videoDrivers = [ "amdgpu" ];
 
