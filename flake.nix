@@ -86,6 +86,7 @@
           isBuilder = true;
           buildSpeed = 1;
           maxBuildJobs = 4;
+          syncthingId = "WGQMBDR-UDX7MWW-JMDKKSQ-PRSIE6H-WJXKGGU-PMPCZKA-JV6VJL6-C6YBSAN";
         };
         "jasonkwh-bcm2711" = {
           name = "bcm2711";
