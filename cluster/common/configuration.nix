@@ -138,6 +138,7 @@
       subUidRanges = [{ startUid = 100000; count = 65536; }];
       subGidRanges = [{ startGid = 100000; count = 65536; }];
     };
+    hermes.extraGroups = [ "systemd-journal" ];
   };
 
   nixpkgs.config = {
@@ -400,6 +401,9 @@
           enabled = true;
           threshold = 0.35;
           target_ratio = 0.15;
+        };
+        kanban = {
+          max_in_progress = 3;
         };
         display = {
           show_reasoning = false;
