@@ -20,5 +20,8 @@
 
   zramSwap.memoryPercent = 50;
 
+  # 4GB Pi + WhatsApp gateway: cap concurrent kanban workers (fleet default is unset/unlimited).
+  services.hermes-agent.settings.kanban.max_in_progress = 3;
+
   time.timeZone = "Australia/Melbourne";
 }
