@@ -95,8 +95,5 @@ in
     # Intel thermal daemon — protects the aging VAIO cooling from hard
     # thermal trips by throttling early.
     thermald.enable = true;
-
-    # Let libinput auto-detect suitable defaults for this older VAIO touchpad.
-    libinput.enable = true;
   };
 }
