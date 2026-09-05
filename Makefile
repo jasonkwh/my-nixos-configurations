@@ -198,7 +198,7 @@ secrets-backup:
 
 secrets-restore:
 	@test -f "$(SECRETS_ARCHIVE)" || { echo 'secrets-restore: $(SECRETS_ARCHIVE) does not exist'; exit 1; }
-	@bash -o pipefail -c 'openssl enc -decrypt -aes-256-cbc -pbkdf2 -iter 600000 -in "$(SECRETS_ARCHIVE)" | tar --extract --acls --xattrs --file=- -C "$$HOME"'
+	@bash -o pipefail -c 'openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in "$(SECRETS_ARCHIVE)" | tar --extract --acls --xattrs --file=- -C "$$HOME"'
 	@printf 'Secrets restored to %s\n' "$$HOME/.secrets"
 
 $(HOSTS):
