@@ -9,17 +9,20 @@
 
 #   make syncthing-init         # one-time: pre-generate syncthing identity + print device ID
 #   make headless-env           # export Wi-Fi/Tailscale secrets for headless boards (~/.secrets/headless-env)
+#   make secrets-backup         # encrypt ~/.secrets as ./secrets.tar.enc
+#   make secrets-restore        # restore ~/.secrets from ./secrets.tar.enc
 
 HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
 LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
+SECRETS_ARCHIVE ?= secrets.tar.enc
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 AUTO_OFFLOAD := $(and $(filter jasonkwh-bcm2710a1,$(LOCAL_HOST)),$(filter jasonkwh-bcm2710a1,$(HOST)))
 OFFLOAD_HOST ?= jasonkwh-bcm2711
 OFFLOAD_SSH  := jasonkwh@$(OFFLOAD_HOST).tail0c0276.ts.net
 OFFLOAD_STORE := ssh-ng://$(OFFLOAD_SSH)
 
-.PHONY: help upgrade boot build update gc image syncthing-init headless-env $(HOSTS)
+.PHONY: help upgrade boot build update gc image syncthing-init headless-env secrets-backup secrets-restore $(HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -31,6 +34,8 @@ help:
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
 		'make image <host>        build that host SD-card image (e.g. jasonkwh-bcm2711)' \
+		'make secrets-backup      encrypt ~/.secrets (SECRETS_ARCHIVE=secrets.tar.enc)' \
+		'make secrets-restore     restore ~/.secrets, including modes and ACLs' \
 		'make $(HOSTS)  upgrade that host'
 
 define nixos-rebuild
@@ -183,6 +188,18 @@ syncthing-init:
 # tailscale-enrol.nix on headless boards and baked into SD images.
 headless-env:
 	bash misc/export-headless-env.sh
+
+# Stream directly through OpenSSL so no unencrypted archive is written to disk.
+# GNU tar's ACL and xattr flags preserve the access required by service users.
+secrets-backup:
+	@test -d "$$HOME/.secrets" || { echo 'secrets-backup: ~/.secrets does not exist'; exit 1; }
+	@bash -o pipefail -c 'umask 077; tar --create --acls --xattrs --file=- -C "$$HOME" .secrets | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -out "$(SECRETS_ARCHIVE)"'
+	@printf 'Encrypted secrets written to %s\n' "$(SECRETS_ARCHIVE)"
+
+secrets-restore:
+	@test -f "$(SECRETS_ARCHIVE)" || { echo 'secrets-restore: $(SECRETS_ARCHIVE) does not exist'; exit 1; }
+	@bash -o pipefail -c 'openssl enc -decrypt -aes-256-cbc -pbkdf2 -iter 600000 -in "$(SECRETS_ARCHIVE)" | tar --extract --acls --xattrs --file=- -C "$$HOME"'
+	@printf 'Secrets restored to %s\n' "$$HOME/.secrets"
 
 $(HOSTS):
 	$(if $(filter image,$(MAKECMDGOALS)),@:,$(call nixos-rebuild,switch,$@))
