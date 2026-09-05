@@ -96,19 +96,7 @@ in
     # thermal trips by throttling early.
     thermald.enable = true;
 
-    # Touchpad tuning (same feel as 7300u): tap-to-click, natural scrolling,
-    # two-finger scroll, no cursor jumps while typing.
-    libinput = {
-      enable = true;
-      touchpad = {
-        tapping = true;
-        naturalScrolling = true;
-        scrollMethod = "twofinger";
-        clickMethod = "clickfinger";
-        accelProfile = "flat";
-        disableWhileTyping = true;
-        accelSpeed = "0.0";
-      };
-    };
+    # Let libinput auto-detect suitable defaults for this older VAIO touchpad.
+    libinput.enable = true;
   };
 }
