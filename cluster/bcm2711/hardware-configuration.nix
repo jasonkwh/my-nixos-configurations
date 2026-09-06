@@ -18,8 +18,11 @@
     "hid_logitech_dj" "hid_logitech_hidpp" "hid_microsoft" "hid_roccat"
     "mmc_block" "nvme" "ohci_hcd" "ohci_pci" "pata_marvell" "pcie-brcmstb"
     "reset-raspberrypi" "sata_nv" "sata_sis" "sata_uli" "sata_via" "sd_mod"
-    "sr_mod" "uhci_hcd" "usb-storage" "usbhid" "vc4" "xhci_hcd" "xhci_pci"
+    "sr_mod" "uhci_hcd" "usb-storage" "usbhid" "xhci_hcd" "xhci_pci"
   ];
+
+  # Headless: prevent vc4_hdmi probe spam.
+  boot.blacklistedKernelModules = [ "vc4" ];
 
   fileSystems."/boot/firmware" = {
     device = "/dev/disk/by-label/FIRMWARE";
