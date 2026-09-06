@@ -25,7 +25,6 @@ in
       grub = {
         enable = lib.mkForce true;
         device = lib.mkForce "/dev/sda"; # Patriot P220, MBR install
-        useOSProber = true;
       };
       systemd-boot.enable = lib.mkForce false;
       efi.canTouchEfiVariables = lib.mkForce false;
