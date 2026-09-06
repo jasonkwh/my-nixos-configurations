@@ -76,6 +76,8 @@ in
   # Lets desktop launchers offer per-app GPU selection.
   services.switcherooControl.enable = true;
 
+  users.users.jasonkwh.extraGroups = [ "cdrom" ];
+
   # Storage tuning layered onto hardware-configuration.nix (kept untouched):
   # ext4 on the P220 — noatime reduces SSD writes; trim via fstrim.
   fileSystems."/" = {
