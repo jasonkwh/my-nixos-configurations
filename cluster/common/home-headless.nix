@@ -113,6 +113,7 @@ in
           email = email;
           name = fullName;
         };
+        credential."https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
       };
     };
 
