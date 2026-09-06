@@ -76,6 +76,9 @@ in
   # Lets desktop launchers offer per-app GPU selection.
   services.switcherooControl.enable = true;
 
+  # X11 session needs QT_IM_MODULE/XMODIFIERS, which waylandFrontend=true omits.
+  i18n.inputMethod.fcitx5.waylandFrontend = lib.mkForce false;
+
   users.users.jasonkwh.extraGroups = [ "cdrom" ];
 
   # Storage tuning layered onto hardware-configuration.nix (kept untouched):
