@@ -142,6 +142,7 @@
       skopeo
       ollama
       podman-compose
+      kdePackages.isoimagewriter
     ];
 
   # Aliases ride along with the tools they point at (zsh is configured

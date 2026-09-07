@@ -9,7 +9,6 @@
     flac
     calibre
     vlc
-    kdePackages.isoimagewriter
     beekeeper-studio
     postman
     pulumi
