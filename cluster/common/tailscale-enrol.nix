@@ -10,7 +10,7 @@
 # misc/export-headless-env.sh — same file as the Wi-Fi credentials,
 # same rsync-at-flash workflow as hermes-env. At boot a oneshot service
 # reads it, joins the tailnet, and marks itself done. From then on the node
-# is reachable at jasonkwh-<host>.tail0c0276.ts.net and fleet SSH works
+# is reachable at jasonkwh-<host>.$(tailscaleDomain) and fleet SSH works
 # immediately (Tailscale SSH handles identity; openssh stays key-only/
 # off-LAN per common/configuration.nix).
 #

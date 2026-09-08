@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, isMonitoringServer ? false, hardwareConfig, hermesPeerHosts, hostDefs, syncthingDevices, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, isMonitoringServer ? false, hardwareConfig, hermesPeerHosts, hostDefs, syncthingDevices, tailscaleDomain, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -62,11 +62,10 @@
     distributedBuilds = true;
     buildMachines =
       let
-        tsDomain = "tail0c0276.ts.net";
         builders = lib.filterAttrs (_: def:
           def.isBuilder or false && def.hostSystem == pkgs.stdenv.hostPlatform.system) hostDefs;
         mkBuilder = host: def: {
-          hostName = "${host}.${tsDomain}";
+          hostName = "${host}.${tailscaleDomain}";
           sshUser = username;
           system = def.hostSystem;
           maxJobs = def.maxBuildJobs;
@@ -74,7 +73,7 @@
           supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
         };
       in
-      lib.filter (m: m.hostName != "${config.networking.hostName}.${tsDomain}")
+      lib.filter (m: m.hostName != "${config.networking.hostName}.${tailscaleDomain}")
         (lib.mapAttrsToList mkBuilder builders);
   };
 
@@ -337,7 +336,7 @@
         devices = builtins.mapAttrs
           (name: dev:
             dev // {
-              addresses = [ "tcp://${name}.tail0c0276.ts.net:22000" ];
+              addresses = [ "tcp://${name}.${tailscaleDomain}:22000" ];
             })
           syncthingDevices;
         folders = let
@@ -440,7 +439,7 @@
         # Peer keys are HERMES_PEER_<NAME>_KEY in ~/.secrets/hermes-env.
         bot_peers = builtins.listToAttrs (map
           (host: lib.nameValuePair host {
-            url = "http://${host}.tail0c0276.ts.net:8642";
+            url = "http://${host}.${tailscaleDomain}:8642";
           })
           (lib.filter (h: h != config.networking.hostName) hermesPeerHosts));
       };

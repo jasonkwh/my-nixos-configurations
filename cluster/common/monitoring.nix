@@ -1,6 +1,6 @@
 # Fleet monitoring: node_exporter everywhere; Prometheus + Grafana on the
 # isMonitoringServer host. All traffic stays on the tailnet.
-{ config, pkgs, lib, name, hostDefs, isMonitoringServer, ... }:
+{ config, pkgs, lib, name, hostDefs, isMonitoringServer, tailscaleDomain, ... }:
 
 {
   services.prometheus = {
@@ -19,7 +19,7 @@
         job_name = "node";
         static_configs = [
           {
-            targets = map (host: "${host}.tail0c0276.ts.net:9100")
+            targets = map (host: "${host}.${tailscaleDomain}:9100")
               (builtins.attrNames hostDefs);
           }
         ];
@@ -42,8 +42,8 @@
       server = {
         http_addr = "0.0.0.0";
         http_port = 3001; # 3000 is the WhatsApp bridge
-        domain = "jasonkwh-${name}.tail0c0276.ts.net";
-        root_url = "http://jasonkwh-${name}.tail0c0276.ts.net:3001/";
+        domain = "jasonkwh-${name}.${tailscaleDomain}";
+        root_url = "http://jasonkwh-${name}.${tailscaleDomain}:3001/";
       };
       security = {
         admin_user = "jasonkwh";

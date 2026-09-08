@@ -34,6 +34,7 @@
       fullName = "Jason Huang";
       email = "jasonkwh@gmail.com";
       homeDirectory = "/home/${username}";
+      tailscaleDomain = "tail0c0276.ts.net";
 
       # Home Manager entry point shared verbatim by every host (and the Live
       # image). cluster/common/home.nix is a pure router: every host gets
@@ -119,7 +120,7 @@
       builderHosts = builtins.mapAttrs
         (targetHost: targetDef:
           builtins.map
-            (host: "${host}.tail0c0276.ts.net")
+            (host: "${host}.${tailscaleDomain}")
             (builtins.attrNames (lib.filterAttrs
               (host: def:
                 def.isBuilder or false
@@ -132,7 +133,7 @@
 
       mkHost = { name, isLaptop ? false, isHeadless ? false, isHermesWhatsappGateway ? false, isMonitoringServer ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
-          inherit username fullName email homeDirectory isLaptop isHeadless;
+          inherit username fullName email homeDirectory isLaptop isHeadless tailscaleDomain;
           inherit isMonitoringServer;
           inherit name;
           inherit hermesPeerHosts;

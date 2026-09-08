@@ -19,7 +19,8 @@ SECRETS_ARCHIVE ?= secrets.tar.enc
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 AUTO_OFFLOAD := $(and $(filter jasonkwh-bcm2710a1,$(LOCAL_HOST)),$(filter jasonkwh-bcm2710a1,$(HOST)))
 OFFLOAD_HOST ?= jasonkwh-bcm2711
-OFFLOAD_SSH  := jasonkwh@$(OFFLOAD_HOST).tail0c0276.ts.net
+TAILSCALE_DOMAIN ?= tail0c0276.ts.net
+OFFLOAD_SSH  := jasonkwh@$(OFFLOAD_HOST).$(TAILSCALE_DOMAIN)
 OFFLOAD_STORE := ssh-ng://$(OFFLOAD_SSH)
 
 .PHONY: help upgrade boot build update gc image syncthing-init headless-env secrets-backup secrets-restore $(HOSTS)
