@@ -248,6 +248,11 @@ For the Tailscale key: generate an **auth key** in the admin console with
    rebuild them.
 6. **Build and switch on the board**: `make upgrade`.
 
+   Note: the `hermes` service user cannot run raw `nixos-rebuild`/`nix-env`
+   via sudo — the assistant activates systems only through `shengos-switch`
+   (owner-gated by `/var/lib/shengos/verified-generations`). All `make` /
+   `sudo` commands in this guide are run as the human user `jasonkwh`.
+
    On `jasonkwh-bcm2710a1`, this command automatically streams the current
    configuration to `jasonkwh-bcm2711.tail0c0276.ts.net` over Tailscale SSH.
    The BCM2711 performs input fetching, evaluation, and building so the Zero
