@@ -45,7 +45,11 @@
         domain = "jasonkwh-${name}.tail0c0276.ts.net";
         root_url = "http://jasonkwh-${name}.tail0c0276.ts.net:3001/";
       };
-      security.admin_user = "jasonkwh";
+      security = {
+        admin_user = "jasonkwh";
+        # Random per-host key, generated once by the preStart below.
+        secret_key = "$__file{/var/lib/grafana/secret_key}";
+      };
       analytics.reporting_enabled = false;
     };
     provision.datasources.settings.datasources = [
@@ -57,4 +61,10 @@
       }
     ];
   };
+
+  # One-time random secret_key for the file provider above.
+  systemd.services.grafana.preStart = ''
+    key=/var/lib/grafana/secret_key
+    [ -s "$key" ] || ${pkgs.coreutils}/bin/head -c 32 /dev/urandom | ${pkgs.coreutils}/bin/base64 > "$key"
+  '';
 }
