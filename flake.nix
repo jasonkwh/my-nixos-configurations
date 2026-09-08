@@ -93,6 +93,7 @@
           hostSystem = "aarch64-linux";
           isHeadless = true;
           isHermesWhatsappGateway = true;
+          isMonitoringServer = true;
           isBuilder = true;
           buildSpeed = 3;
           maxBuildJobs = 2;
@@ -129,9 +130,10 @@
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, isHermesWhatsappGateway ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, isHermesWhatsappGateway ? false, isMonitoringServer ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless;
+          inherit isMonitoringServer;
           inherit name;
           inherit hermesPeerHosts;
           inherit hostDefs;

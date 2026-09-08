@@ -39,6 +39,9 @@ policy—is declared as code and can be reproduced or rolled back safely.
 - **Flake install** — boot the official NixOS minimal ISO and `nixos-install --flake github:jasonkwh/my-nixos-configurations#<host>`: no custom image to build, config comes straight from GitHub. See [docs/install.md](docs/install.md).
 - **Private assistant** — Hermes Agent with a personal companion; one designated
   fleet host owns the WhatsApp gateway. See [小升升](#personal-assistant-小升升).
+- **Fleet monitoring** — node_exporter on every host; the host flagged
+  `isMonitoringServer` runs Prometheus (30d retention) + Grafana (tailnet-only,
+  port 3001) for cluster-wide dashboards.
 
 ## Machine profiles
 
@@ -50,7 +53,7 @@ ShengOS supports any number of machines sharing a common base, keeping hardware-
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
 | **`jasonkwh-2450m`** | Intel Core i5-2450M · Intel HD Graphics 3000 + AMD Radeon HD 6630M · 16GB | Sony VAIO CB — legacy BIOS/MBR, retro gaming via PRIME offload |
 | **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x 2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
-| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway — no desktop, zram, SD card |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway + monitoring server (Prometheus/Grafana) — no desktop, zram, SD card |
 | **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled, zram-only swap, SD card |
 
 ### Distributed build pool
@@ -66,8 +69,20 @@ flake evaluation; builder-topology changes take effect after activation.
 `mkHost` uses `hostSystem`, `isLaptop`, and `isHeadless` to select system and
 Home Manager layers. Setting neither class flag creates a desktop host.
 `isHermesWhatsappGateway = true` designates the single Hermes-enabled
-WhatsApp gateway, currently `jasonkwh-bcm2711`. x86 desktop hosts can build
+WhatsApp gateway, currently `jasonkwh-bcm2711`. `isMonitoringServer = true`
+designates the monitoring host (Prometheus + Grafana, `cluster/common/monitoring.nix`),
+also currently `jasonkwh-bcm2711`. x86 desktop hosts can build
 aarch64 SD images through QEMU binfmt emulation.
+
+### Monitoring
+
+Every host runs `node_exporter` (with the systemd collector), reachable only
+on `tailscale0` port 9100. The host flagged `isMonitoringServer` runs
+Prometheus (scraping all `hostDefs` targets via MagicDNS, 30s interval, 30d
+retention) and Grafana on port 3001 (3000 is taken by the WhatsApp bridge).
+Open `http://jasonkwh-bcm2711.tail0c0276.ts.net:3001` from any fleet machine's
+browser — Grafana is provisioned with a default Prometheus datasource; set
+the admin password on first login.
 
 ## Quick start
 

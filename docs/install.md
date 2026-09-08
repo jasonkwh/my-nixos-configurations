@@ -28,6 +28,7 @@ an encrypted Tailscale connection.
   isHeadless = true;             # boards only: strips Plasma/GUI/Steam/GPU
   syncthingId = "<device-id>";    # omit until the real ID is available
   # isHermesWhatsappGateway = true; # optional; exactly one fleet host
+  # isMonitoringServer = true;      # optional; exactly one fleet host (Prometheus + Grafana)
 };
 ```
 
