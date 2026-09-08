@@ -65,7 +65,7 @@
         builders = lib.filterAttrs (_: def:
           def.isBuilder or false && def.hostSystem == pkgs.stdenv.hostPlatform.system) hostDefs;
         mkBuilder = host: def: {
-          hostName = "${host}.${tailscaleDomain}";
+          hostName = "${host}";
           sshUser = username;
           system = def.hostSystem;
           maxJobs = def.maxBuildJobs;
@@ -73,7 +73,7 @@
           supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
         };
       in
-      lib.filter (m: m.hostName != "${config.networking.hostName}.${tailscaleDomain}")
+      lib.filter (m: m.hostName != config.networking.hostName)
         (lib.mapAttrsToList mkBuilder builders);
   };
 
