@@ -5,7 +5,8 @@
 <h1 align="center">ShengOS</h1>
 
 <p align="center">
-  My personal, reproducible Linux environment built on NixOS.
+  An AI-native, multi-device OS built on NixOS — declarative, monitored,
+  and home to a resident AI companion.
 </p>
 
 <p align="center">
@@ -22,9 +23,13 @@
 
 ---
 
-ShengOS is a personal, reproducible Linux environment built on [NixOS](https://nixos.org/).
-The system—including applications, services, desktop settings, and security
-policy—is declared as code and can be reproduced or rolled back safely.
+ShengOS is an AI-native, multi-device operating system built on
+[NixOS](https://nixos.org/). Everything—applications, services, desktop
+settings, security policy, and even the resident AI assistant's persona and
+memory—is declared as code and reproduced across the fleet. The assistant can
+operate the system, but only through a verified, owner-gated rebuild channel:
+declarative config, distributed builds, fleet-wide monitoring, and a private
+AI companion designed together rather than bolted on.
 
 ## Features
 
@@ -36,6 +41,11 @@ policy—is declared as code and can be reproduced or rolled back safely.
 - **Headless boards** — single-board computers (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`) run a stripped, headless profile: no desktop/Steam/GPU stack, shared CLI tools (including `gh`), zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
 - **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
 - **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep the fleet in lockstep.
+- **Controlled rebuild channel** — the `hermes` service user has no raw
+  `nixos-rebuild`/`nix-env` sudo; it can only activate store paths explicitly
+  verified by the owner via `shengos-switch` (gated by
+  `/var/lib/shengos/verified-generations`). The assistant can operate the
+  system without ever being able to replace it unilaterally.
 - **Flake install** — boot the official NixOS minimal ISO and `nixos-install --flake github:jasonkwh/my-nixos-configurations#<host>`: no custom image to build, config comes straight from GitHub. See [docs/install.md](docs/install.md).
 - **Private assistant** — Hermes Agent with a personal companion; one designated
   fleet host owns the WhatsApp gateway. See [小升升](#personal-assistant-小升升).
