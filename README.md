@@ -27,72 +27,47 @@ ShengOS is an AI-native, multi-device operating system built on
 [NixOS](https://nixos.org/). Everything—applications, services, desktop
 settings, security policy, and even the resident AI assistant's persona and
 memory—is declared as code and reproduced across the fleet. The assistant can
-operate the system, but only through a verified, owner-gated rebuild channel:
-declarative config, distributed builds, fleet-wide monitoring, and a private
-AI companion designed together rather than bolted on.
+operate the system, but only through a verified, owner-gated rebuild channel.
 
 ## Features
 
-- **Declarative everything** — system, user, and desktop config all live in this repo as code.
-- **Reproducible builds** — `flake.lock` pins every dependency; switch machines freely.
-- **Distributed builds** — hosts marked `isBuilder` share same-architecture
-  builds over Tailscale SSH.
+- **Declarative everything** — system, user, and desktop config live in this repo as code; `flake.lock` pins every dependency.
+- **Fleet in lockstep** — Tailscale (networking) + Syncthing (file sync); hosts marked `isBuilder` share same-architecture builds over Tailscale SSH.
+- **Controlled rebuild channel** — the `hermes` service user has no raw `nixos-rebuild`/`nix-env` sudo; it activates only store paths the owner verified via `shengos-switch`.
+- **Fleet monitoring** — `node_exporter` on every host; the `isMonitoringServer` host runs Prometheus (30d retention) + Grafana (tailnet-only, port 3001).
+- **Private assistant** — Hermes Agent with a personal companion (小升升); one designated host owns the WhatsApp gateway.
+- **Headless boards** — SBCs run a stripped profile (no desktop/Steam/GPU stack, zram swap); SD images via `make image <host>`, Wi-Fi + Tailscale enrolment from `~/.secrets/headless-env`.
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
-- **Headless boards** — single-board computers (`jasonkwh-bcm2711`, `jasonkwh-bcm2710a1`) run a stripped, headless profile: no desktop/Steam/GPU stack, shared CLI tools (including `gh`), zram swap; SD images via `make image <host>`. Wi-Fi + Tailscale enrolment come from `~/.secrets/headless-env` (`make headless-env`).
-- **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, and language runtimes.
-- **Always in sync** — Tailscale (networking) + Syncthing (file sync) keep the fleet in lockstep.
-- **Controlled rebuild channel** — the `hermes` service user has no raw
-  `nixos-rebuild`/`nix-env` sudo; it can only activate store paths explicitly
-  verified by the owner via `shengos-switch` (gated by
-  `/var/lib/shengos/verified-generations`). The assistant can operate the
-  system without ever being able to replace it unilaterally.
-- **Flake install** — boot the official NixOS minimal ISO and `nixos-install --flake github:jasonkwh/my-nixos-configurations#<host>`: no custom image to build, config comes straight from GitHub. See [docs/install.md](docs/install.md).
-- **Private assistant** — Hermes Agent with a personal companion; one designated
-  fleet host owns the WhatsApp gateway. See [小升升](#personal-assistant-小升升).
-- **Fleet monitoring** — node_exporter on every host; the host flagged
-  `isMonitoringServer` runs Prometheus (30d retention) + Grafana (tailnet-only,
-  port 3001) for cluster-wide dashboards.
+- **Dev-ready** — containers (Podman), Kubernetes tooling, cloud CLIs, language runtimes.
 
 ## Machine profiles
 
-ShengOS supports any number of machines sharing a common base, keeping hardware-specific configuration scoped per-host. Both x86_64-linux and aarch64-linux (ARM boards) are supported:
+ShengOS supports any number of machines sharing a common base, with
+hardware-specific configuration scoped per-host. Both x86_64-linux and
+aarch64-linux are supported:
 
 | Profile | Hardware | Notes |
 |---------|----------|-------|
-| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
-| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
-| **`jasonkwh-2450m`** | Intel Core i5-2450M · Intel HD Graphics 3000 + AMD Radeon HD 6630M · 16GB | Sony VAIO CB — legacy BIOS/MBR, retro gaming via PRIME offload |
-| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x 2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
-| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway + monitoring server (Prometheus/Grafana) — no desktop, zram, SD card |
-| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled, zram-only swap, SD card |
+| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
+| **`jasonkwh-7300u`** | Intel Core i5-7300U · HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
+| **`jasonkwh-2450m`** | Intel Core i5-2450M · HD 3000 + Radeon HD 6630M · 16GB | Sony VAIO CB — legacy BIOS/MBR, retro gaming via PRIME offload |
+| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · FirePro D500 x2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway + monitoring server |
+| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled |
 
-### Distributed build pool
-
-Builders are derived from `hostDefs` in `flake.nix`: any host declaring
-`isBuilder = true` joins the pool for its architecture. `buildSpeed` provides
-relative scheduling weight and `maxBuildJobs` limits concurrency. Each client
-uses reachable, same-architecture peers except itself. Authentication uses
-Tailscale SSH, and `jasonkwh` is trusted by the remote Nix daemon. Upgrade
-commands probe the active generation's `/etc/nix/machines`, avoiding a second
-flake evaluation; builder-topology changes take effect after activation.
-
-`mkHost` uses `hostSystem`, `isLaptop`, and `isHeadless` to select system and
-Home Manager layers. Setting neither class flag creates a desktop host.
-`isHermesWhatsappGateway = true` designates the single Hermes-enabled
-WhatsApp gateway, currently `jasonkwh-bcm2711`. `isMonitoringServer = true`
-designates the monitoring host (Prometheus + Grafana, `cluster/common/monitoring.nix`),
-also currently `jasonkwh-bcm2711`. x86 desktop hosts can build
-aarch64 SD images through QEMU binfmt emulation.
+`mkHost` uses `hostSystem`, `isLaptop`, `isHeadless` to select system and
+Home Manager layers; `isHermesWhatsappGateway` designates the single WhatsApp
+gateway, `isMonitoringServer` the monitoring host (currently both
+`jasonkwh-bcm2711`). x86 desktop hosts can build aarch64 SD images through
+QEMU binfmt emulation. On the 512MB BCM2710A1, upgrades automatically stream
+to BCM2711 for evaluation/build and copy back only the finished closure.
 
 ### Monitoring
 
-Every host runs `node_exporter` (with the systemd collector), reachable only
-on `tailscale0` port 9100. The host flagged `isMonitoringServer` runs
-Prometheus (scraping all `hostDefs` targets via MagicDNS, 30s interval, 30d
-retention) and Grafana on port 3001 (3000 is taken by the WhatsApp bridge).
-Open `http://jasonkwh-bcm2711.tail0c0276.ts.net:3001` from any fleet machine's
-browser — Grafana is provisioned with a default Prometheus datasource; set
-the admin password on first login.
+Every host runs `node_exporter`, reachable only on `tailscale0` port 9100.
+Prometheus scrapes all `hostDefs` targets via MagicDNS (30s interval);
+Grafana is provisioned with a default Prometheus datasource — set the admin
+password on first login at `http://jasonkwh-bcm2711.tail0c0276.ts.net:3001`.
 
 ## Quick start
 
@@ -103,37 +78,33 @@ meow update          # nix flake update — refresh flake inputs
 meow upgrade         # rebuild + activate the current host's config
 ```
 
-See [Command reference](#command-reference) for the full list, or [docs/install.md](docs/install.md) to install ShengOS on a new machine.
+See [Command reference](#command-reference) for the full list, or
+[docs/install.md](docs/install.md) to install ShengOS on a new machine.
 
 ## Personal assistant (小升升)
 
 ShengOS ships with a personal AI assistant — **小升升** — a private companion
 that lives on the machine, answers to its owner, and looks after them day to
-day. She runs from the flake on Hermes-enabled hosts, and memories and skills
-stay in sync via Tailscale and Syncthing. WhatsApp is intentionally active on
-only the host marked `isHermesWhatsappGateway`; its Baileys session remains
-local to that host and must be paired there.
+day. She runs from the flake on Hermes-enabled hosts; memories and skills stay
+in sync via Tailscale and Syncthing. The assistant can operate the system but
+cannot replace it unilaterally: system activation goes through the
+owner-gated `shengos-switch` channel only.
 
 ## Command reference
 
 | Command | Description |
 |---------|-------------|
-| `meow upgrade` | Rebuild + activate the current host; BCM2710A1 automatically evaluates/builds on BCM2711 |
+| `meow upgrade` | Rebuild + activate the current host |
 | `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
 | `meow update` | Refresh flake inputs (`nix flake update`) |
 | `meow gc` | Delete old generations + refresh bootloader |
-| `meow image <hostname>` | Build an SD-card image for a host, e.g. `meow image jasonkwh-bcm2711` → `result/*.img.zst` |
-| `meow headless-env` | Export the build host's Wi-Fi credentials (+ optional Tailscale auth key) into `~/.secrets/headless-env` for headless boards |
+| `meow image <hostname>` | Build an SD-card image, e.g. `meow image jasonkwh-bcm2711` → `result/*.img.zst` |
+| `meow headless-env` | Export Wi-Fi credentials (+ optional Tailscale auth key) into `~/.secrets/headless-env` |
 | `meow <hostname>` | Rebuild a specific host (e.g. `meow jasonkwh-7520u`) |
-| `meow syncthing-init` | One-time bootstrap of Syncthing identity on a new machine; prints the device ID to register in `flake.nix`'s `hostDefs` |
+| `meow syncthing-init` | One-time Syncthing identity bootstrap; prints the device ID for `hostDefs` |
 
 `upgrade` defaults to the machine's hostname; use `HOST=` or a host target to
 select another configuration.
-On the 512MB BCM2710A1, `upgrade` streams the current configuration to the
-BCM2711 over Tailscale SSH. The BCM2711 fetches inputs, evaluates and builds;
-only the finished system closure is copied back for local activation. The
-BCM2711 must therefore be online and reachable as
-`jasonkwh-bcm2711.tail0c0276.ts.net`.
 
 ## Repository layout
 
@@ -145,12 +116,8 @@ cluster/             # Per-host & shared NixOS config
   common/            #   Shared across all machines (branding, fonts, services…)
                      #   headless.nix — imported when isHeadless = true
                      #   home.nix — HM entry point routing home-headless/-desktop/-laptop
-  7520u/             #   AMD Ryzen 5 7520U host
-  7300u/             #   Intel Core i5-7300U host
-  2450m/             #   Sony VAIO CB (i5-2450M) — legacy BIOS/MBR host
-  1650v2/            #   Mac Pro 2013 (trashcan) — emulation/retro gaming
-  bcm2711/           #   Raspberry Pi 4B headless host (aarch64)
-  bcm2710a1/         #   BCM2710A1 headless host (aarch64)
+  7520u/  7300u/  2450m/  1650v2/   # Per-host config
+  bcm2711/  bcm2710a1/              # aarch64 headless hosts
 
 docs/                # Guides (install, troubleshooting, …)
 assets/              # Logos, wallpapers
@@ -160,4 +127,7 @@ version.yaml         # Current release version (auto-bumped by CI)
 
 ## Versioning
 
-The current release is tracked in `version.yaml`. On every push to `main`, the **Bump Version** workflow reads the current version, bumps it (patch by default, or `minor`/`major` via `workflow_dispatch`), commits the update, and tags the release as `vX.Y.Z` (semver).
+The current release is tracked in `version.yaml`. On every push to `main`,
+the **Bump Version** workflow bumps it (patch by default, or `minor`/`major`
+via `workflow_dispatch`), commits the update, and tags the release as
+`vX.Y.Z` (semver).
