@@ -5,8 +5,7 @@
 <h1 align="center">ShengOS</h1>
 
 <p align="center">
-  An AI-native, multi-device OS built on NixOS — declarative, monitored,
-  and home to a resident AI companion.
+  My personal, reproducible, AI-native Linux environment built on NixOS.
 </p>
 
 <p align="center">
