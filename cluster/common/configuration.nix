@@ -212,8 +212,8 @@
   # activate a store path listed in /var/lib/shengos/verified-generations
   # (one path per line, appended by Jason after review). Raw
   # nixos-rebuild/nix-env sudo is no longer granted.
-  environment.etc."shengos/verified-generations".text = "";
   systemd.tmpfiles.rules = [
+    "d /var/lib/shengos 0755 root root - -"
     "f /var/lib/shengos/verified-generations 0644 root root - -"
   ];
 
