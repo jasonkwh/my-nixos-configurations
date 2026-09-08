@@ -187,7 +187,6 @@
     ripgrep
     (writeShellScriptBin "shengos-switch" ''
       set -eu
-      # Runs as root via sudo; the sudoers rule grants ONLY this script.
       [ "$#" -eq 1 ] || { echo "usage: shengos-switch /nix/store/...-nixos-system-<host>" >&2; exit 1; }
       path="$1"
       case "$path" in /nix/store/*) ;; *) echo "refused: not a store path" >&2; exit 1;; esac
@@ -208,22 +207,14 @@
   environment.shellAliases.hermes =
     "sudo -u hermes ${pkgs.coreutils}/bin/env HERMES_HOME=/var/lib/hermes/.hermes hermes";
 
-  # Controlled rebuild channel for the hermes service user: it may only
-  # activate a store path listed in /var/lib/shengos/verified-generations
-  # (one path per line, appended by Jason after review). Raw
-  # nixos-rebuild/nix-env sudo is no longer granted.
+  # hermes may only activate store paths verified by Jason (see sudoers).
   systemd.tmpfiles.rules = [
     "d /var/lib/shengos 0755 root root - -"
     "f /var/lib/shengos/verified-generations 0644 root root - -"
   ];
 
-  # Passwordless sudo for the hermes service user, scoped to exact binaries.
-  # Wrappers are installed into the system PATH under fixed names; the
-  # sudoers entries reference their stable /run/current-system/sw/bin paths,
-  # so nixpkgs updates never break the match (store paths would drift).
-  # shengos-switch is the only path to activate a system: it accepts a store
-  # path gated by /var/lib/shengos/verified-generations (appended by Jason
-  # after review), never a flake/ref.
+  # Hermes sudo, scoped to stable /run/current-system paths; shengos-switch
+  # is the only activation path (gated by /var/lib/shengos/verified-generations).
   security.sudo.extraRules = let
     sudoCmd = name: {
       command = "/run/current-system/sw/bin/${name} *";
