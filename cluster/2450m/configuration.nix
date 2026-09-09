@@ -29,8 +29,6 @@ in
     };
     # 17GiB swap > max RAM: hibernation image always fits.
     resumeDevice = "/dev/disk/by-uuid/${swapUuid}";
-    # OC watchdog (kernel 6.16+) hangs boot on this PCH.
-    blacklistedKernelModules = [ "intel_oc_wdt" ];
     # Fixed-mux VAIO CB: HD 3000 fused off, HD6630M is the only GPU.
     kernelParams = [ "radeon.dpm=1" ];
   };
