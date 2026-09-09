@@ -83,6 +83,7 @@
     (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
       description = "Drop offline peers from /etc/nix/machines";
       serviceConfig.Type = "oneshot";
+      path = with pkgs; [ tailscale gawk gnugrep gnused coreutils diffutils ];
       script = ''
         f=/etc/nix/machines
         [ -r "$f" ] || exit 0
