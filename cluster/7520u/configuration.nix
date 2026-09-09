@@ -19,12 +19,6 @@ in
 
   hardware = {
     cpu.amd.updateMicrocode = true;
-
-    graphics.extraPackages = with pkgs; [
-      # VA-API and VDPAU for hardware video decode/encode (mpv, ffmpeg, browser video)
-      libva-utils
-      rocmPackages.clr.icd
-    ];
   };
 
   boot = {

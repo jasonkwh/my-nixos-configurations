@@ -1,7 +1,6 @@
 { config, lib, pkgs, username, ... }:
 
 let
-  # 3210m's own swap partition (from hardware-configuration.nix).
   swapUuid = "aca6a618-c225-4420-b8c8-bd96575c3377";
 in
 {
