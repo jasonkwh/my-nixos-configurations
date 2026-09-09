@@ -77,10 +77,8 @@
         (lib.mapAttrsToList mkBuilder builders);
   };
 
-  # nix.buildMachines is a static snapshot; an offline peer (e.g. a laptop
-  # that shut down) stays in /etc/nix/machines and the daemon stalls builds
-  # trying to reach it. Re-filter that file from live Tailscale state every
-  # 2 min. The daemon re-parses the file per build (Nix >= 2.4), no restart.
+  # Offline builders stall distributed builds; re-filter from tailscale state.
+  # The daemon re-parses the file per build (Nix >= 2.4), no restart needed.
   systemd.services.nix-machines-sync = lib.mkIf
     (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
       description = "Drop offline peers from /etc/nix/machines";
@@ -112,8 +110,8 @@
     (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnBootSec = "2min";
-        OnUnitActiveSec = "2min";
+        OnBootSec = "5min";
+        OnUnitActiveSec = "5min";
       };
     };
 
