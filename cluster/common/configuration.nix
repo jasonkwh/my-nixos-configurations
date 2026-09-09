@@ -87,7 +87,7 @@
       script = ''
         f=/etc/nix/machines
         [ -r "$f" ] || exit 0
-        online=$(tailscale status 2>/dev/null | awk '$0 !~ /offline/ {print $2}')
+        online=$(tailscale status 2>/dev/null | awk '$0 !~ /offline/ {print $2}' | tr '\n' ' ')
         [ -n "$online" ] || exit 0
         tmp=$(mktemp)
         while read -r line; do
