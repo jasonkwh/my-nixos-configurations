@@ -107,7 +107,6 @@
       kubelogin
       kustomize
       grpc
-      percona-toolkit
       act
       eksctl
       azure-cli
