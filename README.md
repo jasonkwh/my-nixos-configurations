@@ -47,12 +47,12 @@ aarch64-linux are supported:
 
 | Profile | Hardware | Notes |
 |---------|----------|-------|
-| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
-| **`jasonkwh-7300u`** | Intel Core i5-7300U · HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
-| **`jasonkwh-2450m`** | Intel Core i5-2450M · HD 3000 + Radeon HD 6630M · 16GB | Sony VAIO CB — legacy BIOS/MBR, retro gaming via PRIME offload |
-| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · FirePro D500 x2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
-| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway + monitoring server |
-| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled |
+| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
+| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
+| **`jasonkwh-2450m`** | Intel Core i5-2450M · AMD Radeon HD 6630M · 16GB | Sony VAIO CB — legacy BIOS/MBR, single dGPU via radeon |
+| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway + monitoring server |
+| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled |
 
 `mkHost` uses `hostSystem`, `isLaptop`, `isHeadless` to select system and
 Home Manager layers; `isHermesWhatsappGateway` designates the single WhatsApp

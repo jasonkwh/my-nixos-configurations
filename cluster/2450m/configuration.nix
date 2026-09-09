@@ -38,42 +38,20 @@ in
     # this old VAIO PCH — blacklist it (ref: Arch/Fedora 6.16 breakage).
     blacklistedKernelModules = [ "intel_oc_wdt" ];
 
-    # i5-2450M is Sandy Bridge (32nm, HD 3000 iGPU); leave the default
-    # kernel in place but keep power management conservative.
+    # HD 3000 iGPU is fused off in firmware (fixed-mux VAIO CB, no 00:02.0).
     kernelParams = [
-      # Radeon HD6630M (TeraScale 2) DPM: old vbios on this switchable-graphics
-      # VAIO can mis-clock the dGPU (flicker/blank screen). Start in "battery"
-      # profile for stability; raise to "performance" only while gaming via
-      # /sys/class/drm/card1/device/power_dpm_force_performance_level.
+      # Old vbios can mis-clock the dGPU; start in "battery" profile,
+      # raise via power_dpm_force_performance_level only while gaming.
       "radeon.dpm=1"
     ];
   };
 
-  hardware = {
-    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  # Intel microcode updates (Sandy Bridge errata fixes).
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-    # VA-API for the Sandy Bridge iGPU (32-bit GL & base mesa come from common).
-    graphics.extraPackages = with pkgs; [
-      intel-vaapi-driver # Sandy Bridge uses the legacy driver
-    ];
-  };
-
-  # vainfo / GPU diagnostics.
-  environment.systemPackages = with pkgs; [
-    libva-utils
-  ];
-
-  # Hybrid graphics: HD3000 iGPU handles the desktop; the Radeon HD6630M
-  # (TeraScale 2 — amdgpu does NOT support it, the legacy `radeon` driver
-  # is required) is used on demand via PRIME render offload:
-  #   DRI_PRIME=1 <game>        (or `DRI_PRIME=1 %command%` in Steam)
-  # modesetting covers the Intel iGPU (xf86-video-intel is abandoned and
-  # buggy); radeon DDX claims the AMD dGPU. Each driver only matches its
-  # own hardware.
+  # Single GPU: HD6630M drives everything via legacy radeon (TeraScale 2,
+  # no amdgpu). No PRIME offload needed.
   services.xserver.videoDrivers = [ "modesetting" "radeon" ];
-
-  # Lets desktop launchers offer per-app GPU selection.
-  services.switcherooControl.enable = true;
 
   # X11 session needs QT_IM_MODULE/XMODIFIERS, which waylandFrontend=true omits.
   i18n.inputMethod.fcitx5.waylandFrontend = lib.mkForce false;
