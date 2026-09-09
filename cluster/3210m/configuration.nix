@@ -36,6 +36,9 @@ in
   # X11 session needs QT_IM_MODULE/XMODIFIERS, which waylandFrontend=true omits.
   i18n.inputMethod.fcitx5.waylandFrontend = lib.mkForce false;
 
+  # Built-in DVD drive: allow direct device access without sudo.
+  users.users.jasonkwh.extraGroups = [ "cdrom" ];
+
   # Storage tuning layered onto hardware-configuration.nix (kept untouched):
   # noatime reduces SSD writes; trim via fstrim.
   fileSystems."/" = {
