@@ -12,7 +12,7 @@
 #   make secrets-backup         # encrypt ~/.secrets as ./secrets.tar.enc
 #   make secrets-restore        # restore ~/.secrets from ./secrets.tar.enc
 
-HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
+HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-3210m jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
 LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
 SECRETS_ARCHIVE ?= secrets.tar.enc
