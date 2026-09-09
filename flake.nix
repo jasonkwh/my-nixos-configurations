@@ -115,6 +115,14 @@
           hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVmSSuzESOHYQnRrIqDVlh66vxID1pgQ08RV5u/MwBW";
           syncthingId = "GXTKLBM-LRAL3TP-KDWRB2S-PSWCIIY-5AL77HX-LIRAK2G-PL6HIPH-AXTVBQ5";
         };
+        "jasonkwh-3210m" = {
+          name = "3210m";
+          hostSystem = "x86_64-linux";
+          isLaptop = true;
+          isBuilder = true;
+          buildSpeed = 1;
+          maxBuildJobs = 2;
+        };
         "jasonkwh-1650v2" = {
           name = "1650v2";
           hostSystem = "x86_64-linux";
