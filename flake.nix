@@ -122,6 +122,8 @@
           isBuilder = true;
           buildSpeed = 1;
           maxBuildJobs = 2;
+          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJsR36gqTe9gKZ6y7STXvHaLbN/lDIJH9xD3c4akH4cN";
+          syncthingId = "WOXKEDN-PWOAESC-GEULKND-C66M4IV-FPQTUWW-TL6554M-H2BSD2L-P2AF3QX";
         };
         "jasonkwh-1650v2" = {
           name = "1650v2";
