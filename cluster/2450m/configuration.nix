@@ -46,9 +46,6 @@ in
     ];
   };
 
-  # Intel microcode updates (Sandy Bridge errata fixes).
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-
   # Single GPU: HD6630M drives everything via legacy radeon (TeraScale 2,
   # no amdgpu). No PRIME offload needed.
   services.xserver.videoDrivers = [ "modesetting" "radeon" ];

@@ -66,7 +66,6 @@ in
   };
 
   hardware = {
-    cpu.intel.updateMicrocode = true;
     graphics.extraPackages = with pkgs; [
       intel-media-driver
       libva-vdpau-driver

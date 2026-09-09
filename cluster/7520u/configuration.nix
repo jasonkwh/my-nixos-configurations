@@ -17,10 +17,6 @@ in
 
   time.timeZone = "Australia/Melbourne";
 
-  hardware = {
-    cpu.amd.updateMicrocode = true;
-  };
-
   boot = {
     # Resume hibernation image from the 7520u swap partition.
     resumeDevice = "/dev/disk/by-uuid/${swapUuid}";
