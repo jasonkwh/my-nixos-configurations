@@ -77,6 +77,13 @@
         (lib.mapAttrsToList mkBuilder builders);
   };
 
+  # Root-initiated builder SSH (sudo nixos-rebuild --builders) verifies host
+  # keys against /etc/ssh/ssh_known_hosts — Tailscale SSH identity checks
+  # don't apply to root. Keys are pinned per-host in flake.nix (hostDefs).
+  programs.ssh.knownHosts = builtins.mapAttrs
+    (_: def: { publicKey = def.hostPublicKey; })
+    (lib.filterAttrs (_: def: def ? hostPublicKey) hostDefs);
+
   networking = {
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
     networkmanager = {

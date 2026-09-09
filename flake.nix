@@ -61,6 +61,10 @@
       # syncthingId is the machine's Syncthing device fingerprint
       # (`syncthing -device-id`); omit it for hosts that don't sync.
       # isBuilder gates who joins buildMachines (cluster/common/configuration.nix).
+      # hostPublicKey is the machine's SSH host key (read ON-BOARD via
+      # cat /etc/ssh/ssh_host_ed25519_key.pub — never ssh-keyscan); it pins
+      # the key for root-initiated builder SSH (programs.ssh.knownHosts).
+      # Omit it for hosts whose key hasn't been read yet.
       hostDefs = {
         "jasonkwh-7300u" = {
           name = "7300u";
@@ -78,6 +82,7 @@
           isBuilder = true;
           buildSpeed = 3;
           maxBuildJobs = 4;
+          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIODXodoJLkTtxwWGkqXIWW2dC0BXN/uHgb7eABbczTEZ";
           syncthingId = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
         };
         "jasonkwh-2450m" = {
@@ -87,6 +92,7 @@
           isBuilder = true;
           buildSpeed = 1;
           maxBuildJobs = 4;
+          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG+KOrVNYK6dBw+Ucv53poZ2Ptszaav5ZpFA+j/5+FKP";
           syncthingId = "WGQMBDR-UDX7MWW-JMDKKSQ-PRSIE6H-WJXKGGU-PMPCZKA-JV6VJL6-C6YBSAN";
         };
         "jasonkwh-bcm2711" = {
@@ -99,12 +105,14 @@
           buildSpeed = 3;
           maxBuildJobs = 2;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
+          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMliakPvWur4Rh8cPKw83mEFGwfS/2OlsfO5g9p+BztM";
           syncthingId = "3HVJKXT-JBAOZME-7IO7IXE-ZVA3RPU-NVZ37PL-G26C3V7-JFAETLE-ZOFKBAB";
         };
         "jasonkwh-bcm2710a1" = {
           name = "bcm2710a1";
           hostSystem = "aarch64-linux";
           isHeadless = true;
+          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVmSSuzESOHYQnRrIqDVlh66vxID1pgQ08RV5u/MwBW";
           syncthingId = "GXTKLBM-LRAL3TP-KDWRB2S-PSWCIIY-5AL77HX-LIRAK2G-PL6HIPH-AXTVBQ5";
         };
         "jasonkwh-1650v2" = {
