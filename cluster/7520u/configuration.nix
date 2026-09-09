@@ -6,11 +6,7 @@ in
 {
   imports = [
     ../common/configuration.nix
-    ./netskope.nix
-    ./netskope-uninstaller.nix
   ];
-
-  shengos.netskope.enable = true;
 
   home-manager.users.${username} = {
     imports = [
