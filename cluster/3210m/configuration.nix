@@ -17,8 +17,7 @@ in
 
   time.timeZone = "Australia/Melbourne";
 
-  # VAIO SVS131 (i3-3210M) boots legacy BIOS from the MBR — override the
-  # fleet-default systemd-boot/EFI setup.
+  # Legacy-BIOS VAIO; fleet default is systemd-boot/EFI.
   boot = {
     loader = {
       grub = {
@@ -28,24 +27,19 @@ in
       systemd-boot.enable = lib.mkForce false;
       efi.canTouchEfiVariables = lib.mkForce false;
     };
-
-    # Hibernate resumes from the swap partition.
     resumeDevice = "/dev/disk/by-uuid/${swapUuid}";
   };
 
   # X11 session needs QT_IM_MODULE/XMODIFIERS, which waylandFrontend=true omits.
   i18n.inputMethod.fcitx5.waylandFrontend = lib.mkForce false;
 
-  # Built-in DVD drive: allow direct device access without sudo.
+  # Built-in DVD drive.
   users.users.jasonkwh.extraGroups = [ "cdrom" ];
 
-  # Storage tuning layered onto hardware-configuration.nix (kept untouched):
-  # noatime reduces SSD writes; trim via fstrim.
   fileSystems."/" = {
     options = [ "noatime" ];
   };
 
-  # Single authoritative swap definition; prevent duplicate fstab entries.
   swapDevices = lib.mkForce [
     {
       device = "/dev/disk/by-uuid/${swapUuid}";
@@ -53,6 +47,5 @@ in
     }
   ];
 
-  # Ivy Bridge thermal management for an aging VAIO cooling system.
   services.thermald.enable = true;
 }
