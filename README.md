@@ -50,6 +50,7 @@ aarch64-linux are supported:
 | **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB | Daily driver — Steam, gaming, hibernation |
 | **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB | Spare laptop — hibernates to NVMe swap |
 | **`jasonkwh-2450m`** | Intel Core i5-2450M · AMD Radeon HD 6630M · 16GB | Sony VAIO CB — legacy BIOS/MBR, single dGPU via radeon |
+| **`jasonkwh-3210m`** | Intel Core i3-3210M · Intel HD Graphics 4000 + NVIDIA GeForce GT 640M LE · 12GB | Sony VAIO SVS131 — legacy BIOS/MBR, Optimus PRIME offload (legacy 470) |
 | **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway + monitoring server |
 | **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled |
@@ -115,7 +116,7 @@ cluster/             # Per-host & shared NixOS config
   common/            #   Shared across all machines (branding, fonts, services…)
                      #   headless.nix — imported when isHeadless = true
                      #   home.nix — HM entry point routing home-headless/-desktop/-laptop
-  7520u/  7300u/  2450m/  1650v2/   # Per-host config
+  7520u/  7300u/  2450m/  3210m/  1650v2/   # Per-host config
   bcm2711/  bcm2710a1/              # aarch64 headless hosts
 
 docs/                # Guides (install, troubleshooting, …)
