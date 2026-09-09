@@ -77,6 +77,46 @@
         (lib.mapAttrsToList mkBuilder builders);
   };
 
+  # nix.buildMachines is a static snapshot; an offline peer (e.g. a laptop
+  # that shut down) stays in /etc/nix/machines and the daemon stalls builds
+  # trying to reach it. Re-filter that file from live Tailscale state every
+  # 2 min. The daemon re-parses the file per build (Nix >= 2.4), no restart.
+  systemd.services.nix-machines-sync = lib.mkIf
+    (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
+      description = "Drop offline peers from /etc/nix/machines";
+      serviceConfig.Type = "oneshot";
+      script = ''
+        f=/etc/nix/machines
+        [ -r "$f" ] || exit 0
+        online=$(tailscale status 2>/dev/null | awk '$0 !~ /offline/ {print $2}')
+        [ -n "$online" ] || exit 0
+        tmp=$(mktemp)
+        while read -r line; do
+          [ -n "$line" ] || continue
+          host=$(printf '%s' "$line" | sed -E 's#.*@([^: ]+).*#\1#')
+          short="''${host%%.*}"
+          case " $online " in
+            *" $short "*|*" $host "*) printf '%s\n' "$line" ;;
+          esac
+        done < "$f" > "$tmp"
+        # /etc/nix/machines symlinks into the store; mv replaces the symlink.
+        if ! cmp -s "$tmp" "$f"; then
+          chmod 0444 "$tmp"
+          mv "$tmp" "$f"
+        else
+          rm -f "$tmp"
+        fi
+      '';
+    };
+  systemd.timers.nix-machines-sync = lib.mkIf
+    (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "2min";
+        OnUnitActiveSec = "2min";
+      };
+    };
+
   # Root-initiated builder SSH (sudo nixos-rebuild --builders) verifies host
   # keys against /etc/ssh/ssh_known_hosts — Tailscale SSH identity checks
   # don't apply to root. Keys are pinned per-host in flake.nix (hostDefs).
