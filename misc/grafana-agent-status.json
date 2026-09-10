@@ -181,8 +181,8 @@
     {
       "id": 4,
       "type": "table",
-      "title": "Hermes Agent Machine",
-      "description": "Active machine with hermes-agent.service enabled",
+      "title": "Hermes Agent Machines",
+      "description": "Active machines with hermes-agent.service enabled",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
