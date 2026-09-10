@@ -26,8 +26,7 @@ the fleet. Hermes can operate a host, but it may only activate store paths
 the owner has verified with `shengos-switch`.
 
 - **Lockstep fleet** — Tailscale SSH + Syncthing; `isBuilder` hosts share
-  same-architecture builds. `jasonkwh-bcm2711` is the hub (WhatsApp,
-  Prometheus 14d, Grafana `:3001`).
+  same-architecture builds.
 - **Desktop or board** — Plasma (theming, shortcuts, Fcitx5) on laptops and
   the Mac Pro; headless boards skip the GUI/Steam/GPU stack, use zram, and
   enrol from `~/.secrets/headless-env`.
