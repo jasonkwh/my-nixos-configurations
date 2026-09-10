@@ -19903,9 +19903,9 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * (1 - node_filesystem_avail_bytes{job=\"$job\", fstype!~\"tmpfs|overlay|squashfs|ramfs|iso9660\"} / node_filesystem_size_bytes{job=\"$job\", fstype!~\"tmpfs|overlay|squashfs|ramfs|iso9660\"})",
+                        "expr": "100 * (1 - node_filesystem_avail_bytes{instance=\"$node\", job=\"$job\", fstype!~\"tmpfs|overlay|squashfs|ramfs|iso9660\"} / node_filesystem_size_bytes{instance=\"$node\", job=\"$job\", fstype!~\"tmpfs|overlay|squashfs|ramfs|iso9660\"})",
                         "format": "time_series",
-                        "legendFormat": "{{instance}} {{mountpoint}}",
+                        "legendFormat": "{{mountpoint}}",
                         "range": true,
                         "step": 240
                       }

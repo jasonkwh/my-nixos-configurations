@@ -181,8 +181,8 @@
     {
       "id": 4,
       "type": "table",
-      "title": "Hermes agent per machine",
-      "description": "hermes-agent.service state on every fleet machine (1 = active)",
+      "title": "Hermes Agent Machine",
+      "description": "Active machine with hermes-agent.service enabled",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
@@ -210,27 +210,12 @@
               "reducers": []
             }
           },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "1": {
-                  "text": "active",
-                  "color": "green"
-                },
-                "0": {
-                  "text": "inactive",
-                  "color": "red"
-                }
-              }
-            }
-          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "value": 0,
-                "color": "red"
+                "color": "green"
               }
             ]
           }
@@ -243,15 +228,19 @@
           "options": {
             "excludeByName": {
               "Time": true,
+              "Value": true,
               "__name__": true,
               "job": true,
+              "name": true,
+              "state": true,
               "type": true
             },
             "renameByName": {
               "instance": "Machine",
               "name": "Unit",
               "Value": "Active"
-            }
+            },
+            "orderByMode": "manual"
           }
         }
       ],
