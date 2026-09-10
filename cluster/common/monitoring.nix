@@ -115,8 +115,8 @@ lib.mkMerge [
             { targets = [ "http://127.0.0.1:3000/health" ]; }
           ];
           relabel_configs = [
-            { source_labels = [ "__address__" ]; target_label = "__param_url"; }
-            { source_labels = [ "__param_url" ]; target_label = "instance"; }
+            { source_labels = [ "__address__" ]; target_label = "__param_target"; }
+            { source_labels = [ "__param_target" ]; target_label = "instance"; }
             { target_label = "__address__"; replacement = "127.0.0.1:7979"; }
           ];
         }
