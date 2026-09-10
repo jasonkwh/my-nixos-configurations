@@ -1,18 +1,28 @@
-# Print reachable remote builders (ssh://user@host ...) for make's --builders.
-# /etc/nix/machines is generated from hostDefs by nix.buildMachines, so use
-# the active topology without evaluating the entire flake a second time.
-# A builder is included only when all three hold: isBuilder (already filtered
-# into /etc/nix/machines), matching arch (same filter), and Tailscale reports
-# the peer Online.
+# Reachable builders as a nix.conf --builders value (semicolon-separated;
+# Make's $(shell) collapses newlines). Prefer the generation list over a
+# wiped /etc/nix/machines.
 set -u
 target="${1:-$(hostname)}"
-machines=/etc/nix/machines
 
-[ -r "$machines" ] || exit 0
+machines=""
+for candidate in \
+  /run/current-system/etc/nix/machines \
+  /etc/static/nix/machines \
+  /etc/nix/machines
+do
+  if [ -r "$candidate" ]; then
+    machines="$candidate"
+    break
+  fi
+done
+[ -n "$machines" ] || exit 0
+
 # `tailscale status` marks offline peers with "offline" anywhere in the line.
 online_hosts=$(tailscale status 2>/dev/null | awk '$0 !~ /offline/ {printf "%s ", $2}' || true)
-while read -r builder _; do
-  [ -n "$builder" ] || continue
+sep=""
+while read -r line; do
+  [ -n "$line" ] || continue
+  builder="${line%% *}"
   endpoint="${builder#*://}"
   host="${endpoint#*@}"
   host="${host%%:*}"
@@ -20,6 +30,8 @@ while read -r builder _; do
   short="${host%%.*}"
   case " $online_hosts " in
     *" $short "*|*" $host "*)
-      printf '%s ' "$builder" ;;
+      printf '%s%s' "$sep" "$line"
+      sep="; "
+      ;;
   esac
 done < "$machines"

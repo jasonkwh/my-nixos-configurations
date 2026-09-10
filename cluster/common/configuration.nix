@@ -77,16 +77,18 @@
         (lib.mapAttrsToList mkBuilder builders);
   };
 
-  # Offline builders stall distributed builds; re-filter from tailscale state.
-  # The daemon re-parses the file per build (Nix >= 2.4), no restart needed.
+  # Re-filter the generation's builder list from tailscale state so offline
+  # peers drop out and returning peers are restored. Nix re-reads per build.
   systemd.services.nix-machines-sync = lib.mkIf
     (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
       description = "Drop offline peers from /etc/nix/machines";
       serviceConfig.Type = "oneshot";
       path = with pkgs; [ tailscale gawk gnugrep gnused coreutils diffutils ];
       script = ''
-        f=/etc/nix/machines
-        [ -r "$f" ] || exit 0
+        dest=/etc/nix/machines
+        src=/run/current-system/etc/nix/machines
+        [ -r "$src" ] || src=/etc/static/nix/machines
+        [ -r "$src" ] || exit 0
         online=$(tailscale status 2>/dev/null | awk '$0 !~ /offline/ {print $2}' | tr '\n' ' ')
         [ -n "$online" ] || exit 0
         tmp=$(mktemp)
@@ -97,11 +99,10 @@
           case " $online " in
             *" $short "*|*" $host "*) printf '%s\n' "$line" ;;
           esac
-        done < "$f" > "$tmp"
-        # /etc/nix/machines symlinks into the store; mv replaces the symlink.
-        if ! cmp -s "$tmp" "$f"; then
+        done < "$src" > "$tmp"
+        if ! cmp -s "$tmp" "$dest"; then
           chmod 0444 "$tmp"
-          mv "$tmp" "$f"
+          mv "$tmp" "$dest"
         else
           rm -f "$tmp"
         fi
