@@ -46,15 +46,15 @@ lib.mkMerge [
             headers = { };
             metrics = [
               {
+                # json_exporter v0.7.0 rejects type: gauge (upstream bug #393);
+                # omit type (defaults untyped) and use k8s-style {.field} paths.
                 name = "hermes_whatsapp_queue_length";
-                path = "{{ .queueLength }}";
-                type = "gauge";
+                path = "{.queueLength}";
                 help = "WhatsApp gateway message queue backlog";
               }
               {
                 name = "hermes_whatsapp_uptime_seconds";
-                path = "{{ .uptime }}";
-                type = "gauge";
+                path = "{.uptime}";
                 help = "WhatsApp gateway process uptime in seconds";
               }
             ];
