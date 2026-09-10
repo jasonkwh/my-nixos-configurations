@@ -4,7 +4,7 @@
 # NOTE: the module body is lib.mkMerge — do NOT switch to attrset `//`:
 # a `//` between blocks would shallow-replace `exporters` and silently drop
 # exporters.node on the server host (2026-09-10, bcm2711).
-{ config, pkgs, lib, name, hostDefs, isFleetHub, tailscaleDomain, ... }:
+{ config, pkgs, lib, name, hostDefs, isFleetHub, tailscaleDomain, homeDirectory, ... }:
 
 lib.mkMerge [
   {
@@ -27,10 +27,16 @@ lib.mkMerge [
       listenAddress = "127.0.0.1";
       configFile = pkgs.writeText "blackbox.yml" (
         builtins.toJSON {
-          modules.http_2xx = {
+          # HTTP 200 is not enough: /health stays 200 while status is
+          # disconnected/degraded (pairing, flap). Require the JSON status.
+          modules.whatsapp_connected = {
             prober = "http";
             timeout = "5s";
-            http = { preferred_ip_protocol = "ip4"; valid_status_codes = [ 200 ]; };
+            http = {
+              preferred_ip_protocol = "ip4";
+              valid_status_codes = [ 200 ];
+              fail_if_body_not_matches_regexp = [ ''"status"\s*:\s*"connected"'' ];
+            };
           };
         }
       );
@@ -87,12 +93,11 @@ lib.mkMerge [
           static_configs = [{ targets = [ "127.0.0.1:8384" ]; }];
         }
         {
-          # WhatsApp gateway health: blackbox HTTP probe of the bridge's
-          # /health endpoint. probe_success carries the instance label, so
-          # the dashboard always shows which host currently runs it.
+          # WhatsApp gateway health: blackbox probe of /health that requires
+          # HTTP 200 and status:"connected". Gateway is hub-only (loopback).
           job_name = "whatsapp-gateway";
           metrics_path = "/probe";
-          params = { module = [ "http_2xx" ]; };
+          params = { module = [ "whatsapp_connected" ]; };
           static_configs = [
             {
               # Gateway runs on this host (bcm2711) — probe via loopback.
@@ -167,13 +172,14 @@ lib.mkMerge [
     };
 
     # One-time random secret_key for the file provider above.
-    systemd.services.grafana.preStart = ''
+    systemd.services.grafana.preStart = lib.mkIf isFleetHub ''
       key=/var/lib/grafana/secret_key
       [ -s "$key" ] || ${pkgs.coreutils}/bin/head -c 32 /dev/urandom | ${pkgs.coreutils}/bin/base64 > "$key"
     '';
   }
 
-  # OpenRouter balance -> textfile; key only readable by hermes (server-only).
+  # OpenRouter balance -> textfile. EnvironmentFile is read by systemd as
+  # root; hermes has no ACL on ~/.secrets/hermes-env (only gmail-app-password).
   {
     systemd.services.prometheus-openrouter-credits = lib.mkIf isFleetHub {
       description = "Poll OpenRouter credit balance into node_exporter textfile";
@@ -183,14 +189,17 @@ lib.mkMerge [
       serviceConfig = {
         Type = "oneshot";
         User = "hermes";
+        EnvironmentFile = "${homeDirectory}/.secrets/hermes-env";
       };
       script = ''
-        key=$(${pkgs.gnugrep}/bin/grep -oP '^OPENROUTER_API_KEY=\K.*' /home/jasonkwh/.secrets/hermes-env)
-        json=$(${pkgs.curl}/bin/curl -sf --max-time 10 https://openrouter.ai/api/v1/credits -H "Authorization: Bearer $key") || exit 0
-        balance=$(${pkgs.jq}/bin/jq -r '.data.total_credits - .data.total_usage' <<<"$json")
+        out=/var/lib/prometheus-textfile/openrouter.prom
+        tmp=$out.tmp
+        json=$(${pkgs.curl}/bin/curl -sf --max-time 10 https://openrouter.ai/api/v1/credits -H "Authorization: Bearer $OPENROUTER_API_KEY") || exit 0
+        balance=$(${pkgs.jq}/bin/jq -er '.data.total_credits - .data.total_usage' <<<"$json") || exit 0
         ${pkgs.jq}/bin/jq -rn --argjson b "$balance" \
           '"# TYPE hermes_openrouter_credits_remaining gauge\n# HELP hermes_openrouter_credits_remaining OpenRouter balance (total_credits - total_usage)\nhermes_openrouter_credits_remaining \( $b )\n"' \
-          > /var/lib/prometheus-textfile/openrouter.prom
+          > "$tmp"
+        ${pkgs.coreutils}/bin/mv "$tmp" "$out"
       '';
     };
     systemd.timers.prometheus-openrouter-credits = lib.mkIf isFleetHub {
@@ -219,10 +228,17 @@ lib.mkMerge [
       script = ''
         out=/var/lib/prometheus-textfile/llm.prom
         tmp=$out.tmp
-        : > "$tmp"
         today=$(${pkgs.coreutils}/bin/date +%Y-%m-%d)
-        for f in /var/lib/hermes/.hermes/logs/agent.log /var/lib/hermes/.hermes/logs/agent.log.{1,2,3}; do
-          [ -r "$f" ] || continue
+        files=
+        for f in /var/lib/hermes/.hermes/logs/agent.log /var/lib/hermes/.hermes/logs/agent.log.1 /var/lib/hermes/.hermes/logs/agent.log.2 /var/lib/hermes/.hermes/logs/agent.log.3; do
+          [ -r "$f" ] && files="$files $f"
+        done
+        if [ -z "$files" ]; then
+          : > "$tmp"
+        else
+          # One awk over every readable rotation so HELP/TYPE/samples are
+          # emitted once. Per-file appends duplicate names and node_exporter
+          # drops the whole textfile.
           ${pkgs.gawk}/bin/awk -v d="$today" '
             $1 == d && /agent.conversation_loop: API call/ && !/API call failed/ {
               seen++
@@ -233,24 +249,28 @@ lib.mkMerge [
               calls[m]++; ti[m] += i; to[m] += o
             }
             END {
-              # Empty rotations (no lines matched) emit nothing — duplicate
-              # HELP/metric blocks would make the textfile invalid.
-              if (seen + bad > 0) {
+              if (seen + bad == 0) exit
               printf "# HELP hermes_llm_tokens_lines_matched agent.log API-call lines seen today\n"
               printf "# TYPE hermes_llm_tokens_lines_matched gauge\n"
               printf "hermes_llm_tokens_lines_matched %d\n", seen+0
               printf "# HELP hermes_llm_tokens_parse_errors API-call lines with missing/renamed fields (nonzero = upstream log format changed)\n"
               printf "# TYPE hermes_llm_tokens_parse_errors gauge\n"
               printf "hermes_llm_tokens_parse_errors %d\n", bad+0
+              if (length(calls) == 0) exit
+              printf "# HELP hermes_llm_calls_total successful agent.log API calls today (resets midnight; gauge)\n"
+              printf "# TYPE hermes_llm_calls_total gauge\n"
+              printf "# HELP hermes_llm_tokens_in_total prompt tokens today (resets midnight; gauge)\n"
+              printf "# TYPE hermes_llm_tokens_in_total gauge\n"
+              printf "# HELP hermes_llm_tokens_out_total completion tokens today (resets midnight; gauge)\n"
+              printf "# TYPE hermes_llm_tokens_out_total gauge\n"
               for (k in calls) {
                 label = k; gsub(/[."\/]/, "_", label)
                 printf "hermes_llm_calls_total{model=\"%s\"} %d\n", label, calls[k]
                 printf "hermes_llm_tokens_in_total{model=\"%s\"} %d\n", label, ti[k]
                 printf "hermes_llm_tokens_out_total{model=\"%s\"} %d\n", label, to[k]
               }
-              }
-            }' "$f" >> "$tmp"
-        done
+            }' $files > "$tmp"
+        fi
         ${pkgs.coreutils}/bin/mv "$tmp" "$out"
       '';
     };

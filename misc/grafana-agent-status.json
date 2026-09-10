@@ -8,7 +8,7 @@
       "id": 1,
       "type": "stat",
       "title": "WhatsApp Gateway Health",
-      "description": "1 = gateway /health probe OK. Legend shows which host runs it — moves if the gateway migrates.",
+      "description": "1 = /health returned HTTP 200 and status:\"connected\". Gateway is probed on the fleet hub via loopback.",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
@@ -194,7 +194,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "node_systemd_unit_state{name=\"hermes-agent.service\", state=\"active\"}",
+          "expr": "node_systemd_unit_state{name=\"hermes-agent.service\", state=\"active\"} == 1",
           "instant": true,
           "format": "table"
         }
@@ -372,7 +372,7 @@
       "id": 9,
       "type": "stat",
       "title": "OpenRouter Credits",
-      "description": "Remaining OpenRouter balance (USD), polled from /api/v1/credits every minute.",
+      "description": "Remaining OpenRouter balance (USD), polled from /api/v1/credits every 10 minutes.",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
@@ -406,15 +406,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "value": 2,
+                "value": 0,
                 "color": "red"
               },
               {
-                "value": 5,
+                "value": 2,
                 "color": "orange"
               },
               {
-                "value": 999999,
+                "value": 5,
                 "color": "green"
               }
             ]
@@ -460,7 +460,7 @@
             "fillOpacity": 10,
             "lineWidth": 1,
             "showPoints": "never",
-            "stepAfter": true
+            "lineInterpolation": "stepAfter"
           },
           "thresholds": {
             "mode": "absolute",
@@ -477,12 +477,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "hermes_llm_calls_total",
+          "expr": "sum(hermes_llm_calls_total) by (model)",
           "legendFormat": "{{model}}"
         },
         {
           "refId": "B",
-          "expr": "hermes_llm_tokens_parse_errors > 0",
+          "expr": "sum(hermes_llm_tokens_parse_errors) > 0",
           "legendFormat": "PARSE ERRORS"
         }
       ]
@@ -517,7 +517,7 @@
             "fillOpacity": 10,
             "lineWidth": 1,
             "showPoints": "never",
-            "stepAfter": true
+            "lineInterpolation": "stepAfter"
           },
           "thresholds": {
             "mode": "absolute",
@@ -532,8 +532,8 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
-              "options": "in"
+              "id": "byRegexp",
+              "options": "^in "
             },
             "properties": [
               {
@@ -547,8 +547,8 @@
           },
           {
             "matcher": {
-              "id": "byName",
-              "options": "out"
+              "id": "byRegexp",
+              "options": "^out "
             },
             "properties": [
               {
