@@ -11,7 +11,7 @@
     };
   } // lib.optionalAttrs isMonitoringServer {
     enable = true;
-    retentionTime = "30d"; # SD-card friendly
+    retentionTime = "14d"; # Pi host — 30d wrote too much to SD for little value
     globalConfig.scrape_interval = "30s";
 
     scrapeConfigs = [
