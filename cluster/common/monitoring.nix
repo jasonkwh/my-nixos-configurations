@@ -87,14 +87,9 @@ lib.mkMerge [
           ];
         }
         {
-          # Per-host /metrics so the dashboard shows every machine's own view.
+          # Hub /metrics already includes every peer.
           job_name = "syncthing";
-          static_configs = [
-            {
-              targets = map (host: "${host}.${tailscaleDomain}:8384")
-                (builtins.attrNames (lib.filterAttrs (_: def: def ? syncthingId) hostDefs));
-            }
-          ];
+          static_configs = [{ targets = [ "127.0.0.1:8384" ]; }];
         }
         {
           # WhatsApp gateway health: blackbox probe of /health that requires
@@ -132,7 +127,7 @@ lib.mkMerge [
       ];
     };
 
-    networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 8384 ]
+    networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 ]
       ++ lib.optionals isFleetHub [ 3001 ];
 
     services.grafana = lib.mkIf isFleetHub {

@@ -359,8 +359,6 @@
     # and Tailscale — no known_hosts pinning or shared secrets to copy.
     syncthing = {
       enable = true;
-      # Hub scrapes per-host /metrics over the tailnet.
-      guiAddress = "0.0.0.0:8384";
       user = "hermes";
       group = "hermes";
       dataDir = "/var/lib/syncthing-hermes";

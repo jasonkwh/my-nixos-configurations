@@ -19,10 +19,49 @@
         "y": 0
       },
       "options": {},
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "Disconnected",
+                        "color": "red"
+                      },
+                      "1": {
+                        "text": "Connected",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic",
+                  "applyToRow": true
+                }
+              }
+            ]
+          }
+        ]
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "label_replace(\n  count by (instance) (syncthing_connections_active > 0) + on(instance) vector(1),\n  \"name\", \"jasonkwh-$1\", \"instance\", \"jasonkwh-([^.]+)\\\\.tail0c0276\\\\.ts\\\\.net:8384\"\n)",
+          "expr": "label_replace(vector(1), \"name\", \"jasonkwh-bcm2711\", \"\", \"\")\nor\n(((syncthing_connections_active > bool 0) * on(device) group_left(name) syncthing_config_device_info)\n  and on(device) syncthing_config_device_info)",
           "instant": true,
           "format": "table"
         }
@@ -42,8 +81,7 @@
             },
             "renameByName": {
               "name": "Device",
-              "Value": "Active connections",
-              "paused": "Paused"
+              "Value": "Status"
             }
           }
         }
