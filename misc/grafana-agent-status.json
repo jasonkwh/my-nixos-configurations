@@ -8,7 +8,7 @@
       "id": 1,
       "type": "stat",
       "title": "WhatsApp Gateway Health",
-      "description": "1 = gateway /health probe OK. Legend shows which host runs it \u2014 moves if the gateway migrates.",
+      "description": "1 = gateway /health probe OK. Legend shows which host runs it — moves if the gateway migrates.",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
@@ -84,9 +84,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 18,
-        "x": 6,
-        "y": 0
+        "w": 12,
+        "x": 0,
+        "y": 16
       },
       "options": {
         "unit": "s",
@@ -137,8 +137,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 8
+        "x": 12,
+        "y": 16
       },
       "options": {
         "cellHeight": "sm",
@@ -212,8 +212,8 @@
       "gridPos": {
         "h": 8,
         "w": 6,
-        "x": 18,
-        "y": 8
+        "x": 12,
+        "y": 0
       },
       "options": {
         "reduceOptions": {
@@ -271,9 +271,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 18,
+        "w": 24,
         "x": 0,
-        "y": 16
+        "y": 24
       },
       "options": {
         "unit": "s",
@@ -324,8 +324,8 @@
       "gridPos": {
         "h": 8,
         "w": 6,
-        "x": 12,
-        "y": 8
+        "x": 6,
+        "y": 0
       },
       "options": {
         "reduceOptions": {
@@ -381,7 +381,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 16
+        "y": 0
       },
       "options": {
         "reduceOptions": {
@@ -443,7 +443,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 8
       },
       "options": {
         "legend": {
@@ -500,7 +500,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 8
       },
       "options": {
         "legend": {
