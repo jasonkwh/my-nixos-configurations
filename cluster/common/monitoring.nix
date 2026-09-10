@@ -87,10 +87,14 @@ lib.mkMerge [
           ];
         }
         {
-          # Syncthing's own /metrics sees the whole fleet (folder states,
-          # per-peer traffic); unauthenticated since the GUI has no password.
+          # Per-host /metrics so the dashboard shows every machine's own view.
           job_name = "syncthing";
-          static_configs = [{ targets = [ "127.0.0.1:8384" ]; }];
+          static_configs = [
+            {
+              targets = map (host: "${host}.${tailscaleDomain}:8384")
+                (builtins.attrNames (lib.filterAttrs (_: def: def ? syncthingId) hostDefs));
+            }
+          ];
         }
         {
           # WhatsApp gateway health: blackbox probe of /health that requires
@@ -128,7 +132,7 @@ lib.mkMerge [
       ];
     };
 
-    networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 ]
+    networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 8384 ]
       ++ lib.optionals isFleetHub [ 3001 ];
 
     services.grafana = lib.mkIf isFleetHub {

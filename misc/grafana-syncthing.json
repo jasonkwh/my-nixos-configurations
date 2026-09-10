@@ -22,7 +22,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "label_replace(count(syncthing_connections_active > 0)+1, \"name\", \"jasonkwh-bcm2711\", \"\", \"\")\nor\n((syncthing_connections_active * on(device) group_left(name) syncthing_config_device_info)\n  and on(device) syncthing_config_device_info)",
+          "expr": "label_replace(\n  count by (instance) (syncthing_connections_active > 0) + on(instance) vector(1),\n  \"name\", \"jasonkwh-$1\", \"instance\", \"jasonkwh-([^.]+)\\\\.tail0c0276\\\\.ts\\\\.net:8384\"\n)",
           "instant": true,
           "format": "table"
         }
