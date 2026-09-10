@@ -47,6 +47,22 @@
                 ]
               },
               {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": 0,
+                      "color": "red"
+                    },
+                    {
+                      "value": 1,
+                      "color": "green"
+                    }
+                  ]
+                }
+              },
+              {
                 "id": "custom.cellOptions",
                 "value": {
                   "type": "color-background",
