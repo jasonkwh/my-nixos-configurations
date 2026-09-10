@@ -62,7 +62,8 @@ lib.mkMerge [
           params = { module = [ "http_2xx" ]; };
           static_configs = [
             {
-              targets = [ "jasonkwh-bcm2711.${tailscaleDomain}:3000/health" ];
+              # Gateway runs on this host (bcm2711) — probe via loopback.
+              targets = [ "127.0.0.1:3000/health" ];
             }
           ];
           relabel_configs = [

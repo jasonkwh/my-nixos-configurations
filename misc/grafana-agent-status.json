@@ -7,7 +7,7 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "WhatsApp gateway health",
+      "title": "WhatsApp Gateway Health",
       "description": "1 = gateway /health probe OK. Legend shows which host runs it \u2014 moves if the gateway migrates.",
       "datasource": {
         "type": "prometheus",
@@ -77,15 +77,15 @@
     {
       "id": 3,
       "type": "timeseries",
-      "title": "Gateway probe latency",
+      "title": "WhatsApp Gateway Probe Latency",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 16,
+        "x": 8,
         "y": 0
       },
       "options": {
@@ -136,9 +136,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 0
+        "w": 24,
+        "x": 0,
+        "y": 8
       },
       "options": {
         "cellHeight": "sm",
@@ -195,75 +195,6 @@
         {
           "refId": "A",
           "expr": "node_systemd_unit_state{name=\"hermes-agent.service\", state=\"active\"}",
-          "instant": true,
-          "format": "table"
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "type": "table",
-      "title": "WhatsApp session health detail",
-      "description": "Raw probe fields: success, duration, and TLS info (blackbox http probe of /health)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
-      "options": {
-        "cellHeight": "sm",
-        "showHeader": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
-            },
-            "renameByName": {
-              "instance": "Target",
-              "Value": "Probe OK"
-            }
-          }
-        }
-      ],
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "probe_success{job=\"whatsapp-gateway\"}",
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "refId": "B",
-          "expr": "probe_duration_seconds{job=\"whatsapp-gateway\"}",
           "instant": true,
           "format": "table"
         }
