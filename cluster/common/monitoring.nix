@@ -235,7 +235,7 @@ lib.mkMerge [
             END {
               # Empty rotations (no lines matched) emit nothing — duplicate
               # HELP/metric blocks would make the textfile invalid.
-              if (seen + bad == 0) next
+              if (seen + bad > 0) {
               printf "# HELP hermes_llm_tokens_lines_matched agent.log API-call lines seen today\n"
               printf "# TYPE hermes_llm_tokens_lines_matched gauge\n"
               printf "hermes_llm_tokens_lines_matched %d\n", seen+0
@@ -247,6 +247,7 @@ lib.mkMerge [
                 printf "hermes_llm_calls_total{model=\"%s\"} %d\n", label, calls[k]
                 printf "hermes_llm_tokens_in_total{model=\"%s\"} %d\n", label, ti[k]
                 printf "hermes_llm_tokens_out_total{model=\"%s\"} %d\n", label, to[k]
+              }
               }
             }' "$f" >> "$tmp"
         done
