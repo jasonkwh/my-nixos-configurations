@@ -11,8 +11,14 @@ lib.mkMerge [
     services.prometheus.exporters.node = {
       enable = true;
       listenAddress = "0.0.0.0";
-      enabledCollectors = [ "systemd" ];
+      enabledCollectors = [ "systemd" "textfile" ];
+      # Single shared textfile dir: monitoring server writes openrouter.prom,
+      # hermes hosts write llm.prom (see the units below).
+      extraFlags = [ "--collector.textfile.directory=/var/lib/prometheus-textfile" ];
     };
+    systemd.tmpfiles.rules = [
+      "d /var/lib/prometheus-textfile 0755 hermes hermes"
+    ];
   }
 
   {
@@ -25,6 +31,33 @@ lib.mkMerge [
             prober = "http";
             timeout = "5s";
             http = { preferred_ip_protocol = "ip4"; valid_status_codes = [ 200 ]; };
+          };
+        }
+      );
+    };
+
+    # Exposes gateway /health JSON fields (queueLength, uptime) as gauges.
+    services.prometheus.exporters.json = lib.mkIf isMonitoringServer {
+      enable = true;
+      listenAddress = "127.0.0.1";
+      configFile = pkgs.writeText "json-exporter.yml" (
+        builtins.toJSON {
+          modules.whatsapp_gateway = {
+            headers = { };
+            metrics = [
+              {
+                name = "hermes_whatsapp_queue_length";
+                path = "{{ .queueLength }}";
+                type = "gauge";
+                help = "WhatsApp gateway message queue backlog";
+              }
+              {
+                name = "hermes_whatsapp_uptime_seconds";
+                path = "{{ .uptime }}";
+                type = "gauge";
+                help = "WhatsApp gateway process uptime in seconds";
+              }
+            ];
           };
         }
       );
@@ -70,6 +103,21 @@ lib.mkMerge [
             { source_labels = [ "__address__" ]; target_label = "__param_target"; }
             { source_labels = [ "__param_target" ]; target_label = "instance"; }
             { target_label = "__address__"; replacement = "127.0.0.1:9115"; }
+          ];
+        }
+        {
+          # Gateway /health JSON (queueLength, uptime) as numeric metrics.
+          # Runs on the same host; json exporter polls loopback directly.
+          job_name = "whatsapp-gateway-json";
+          metrics_path = "/probe";
+          params = { module = [ "whatsapp_gateway" ]; };
+          static_configs = [
+            { targets = [ "http://127.0.0.1:3000/health" ]; }
+          ];
+          relabel_configs = [
+            { source_labels = [ "__address__" ]; target_label = "__param_url"; }
+            { source_labels = [ "__param_url" ]; target_label = "instance"; }
+            { target_label = "__address__"; replacement = "127.0.0.1:7979"; }
           ];
         }
       ];
@@ -123,5 +171,90 @@ lib.mkMerge [
       key=/var/lib/grafana/secret_key
       [ -s "$key" ] || ${pkgs.coreutils}/bin/head -c 32 /dev/urandom | ${pkgs.coreutils}/bin/base64 > "$key"
     '';
+  }
+
+  # OpenRouter balance -> textfile; key only readable by hermes (server-only).
+  {
+    systemd.services.prometheus-openrouter-credits = lib.mkIf isMonitoringServer {
+      description = "Poll OpenRouter credit balance into node_exporter textfile";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "hermes";
+      };
+      script = ''
+        key=$(${pkgs.coreutils}/bin/grep -oP '^OPENROUTER_API_KEY=\K.*' /home/jasonkwh/.secrets/hermes-env)
+        json=$(curl -sf --max-time 10 https://openrouter.ai/api/v1/credits -H "Authorization: Bearer $key") || exit 0
+        balance=$(${pkgs.jq}/bin/jq -r '.data.total_credits - .data.total_usage' <<<"$json")
+        ${pkgs.jq}/bin/jq -rn --argjson b "$balance" \
+          '"# TYPE hermes_openrouter_credits_remaining gauge\n# HELP hermes_openrouter_credits_remaining OpenRouter balance (total_credits - total_usage)\nhermes_openrouter_credits_remaining \( $b )\n"' \
+          > /var/lib/prometheus-textfile/openrouter.prom
+      '';
+    };
+    systemd.timers.prometheus-openrouter-credits = lib.mkIf isMonitoringServer {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "*:0/10";
+        AccuracySec = "10s";
+        Persistent = true;
+      };
+    };
+  }
+
+  # Per-host LLM token usage from the hermes agent log, written to the shared
+  # textfile dir. Daily totals: scans today's lines across log rotations and
+  # resets at midnight. Gated on hermes being enabled on the host.
+  {
+    systemd.services.prometheus-hermes-llm-tokens = lib.mkIf config.services.hermes-agent.enable {
+      description = "Sum today's hermes LLM API calls/tokens from agent.log into node_exporter textfile";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "hermes";
+      };
+      script = ''
+        out=/var/lib/prometheus-textfile/llm.prom
+        tmp=$out.tmp
+        : > "$tmp"
+        today=$(${pkgs.coreutils}/bin/date +%Y-%m-%d)
+        for f in /var/lib/hermes/.hermes/logs/agent.log /var/lib/hermes/.hermes/logs/agent.log.{1,2,3}; do
+          [ -r "$f" ] || continue
+          ${pkgs.gawk}/bin/awk -v d="$today" '
+            $1 == d && /agent.conversation_loop: API call/ {
+              match($0, /model=[^ ]+/);      m = substr($0, RSTART+6, RLENGTH-6)
+              match($0, / in=[0-9]+/);       i = substr($0, RSTART+4, RLENGTH-4)
+              match($0, / out=[0-9]+/);      o = substr($0, RSTART+5, RLENGTH-5)
+              calls[m]++; ti[m] += i; to[m] += o
+            }
+            END {
+              for (k in calls) {
+                gsub(/[."\/]/, "_", k)
+                printf "hermes_llm_calls_total{model=\"%s\"} %d\n", k, calls[k]
+                printf "hermes_llm_tokens_in_total{model=\"%s\"} %d\n", k, ti[k]
+                printf "hermes_llm_tokens_out_total{model=\"%s\"} %d\n", k, to[k]
+              }
+            }' "$f" >> "$tmp"
+        done
+        echo "# HELP hermes_llm_calls_total LLM API calls made today by hermes agent" >> "$tmp"
+        echo "# TYPE hermes_llm_calls_total gauge" >> "$tmp"
+        echo "# HELP hermes_llm_tokens_in_total LLM prompt tokens today (from agent.log API call lines)" >> "$tmp"
+        echo "# TYPE hermes_llm_tokens_in_total gauge" >> "$tmp"
+        echo "# HELP hermes_llm_tokens_out_total LLM completion tokens today" >> "$tmp"
+        echo "# TYPE hermes_llm_tokens_out_total gauge" >> "$tmp"
+        ${pkgs.coreutils}/bin/mv "$tmp" "$out"
+      '';
+    };
+    systemd.timers.prometheus-hermes-llm-tokens = lib.mkIf config.services.hermes-agent.enable {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "*:0/10";
+        AccuracySec = "10s";
+        Persistent = true;
+      };
+    };
   }
 ]
