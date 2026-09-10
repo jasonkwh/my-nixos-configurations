@@ -39,35 +39,16 @@
                         "color": "red"
                       },
                       "1": {
-                        "text": "Connected",
-                        "color": "green"
+                        "text": "Connected"
                       }
                     }
                   }
                 ]
               },
               {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "value": 0,
-                      "color": "red"
-                    },
-                    {
-                      "value": 1,
-                      "color": "green"
-                    }
-                  ]
-                }
-              },
-              {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background",
-                  "mode": "basic",
-                  "applyToRow": true
+                  "type": "color-text"
                 }
               }
             ]
