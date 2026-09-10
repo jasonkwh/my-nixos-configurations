@@ -185,7 +185,7 @@ lib.mkMerge [
         User = "hermes";
       };
       script = ''
-        key=$(${pkgs.coreutils}/bin/grep -oP '^OPENROUTER_API_KEY=\K.*' /home/jasonkwh/.secrets/hermes-env)
+        key=$(${pkgs.gnugrep}/bin/grep -oP '^OPENROUTER_API_KEY=\K.*' /home/jasonkwh/.secrets/hermes-env)
         json=$(curl -sf --max-time 10 https://openrouter.ai/api/v1/credits -H "Authorization: Bearer $key") || exit 0
         balance=$(${pkgs.jq}/bin/jq -r '.data.total_credits - .data.total_usage' <<<"$json")
         ${pkgs.jq}/bin/jq -rn --argjson b "$balance" \
