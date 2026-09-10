@@ -1,0 +1,137 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Fleet device connections (via bcm2711)",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "options": {},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "syncthing_connections_active * on(device) group_left(name) syncthing_config_device_info",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true, "introducer": true, "untrusted": true },
+            "renameByName": { "name": "Device", "Value": "Active connections", "paused": "Paused" }
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Devices connected",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(syncthing_connections_active > 0)",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Out-of-sync bytes (need)",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "unit": "bytes" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(syncthing_model_folder_summary{scope=\"need\",type=\"bytes\"})",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Folder backlog (bytes needed to sync)",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 8 },
+      "options": { "unit": "bytes" },
+      "fieldConfig": { "defaults": { "custom": { "fillOpacity": 15 } }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "syncthing_model_folder_summary{scope=\"need\",type=\"bytes\"}",
+          "legendFormat": "{{folder}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Folder sync state (0=idle, 1=scanning, 2=syncing)",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "idle", "color": "green" }, "1": { "text": "scanning", "color": "yellow" }, "2": { "text": "syncing", "color": "orange" } } }
+          ]
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "syncthing_model_folder_state",
+          "legendFormat": "{{folder}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Sync traffic (B/s)",
+      "datasource": { "type": "prometheus", "uid": "${ds_prometheus}" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 17 },
+      "options": { "unit": "Bps" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(syncthing_protocol_sent_bytes_total[5m])",
+          "legendFormat": "sent"
+        },
+        {
+          "refId": "B",
+          "expr": "rate(syncthing_protocol_recv_bytes_total[5m])",
+          "legendFormat": "received"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["shengos", "syncthing"],
+  "templating": {
+    "list": [
+      {
+        "name": "ds_prometheus",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "text": "Prometheus", "value": "Prometheus" },
+        "hide": 2
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "ShengOS Syncthing Status",
+  "uid": "shengos-syncthing",
+  "version": 1
+}

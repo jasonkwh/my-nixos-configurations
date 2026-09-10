@@ -60,6 +60,18 @@
         isDefault = true;
       }
     ];
+    provision.dashboards.settings.providers = [
+      {
+        name = "fleet";
+        options.path = ../../misc/grafana-fleet-overview.json;
+        options.foldersFromFilesStructure = false;
+      }
+      {
+        name = "fleet";
+        options.path = ../../misc/grafana-syncthing.json;
+        options.foldersFromFilesStructure = false;
+      }
+    ];
   };
 
   # One-time random secret_key for the file provider above.
