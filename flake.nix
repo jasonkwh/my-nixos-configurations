@@ -36,6 +36,14 @@
       homeDirectory = "/home/${username}";
       tailscaleDomain = "tail0c0276.ts.net";
 
+      # Hermes model config — single source of truth; passed into
+      # cluster/common/configuration.nix via specialArgs.
+      hermesModel = {
+        provider = "openrouter";
+        default = "z-ai/glm-5.3-flash";
+        base_url = "https://openrouter.ai/api/v1";
+      };
+
       # Home Manager entry point shared verbatim by every host (and the Live
       # image). cluster/common/home.nix is a pure router: every host gets
       # home-headless core; isLaptop/isHeadless flags (set per-host below)
@@ -155,6 +163,7 @@
           inherit isMonitoringServer;
           inherit name;
           inherit hermesPeerHosts;
+          inherit hermesModel;
           inherit hostDefs;
           # Syncthing device ids for all fleet members that sync, from hostDefs.
           # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).

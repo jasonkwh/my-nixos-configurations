@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, isMonitoringServer ? false, hardwareConfig, hermesPeerHosts, hostDefs, syncthingDevices, tailscaleDomain, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, isMonitoringServer ? false, hardwareConfig, hermesPeerHosts, hostDefs, syncthingDevices, tailscaleDomain, hermesModel, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -450,11 +450,8 @@
           api_max_retries = 6;
         };
 
-        model = {
-          provider = "openrouter";
-          default = "z-ai/glm-5.3-flash";
-          base_url = "https://openrouter.ai/api/v1";
-        };
+        # Values come from flake.nix (hermesModel) via specialArgs.
+        model = hermesModel;
         memory = {
           memory_enabled = true;
           user_profile_enabled = true;
