@@ -63,12 +63,13 @@
     provision.dashboards.settings.providers = [
       {
         name = "fleet";
-        options.path = ../../misc/grafana-fleet-overview.json;
-        options.foldersFromFilesStructure = false;
-      }
-      {
-        name = "fleet";
-        options.path = ../../misc/grafana-syncthing.json;
+        options.path = pkgs.symlinkJoin {
+          name = "grafana-fleet-dashboards";
+          paths = [
+            (pkgs.writeTextDir "grafana-fleet-overview.json" (builtins.readFile ../../misc/grafana-fleet-overview.json))
+            (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../misc/grafana-syncthing.json))
+          ];
+        };
         options.foldersFromFilesStructure = false;
       }
     ];
