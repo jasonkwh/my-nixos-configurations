@@ -429,6 +429,151 @@
           "instant": true
         }
       ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "LLM API Calls Today (per model)",
+      "description": "Daily call counts parsed from agent.log, reset at midnight. parse_errors > 0 means the agent.log format changed and tokens/calls may be undercounted.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${ds_prometheus}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stepAfter": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hermes_llm_calls_total",
+          "legendFormat": "{{model}}"
+        },
+        {
+          "refId": "B",
+          "expr": "hermes_llm_tokens_parse_errors > 0",
+          "legendFormat": "PARSE ERRORS"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "LLM Tokens Today (in/out, per model)",
+      "description": "Daily prompt/completion token totals from agent.log API-call lines, reset at midnight.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${ds_prometheus}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stepAfter": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "in"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "out"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(hermes_llm_tokens_in_total) by (model)",
+          "legendFormat": "in {{model}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(hermes_llm_tokens_out_total) by (model)",
+          "legendFormat": "out {{model}}"
+        }
+      ]
     }
   ],
   "schemaVersion": 39,
