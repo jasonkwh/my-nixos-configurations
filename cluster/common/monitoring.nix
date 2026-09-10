@@ -1,10 +1,10 @@
 # Fleet monitoring: node_exporter everywhere; Prometheus + Grafana on the
-# isMonitoringServer host. All traffic stays on the tailnet.
+# isFleetHub host. All traffic stays on the tailnet.
 #
 # NOTE: the module body is lib.mkMerge — do NOT switch to attrset `//`:
 # a `//` between blocks would shallow-replace `exporters` and silently drop
 # exporters.node on the server host (2026-09-10, bcm2711).
-{ config, pkgs, lib, name, hostDefs, isMonitoringServer, tailscaleDomain, ... }:
+{ config, pkgs, lib, name, hostDefs, isFleetHub, tailscaleDomain, ... }:
 
 lib.mkMerge [
   {
@@ -22,7 +22,7 @@ lib.mkMerge [
   }
 
   {
-    services.prometheus.exporters.blackbox = lib.mkIf isMonitoringServer {
+    services.prometheus.exporters.blackbox = lib.mkIf isFleetHub {
       enable = true;
       listenAddress = "127.0.0.1";
       configFile = pkgs.writeText "blackbox.yml" (
@@ -37,7 +37,7 @@ lib.mkMerge [
     };
 
     # Exposes gateway /health JSON fields (queueLength, uptime) as gauges.
-    services.prometheus.exporters.json = lib.mkIf isMonitoringServer {
+    services.prometheus.exporters.json = lib.mkIf isFleetHub {
       enable = true;
       listenAddress = "127.0.0.1";
       configFile = pkgs.writeText "json-exporter.yml" (
@@ -65,7 +65,7 @@ lib.mkMerge [
   }
 
   {
-    services.prometheus = lib.mkIf isMonitoringServer {
+    services.prometheus = lib.mkIf isFleetHub {
       enable = true;
       retentionTime = "14d"; # Pi host — 30d wrote too much to SD for little value
       globalConfig.scrape_interval = "30s";
@@ -124,9 +124,9 @@ lib.mkMerge [
     };
 
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 ]
-      ++ lib.optionals isMonitoringServer [ 3001 ];
+      ++ lib.optionals isFleetHub [ 3001 ];
 
-    services.grafana = lib.mkIf isMonitoringServer {
+    services.grafana = lib.mkIf isFleetHub {
       enable = true;
       settings = {
         server = {
@@ -175,7 +175,7 @@ lib.mkMerge [
 
   # OpenRouter balance -> textfile; key only readable by hermes (server-only).
   {
-    systemd.services.prometheus-openrouter-credits = lib.mkIf isMonitoringServer {
+    systemd.services.prometheus-openrouter-credits = lib.mkIf isFleetHub {
       description = "Poll OpenRouter credit balance into node_exporter textfile";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
@@ -193,7 +193,7 @@ lib.mkMerge [
           > /var/lib/prometheus-textfile/openrouter.prom
       '';
     };
-    systemd.timers.prometheus-openrouter-credits = lib.mkIf isMonitoringServer {
+    systemd.timers.prometheus-openrouter-credits = lib.mkIf isFleetHub {
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnCalendar = "*:0/10";

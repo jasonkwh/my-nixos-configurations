@@ -107,8 +107,7 @@
           name = "bcm2711";
           hostSystem = "aarch64-linux";
           isHeadless = true;
-          isHermesWhatsappGateway = true;
-          isMonitoringServer = true;
+          isFleetHub = true;
           isBuilder = true;
           buildSpeed = 3;
           maxBuildJobs = 2;
@@ -157,10 +156,10 @@
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, isHermesWhatsappGateway ? false, isMonitoringServer ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless tailscaleDomain;
-          inherit isMonitoringServer;
+          inherit isFleetHub;
           inherit name;
           inherit hermesPeerHosts;
           inherit hermesModel;
@@ -183,7 +182,7 @@
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
           ({ config, pkgs, ... }:
-            lib.mkIf (isHermesWhatsappGateway && config.services.hermes-agent.enable) {
+            lib.mkIf (isFleetHub && config.services.hermes-agent.enable) {
               services.hermes-agent.environment.WHATSAPP_ENABLED = "true";
               # The pypi wheel doesn't ship the top-level scripts/ dir, so the
               # WhatsApp bridge.js is missing from the nix package. Seed it into

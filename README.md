@@ -33,7 +33,7 @@ operate the system, but only through a verified, owner-gated rebuild channel.
 - **Declarative everything** — system, user, and desktop config live in this repo as code; `flake.lock` pins every dependency.
 - **Fleet in lockstep** — Tailscale (networking) + Syncthing (file sync); hosts marked `isBuilder` share same-architecture builds over Tailscale SSH.
 - **Controlled rebuild channel** — the `hermes` service user has no raw `nixos-rebuild`/`nix-env` sudo; it activates only store paths the owner verified via `shengos-switch`.
-- **Fleet monitoring** — `node_exporter` on every host; the `isMonitoringServer` host runs Prometheus (30d retention) + Grafana (tailnet-only, port 3001).
+- **Fleet monitoring** — `node_exporter` on every host; the `isFleetHub` host runs Prometheus (30d retention) + Grafana (tailnet-only, port 3001).
 - **Private assistant** — Hermes Agent with a personal companion (小升升); one designated host owns the WhatsApp gateway.
 - **Headless boards** — SBCs run a stripped profile (no desktop/Steam/GPU stack, zram swap); SD images via `make image <host>`, Wi-Fi + Tailscale enrolment from `~/.secrets/headless-env`.
 - **KDE Plasma** — curated desktop with theming, shortcuts, and Fcitx5 Chinese input.
@@ -56,8 +56,8 @@ aarch64-linux are supported:
 | **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled |
 
 `mkHost` uses `hostSystem`, `isLaptop`, `isHeadless` to select system and
-Home Manager layers; `isHermesWhatsappGateway` designates the single WhatsApp
-gateway, `isMonitoringServer` the monitoring host (currently both
+Home Manager layers; `isFleetHub` designates the fleet hub host — the single
+WhatsApp gateway plus Prometheus/Grafana monitoring (currently
 `jasonkwh-bcm2711`). x86 desktop hosts can build aarch64 SD images through
 QEMU binfmt emulation. On the 512MB BCM2710A1, upgrades automatically stream
 to BCM2711 for evaluation/build and copy back only the finished closure.

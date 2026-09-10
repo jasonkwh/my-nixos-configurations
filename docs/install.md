@@ -27,8 +27,7 @@ an encrypted Tailscale connection.
   isLaptop = true;               # laptops only: lid/Wayland/battery extras
   isHeadless = true;             # boards only: strips Plasma/GUI/Steam/GPU
   syncthingId = "<device-id>";    # omit until the real ID is available
-  # isHermesWhatsappGateway = true; # optional; exactly one fleet host
-  # isMonitoringServer = true;      # optional; exactly one fleet host (Prometheus + Grafana)
+  # isFleetHub = true; # optional; exactly one fleet host (WhatsApp gateway + Prometheus/Grafana)
 };
 ```
 
@@ -37,10 +36,11 @@ is automatic: `cluster/common/home.nix` routes the shared CLI core plus
 desktop/laptop layers based on these flags — only put machine-specific
 packages in the copied `cluster/<host>/home.nix`.
 
-`isHermesWhatsappGateway` is separate from the host class. Set it on exactly
-one Hermes-enabled host to add `WHATSAPP_ENABLED=true`; leave it absent
-everywhere else. A host with Hermes disabled cannot activate WhatsApp even if
-the flag is accidentally set.
+`isFleetHub` marks the fleet hub: it owns the WhatsApp gateway
+(`WHATSAPP_ENABLED=true`) and the Prometheus + Grafana stack. Set it on
+exactly one Hermes-enabled host; leave it absent everywhere else. A host
+with Hermes disabled cannot activate WhatsApp even if the flag is
+accidentally set.
 
 2. Commit and push. During installation, the host falls back to
    `/etc/nixos/hardware-configuration.nix`, generated in Step 2. A committed
@@ -161,10 +161,10 @@ ID registered. A fresh node pairs with an empty/unknown state only after you
 complete the pairing step above; both folders also use trashcan versioning
 (14-day retention) as a safety net against accidental overwrites.
 
-### Q: How do I move the Hermes WhatsApp gateway to another host?
-Move `isHermesWhatsappGateway = true` to the target host in `flake.nix`. Rebuild
-the old gateway first so its WhatsApp bridge stops, then rebuild the new
-gateway; this avoids both bridges running simultaneously during the change.
+### Q: How do I move the fleet hub (WhatsApp gateway / monitoring) to another host?
+Move `isFleetHub = true` to the target host in `flake.nix`. Rebuild
+the old hub first so its WhatsApp bridge stops, then rebuild the new
+hub; this avoids both bridges running simultaneously during the change.
 
 The Baileys WhatsApp session is host-local and is deliberately not synchronized
 by Syncthing. Pair WhatsApp on the new gateway with `hermes whatsapp` if that
