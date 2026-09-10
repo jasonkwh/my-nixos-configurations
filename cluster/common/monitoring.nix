@@ -30,7 +30,39 @@
         job_name = "syncthing";
         static_configs = [{ targets = [ "127.0.0.1:8384" ]; }];
       }
+      {
+        # WhatsApp gateway health: blackbox HTTP probe of the bridge's
+        # /health endpoint. probe_success carries the instance label, so
+        # the dashboard always shows which host currently runs it.
+        job_name = "whatsapp-gateway";
+        metrics_path = "/probe";
+        params = { module = [ "http_2xx" ]; };
+        static_configs = [
+          {
+            targets = [ "jasonkwh-bcm2711.${tailscaleDomain}:3000/health" ];
+          }
+        ];
+        relabel_configs = [
+          { source_labels = [ "__address__" ]; target_label = "__param_target"; }
+          { source_labels = [ "__param_target" ]; target_label = "instance"; }
+          { target_label = "__address__"; replacement = "127.0.0.1:9115"; }
+        ];
+      }
     ];
+
+    exporters.blackbox = {
+      enable = true;
+      listenAddress = "127.0.0.1";
+      configFile = pkgs.writeText "blackbox.yml" (
+        builtins.toJSON {
+          modules.http_2xx = {
+            prober = "http";
+            timeout = "5s";
+            http = { preferred_ip_protocol = "ip4"; valid_status_codes = [ 200 ]; };
+          };
+        }
+      );
+    };
   };
 
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 ]
@@ -68,6 +100,7 @@
           paths = [
             (pkgs.writeTextDir "grafana-fleet-overview.json" (builtins.readFile ../../misc/grafana-fleet-overview.json))
             (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../misc/grafana-syncthing.json))
+            (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../misc/grafana-agent-status.json))
           ];
         };
         options.foldersFromFilesStructure = false;
