@@ -233,6 +233,9 @@ lib.mkMerge [
               calls[m]++; ti[m] += i; to[m] += o
             }
             END {
+              # Empty rotations (no lines matched) emit nothing — duplicate
+              # HELP/metric blocks would make the textfile invalid.
+              if (seen + bad == 0) next
               printf "# HELP hermes_llm_tokens_lines_matched agent.log API-call lines seen today\n"
               printf "# TYPE hermes_llm_tokens_lines_matched gauge\n"
               printf "hermes_llm_tokens_lines_matched %d\n", seen+0
