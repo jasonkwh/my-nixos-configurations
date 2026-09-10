@@ -12,16 +12,11 @@
 #   make secrets-backup         # encrypt ~/.secrets as ./secrets.tar.enc
 #   make secrets-restore        # restore ~/.secrets from ./secrets.tar.enc
 
-HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-3210m jasonkwh-1650v2 jasonkwh-bcm2711 jasonkwh-bcm2710a1
+HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-3210m jasonkwh-1650v2 jasonkwh-bcm2711
 LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
 SECRETS_ARCHIVE ?= secrets.tar.enc
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
-AUTO_OFFLOAD := $(and $(filter jasonkwh-bcm2710a1,$(LOCAL_HOST)),$(filter jasonkwh-bcm2710a1,$(HOST)))
-OFFLOAD_HOST ?= jasonkwh-bcm2711
-TAILSCALE_DOMAIN ?= tail0c0276.ts.net
-OFFLOAD_SSH  := jasonkwh@$(OFFLOAD_HOST).$(TAILSCALE_DOMAIN)
-OFFLOAD_STORE := ssh-ng://$(OFFLOAD_SSH)
 
 .PHONY: help upgrade boot build update gc image syncthing-init headless-env secrets-backup secrets-restore $(HOSTS)
 .DEFAULT_GOAL := help
@@ -30,7 +25,7 @@ help:
 	@printf '%s\n' \
 		'HOST=$(HOST)  (override: make upgrade HOST=jasonkwh-7520u)' \
 		'' \
-		'make upgrade             rebuild and activate (bcm2710a1 uses bcm2711)' \
+		'make upgrade             rebuild and activate' \
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
@@ -46,50 +41,8 @@ endef
 # `make build` alone → upgrade current host
 # `make build jasonkwh-7520u` → host target does the work; build is a no-op
 ifeq ($(EXPLICIT_HOST),)
-ifneq ($(AUTO_OFFLOAD),)
-# Low-memory path: stream the source tree to bcm2711 without invoking Nix
-# locally, perform evaluation and building there, copy the finished closure
-# back, then activate locally.
-# Activation runs in a transient unit, not in the calling shell: if a restarted
-# unit tears down the SSH session the rebuild was invoked over, switch-to-
-# configuration survives and finishes. A killed run leaves its crash-recovery
-# files (/run/nixos/{restart,start}-list) behind, and every later switch then
-# replays them — restarting those units again regardless of restartIfChanged.
-# The unit logs to the journal and a follower relays it; --pipe would instead
-# wire the switch to the dying pty and its next write would abort it. Anchor
-# the follower to a timestamp: --lines=0 seeks only once it has opened the
-# journal, by which point the first lines of the switch are already gone.
-upgrade build:
-	@set -eu; \
-	echo "Streaming configuration to $(OFFLOAD_HOST)..."; \
-	SYSTEM_PATH=$$(tar --exclude='./.git' --exclude='./result' -cf - . \
-	  | ssh '$(OFFLOAD_SSH)' \
-	    "set -eu; \
-	     rm -rf '/tmp/shengos-upgrade-$(HOST)'; \
-	     mkdir -p '/tmp/shengos-upgrade-$(HOST)'; \
-	     trap 'rm -rf /tmp/shengos-upgrade-$(HOST)' EXIT; \
-	     tar -xf - -C '/tmp/shengos-upgrade-$(HOST)'; \
-	     nix build --impure --accept-flake-config --no-link --print-out-paths \
-	       '/tmp/shengos-upgrade-$(HOST)#nixosConfigurations.$(HOST).config.system.build.toplevel'"); \
-	test -n "$$SYSTEM_PATH"; \
-	echo "Copying the finished system back to $(HOST)..."; \
-	nix copy --no-check-sigs --from '$(OFFLOAD_STORE)' "$$SYSTEM_PATH"; \
-	echo "Activating $$SYSTEM_PATH..."; \
-	sudo /run/current-system/sw/bin/nix-env \
-	  --profile /nix/var/nix/profiles/system --set "$$SYSTEM_PATH"; \
-	SINCE=$$(date '+%Y-%m-%d %H:%M:%S'); \
-	sudo /run/current-system/sw/bin/journalctl --unit=shengos-switch \
-	  --follow --since="$$SINCE" --no-pager --output=cat & \
-	FOLLOW=$$!; \
-	trap 'sleep 1; kill $$FOLLOW 2>/dev/null || true' EXIT INT TERM; \
-	sudo /run/current-system/sw/bin/systemd-run --collect --wait \
-	  --unit=shengos-switch \
-	  --property=StandardOutput=journal --property=StandardError=journal \
-	  "$$SYSTEM_PATH/bin/switch-to-configuration" switch
-else
 upgrade build:
 	$(call nixos-rebuild,switch,$(HOST))
-endif
 else
 build:
 	@:
@@ -127,11 +80,6 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # `update` and `syncthing-init`, especially on slower boards.
 BUILDER_TARGETS := upgrade boot build gc image $(HOSTS)
 REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
-ifneq ($(AUTO_OFFLOAD),)
-# The offloaded path performs its own transfer and remote build; even the
-# lightweight local builder probe is unnecessary for upgrade/build.
-REQUESTED_BUILDER_TARGETS := $(filter-out upgrade build,$(REQUESTED_BUILDER_TARGETS))
-endif
 ifneq ($(REQUESTED_BUILDER_TARGETS),)
 BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
 REMOTE_BUILDERS := $(shell bash misc/remote-builders.sh '$(BUILDER_HOST)')

@@ -4,7 +4,7 @@ Choose the path for the target hardware:
 
 - **x86 laptop/desktop** — follow Steps 1–5 using the official NixOS minimal ISO.
 - **ARM headless node** — skip the ISO and use the
-  [headless board path](#headless-board-path-jasonkwh-bcm2711--jasonkwh-bcm2710a1).
+  [headless board path](#headless-board-path-jasonkwh-bcm2711).
 
 Use an existing machine as the source of truth and transfer secrets only over
 an encrypted Tailscale connection.
@@ -173,8 +173,7 @@ host does not already have a valid session.
 ### Q: How do distributed builds work?
 Hosts with `isBuilder = true` in `hostDefs` join the pool for their
 architecture; `buildSpeed` and `maxBuildJobs` tune scheduling. Reachable peers
-are selected through Tailscale SSH. Offline peers are skipped, except that the
-BCM2710A1's low-memory upgrade path explicitly requires BCM2711.
+are selected through Tailscale SSH. Offline peers are skipped.
 
 ### Q: Installing on a Mac Pro 2013 (trashcan)?
 Registered as `jasonkwh-1650v2` in this repo — `cluster/1650v2/configuration.nix`
@@ -196,11 +195,10 @@ standard NVRAM entries is the default, but Mac firmware occasionally drops
 NVRAM entries — if boot becomes unreliable, switch to
 `boot.loader.grub.efiInstallAsRemovable = true`.
 
-## Headless board path (jasonkwh-bcm2711 / jasonkwh-bcm2710a1)
+## Headless board path (jasonkwh-bcm2711)
 
 Install headless boards from an SD-card image rather than the minimal ISO.
-Supported examples are `jasonkwh-bcm2711` (Pi 4B, 4GB) and
-`jasonkwh-bcm2710a1` (Zero 2 W, 512MB). First create
+The supported example is `jasonkwh-bcm2711` (Pi 4B, 4GB). First create
 `~/.secrets/headless-env` on the build host:
 
 ```bash
@@ -218,7 +216,6 @@ For the Tailscale key: generate an **auth key** in the admin console with
 
    ```bash
    make image jasonkwh-bcm2711      # Pi 4B
-   make image jasonkwh-bcm2710a1    # bcm2710a1
    zstd -d result/sd-image/*.img.zst
    sudo dd if=result/sd-image/*.img of=/dev/sdX bs=4M status=progress
    ```
@@ -253,19 +250,7 @@ For the Tailscale key: generate an **auth key** in the admin console with
    (owner-gated by `/var/lib/shengos/verified-generations`). All `make` /
    `sudo` commands in this guide are run as the human user `jasonkwh`.
 
-   On `jasonkwh-bcm2710a1`, this command automatically streams the current
-   configuration to `jasonkwh-bcm2711.tail0c0276.ts.net` over Tailscale SSH.
-   The BCM2711 performs input fetching, evaluation, and building so the Zero
-   2 W does not exhaust its 512MB RAM. The completed system closure is copied
-   back and activated locally. Ensure BCM2711 is online and reachable before
-   upgrading BCM2710A1.
-
-The `bcm2710a1` host has no nixos-hardware module, so its SD image uses the
-generic aarch64 firmware set (`bcm2710-rpi-zero-2-w.dtb` is included).
-It keeps Hermes disabled to fit its 512MB RAM, but runs Syncthing as an
-explicitly provisioned `hermes` system user to provide a backup replica.
-
-Both boards boot through Broadcom firmware and extlinux
-(`boot.loader.generic-extlinux-compatible`), not UEFI. Their committed
-hardware configurations mean a freshly flashed card does not need
-`nixos-generate-config`.
+The board uses the nixos-hardware Raspberry Pi 4 module. It boots through
+Broadcom firmware and extlinux (`boot.loader.generic-extlinux-compatible`),
+not UEFI. Its committed hardware configuration means a freshly flashed card
+does not need `nixos-generate-config`.

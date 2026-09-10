@@ -115,13 +115,6 @@
           hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMliakPvWur4Rh8cPKw83mEFGwfS/2OlsfO5g9p+BztM";
           syncthingId = "3HVJKXT-JBAOZME-7IO7IXE-ZVA3RPU-NVZ37PL-G26C3V7-JFAETLE-ZOFKBAB";
         };
-        "jasonkwh-bcm2710a1" = {
-          name = "bcm2710a1";
-          hostSystem = "aarch64-linux";
-          isHeadless = true;
-          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJVmSSuzESOHYQnRrIqDVlh66vxID1pgQ08RV5u/MwBW";
-          syncthingId = "GXTKLBM-LRAL3TP-KDWRB2S-PSWCIIY-5AL77HX-LIRAK2G-PL6HIPH-AXTVBQ5";
-        };
         "jasonkwh-3210m" = {
           name = "3210m";
           hostSystem = "x86_64-linux";

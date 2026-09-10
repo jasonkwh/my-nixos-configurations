@@ -53,14 +53,12 @@ aarch64-linux are supported:
 | **`jasonkwh-3210m`** | Intel Core i3-3210M · Intel HD Graphics 4000 + NVIDIA GeForce GT 640M LE · 12GB | Sony VAIO SVS131 — legacy BIOS/MBR, Optimus PRIME offload (legacy 470) |
 | **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB | Mac Pro 2013 (trashcan) — emulation/retro gaming + Tailscale node |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB | Headless Hermes + WhatsApp gateway + monitoring server |
-| **`jasonkwh-bcm2710a1`** | Broadcom BCM2710A1 · Broadcom VideoCore IV · 512MB | Headless Syncthing backup node — Hermes disabled |
 
 `mkHost` uses `hostSystem`, `isLaptop`, `isHeadless` to select system and
 Home Manager layers; `isFleetHub` designates the fleet hub host — the single
 WhatsApp gateway plus Prometheus/Grafana monitoring (currently
 `jasonkwh-bcm2711`). x86 desktop hosts can build aarch64 SD images through
-QEMU binfmt emulation. On the 512MB BCM2710A1, upgrades automatically stream
-to BCM2711 for evaluation/build and copy back only the finished closure.
+QEMU binfmt emulation.
 
 ### Monitoring
 
@@ -117,7 +115,7 @@ cluster/             # Per-host & shared NixOS config
                      #   headless.nix — imported when isHeadless = true
                      #   home.nix — HM entry point routing home-headless/-desktop/-laptop
   7520u/  7300u/  2450m/  3210m/  1650v2/   # Per-host config
-  bcm2711/  bcm2710a1/              # aarch64 headless hosts
+  bcm2711/                          # aarch64 headless host
 
 docs/                # Guides (install, troubleshooting, …)
 assets/              # Logos, wallpapers

@@ -1,6 +1,6 @@
 # Headless first-boot Tailscale enrolment (fleet-wide, reusable module).
 #
-# Problem: a headless board (bcm2711, bcm2710a1, ...) boots with no screen or
+# Problem: a headless board (bcm2711, ...) boots with no screen or
 # keyboard; `tailscale up` normally needs one interactive auth.
 #
 # Solution: a Tailscale auth key (admin console: reusable=on when shared by
