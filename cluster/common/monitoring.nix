@@ -224,27 +224,29 @@ lib.mkMerge [
         for f in /var/lib/hermes/.hermes/logs/agent.log /var/lib/hermes/.hermes/logs/agent.log.{1,2,3}; do
           [ -r "$f" ] || continue
           ${pkgs.gawk}/bin/awk -v d="$today" '
-            $1 == d && /agent.conversation_loop: API call/ {
-              match($0, /model=[^ ]+/);      m = substr($0, RSTART+6, RLENGTH-6)
-              match($0, / in=[0-9]+/);       i = substr($0, RSTART+4, RLENGTH-4)
-              match($0, / out=[0-9]+/);      o = substr($0, RSTART+5, RLENGTH-5)
+            $1 == d && /agent.conversation_loop: API call/ && !/API call failed/ {
+              seen++
+              match($0, /model=[^ ]+/); m = (RSTART ? substr($0, RSTART+6, RLENGTH-6) : "")
+              match($0, / in=[0-9]+/);  i = (RSTART ? substr($0, RSTART+4, RLENGTH-4) : "")
+              match($0, / out=[0-9]+/); o = (RSTART ? substr($0, RSTART+5, RLENGTH-5) : "")
+              if (m == "" || i == "" || o == "") { bad++; next }
               calls[m]++; ti[m] += i; to[m] += o
             }
             END {
+              printf "# HELP hermes_llm_tokens_lines_matched agent.log API-call lines seen today\n"
+              printf "# TYPE hermes_llm_tokens_lines_matched gauge\n"
+              printf "hermes_llm_tokens_lines_matched %d\n", seen+0
+              printf "# HELP hermes_llm_tokens_parse_errors API-call lines with missing/renamed fields (nonzero = upstream log format changed)\n"
+              printf "# TYPE hermes_llm_tokens_parse_errors gauge\n"
+              printf "hermes_llm_tokens_parse_errors %d\n", bad+0
               for (k in calls) {
-                gsub(/[."\/]/, "_", k)
-                printf "hermes_llm_calls_total{model=\"%s\"} %d\n", k, calls[k]
-                printf "hermes_llm_tokens_in_total{model=\"%s\"} %d\n", k, ti[k]
-                printf "hermes_llm_tokens_out_total{model=\"%s\"} %d\n", k, to[k]
+                label = k; gsub(/[."\/]/, "_", label)
+                printf "hermes_llm_calls_total{model=\"%s\"} %d\n", label, calls[k]
+                printf "hermes_llm_tokens_in_total{model=\"%s\"} %d\n", label, ti[k]
+                printf "hermes_llm_tokens_out_total{model=\"%s\"} %d\n", label, to[k]
               }
             }' "$f" >> "$tmp"
         done
-        echo "# HELP hermes_llm_calls_total LLM API calls made today by hermes agent" >> "$tmp"
-        echo "# TYPE hermes_llm_calls_total gauge" >> "$tmp"
-        echo "# HELP hermes_llm_tokens_in_total LLM prompt tokens today (from agent.log API call lines)" >> "$tmp"
-        echo "# TYPE hermes_llm_tokens_in_total gauge" >> "$tmp"
-        echo "# HELP hermes_llm_tokens_out_total LLM completion tokens today" >> "$tmp"
-        echo "# TYPE hermes_llm_tokens_out_total gauge" >> "$tmp"
         ${pkgs.coreutils}/bin/mv "$tmp" "$out"
       '';
     };
