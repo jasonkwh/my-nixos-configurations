@@ -75,59 +75,6 @@
       ]
     },
     {
-      "id": 2,
-      "type": "stat",
-      "title": "Gateway host (current)",
-      "description": "The machine currently answering the WhatsApp gateway health probe",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 0
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "name",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "label_replace(probe_success{job=\"whatsapp-gateway\"} == 1, \"host\", \"$1\", \"instance\", \"jasonkwh-(.*)\\\\.tail.*:3000\")",
-          "instant": true,
-          "format": "time_series"
-        }
-      ]
-    },
-    {
       "id": 3,
       "type": "timeseries",
       "title": "Gateway probe latency",
@@ -189,9 +136,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
+        "w": 6,
+        "x": 6,
+        "y": 0
       },
       "options": {
         "cellHeight": "sm",
@@ -264,8 +211,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 24,
+        "x": 0,
         "y": 8
       },
       "options": {
