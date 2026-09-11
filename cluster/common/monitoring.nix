@@ -193,11 +193,26 @@ lib.mkMerge [
       script = ''
         out=/var/lib/prometheus-textfile/openrouter.prom
         tmp=$out.tmp
-        json=$(${pkgs.curl}/bin/curl -sf --max-time 10 https://openrouter.ai/api/v1/credits -H "Authorization: Bearer $OPENROUTER_API_KEY") || exit 0
+        auth="Authorization: Bearer $OPENROUTER_API_KEY"
+        json=$(${pkgs.curl}/bin/curl -sf --max-time 10 https://openrouter.ai/api/v1/credits -H "$auth") || exit 0
         balance=$(${pkgs.jq}/bin/jq -er '.data.total_credits - .data.total_usage' <<<"$json") || exit 0
-        ${pkgs.jq}/bin/jq -rn --argjson b "$balance" \
-          '"# TYPE hermes_openrouter_credits_remaining gauge\n# HELP hermes_openrouter_credits_remaining OpenRouter balance (total_credits - total_usage)\nhermes_openrouter_credits_remaining \( $b )\n"' \
-          > "$tmp"
+        daily=
+        keyjson=$(${pkgs.curl}/bin/curl -sf --max-time 10 https://openrouter.ai/api/v1/key -H "$auth") || keyjson=
+        if [ -n "$keyjson" ]; then
+          daily=$(${pkgs.jq}/bin/jq -er '.data.usage_daily | select(. != null)' <<<"$keyjson") || daily=
+        fi
+        {
+          printf '%s\n' \
+            '# HELP hermes_openrouter_credits_remaining OpenRouter balance (total_credits - total_usage)' \
+            '# TYPE hermes_openrouter_credits_remaining gauge'
+          ${pkgs.jq}/bin/jq -rn --argjson b "$balance" '"hermes_openrouter_credits_remaining \($b)"'
+          if [ -n "$daily" ]; then
+            printf '%s\n' \
+              '# HELP hermes_openrouter_usage_daily OpenRouter API key spend today (UTC)' \
+              '# TYPE hermes_openrouter_usage_daily gauge'
+            ${pkgs.jq}/bin/jq -rn --argjson d "$daily" '"hermes_openrouter_usage_daily \($d)"'
+          fi
+        } > "$tmp"
         ${pkgs.coreutils}/bin/mv "$tmp" "$out"
       '';
     };

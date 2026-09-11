@@ -372,7 +372,7 @@
       "id": 9,
       "type": "stat",
       "title": "OpenRouter Credits",
-      "description": "Remaining OpenRouter balance (USD), polled from /api/v1/credits every 10 minutes.",
+      "description": "Account remaining (total_credits - total_usage) and this key's spend today (UTC). Polled every 10 minutes. Token graphs can outrun billed USD because of prompt cache.",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
@@ -394,7 +394,7 @@
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "fieldConfig": {
@@ -420,13 +420,46 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent today"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": 0,
+                      "color": "blue"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
       },
       "targets": [
         {
           "refId": "A",
           "expr": "hermes_openrouter_credits_remaining",
-          "instant": true
+          "legendFormat": "remaining"
+        },
+        {
+          "refId": "B",
+          "expr": "hermes_openrouter_usage_daily",
+          "legendFormat": "spent today"
         }
       ]
     },
@@ -595,6 +628,7 @@
       }
     ]
   },
+  "refresh": "1m",
   "time": {
     "from": "now-6h",
     "to": "now"
