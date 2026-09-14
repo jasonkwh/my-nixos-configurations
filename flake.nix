@@ -81,6 +81,7 @@
           isBuilder = true;
           buildSpeed = 2;
           maxBuildJobs = 2;
+          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk5ItDGM2FVXZhn7c2B7u96cgximMG2fmlR6B+7nef1";
           syncthingId = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
         };
         "jasonkwh-7520u" = {
