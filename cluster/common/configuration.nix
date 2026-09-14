@@ -57,9 +57,8 @@
       cores = 0;
     };
 
-    # Builders: opt-in via isBuilder, and only serve their own arch.
-    # No self-entry (local builds stay local). Tailscale SSH handles auth.
-    distributedBuilds = true;
+    # false: nix.conf builders entry on a builder host re-dispatches back and deadlocks
+    distributedBuilds = false;
     buildMachines =
       let
         builders = lib.filterAttrs (_: def:
@@ -80,7 +79,7 @@
   # Re-filter the generation's builder list from tailscale state so offline
   # peers drop out and returning peers are restored. Nix re-reads per build.
   systemd.services.nix-machines-sync = lib.mkIf
-    (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
+    (config.nix.buildMachines != [ ]) {
       description = "Drop offline peers from /etc/nix/machines";
       serviceConfig.Type = "oneshot";
       path = with pkgs; [ tailscale gawk gnugrep gnused coreutils diffutils ];
@@ -109,7 +108,7 @@
       '';
     };
   systemd.timers.nix-machines-sync = lib.mkIf
-    (config.nix.distributedBuilds && config.nix.buildMachines != [ ]) {
+    (config.nix.buildMachines != [ ]) {
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnBootSec = "5min";
