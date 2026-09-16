@@ -20,7 +20,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"systemd-journal\", host=~\"$host\", level=~\"error|crit|alert|emerg\"}",
+          "expr": "{job=\"systemd-journal\", host=~\"$host\", level=~\"err|crit|alert|emerg\"}",
           "refId": "A",
           "queryType": "range"
         }

@@ -276,7 +276,7 @@ lib.mkMerge [
           };
         };
         # 14d like Prometheus; Loki Go durations reject "d".
-        limits_config.retention_period = "336h";
+        limits_config.retention_period = "336h"; # 336h == 14d
         compactor = {
           working_directory = "/var/lib/loki/compactor";
           retention_enabled = true;
