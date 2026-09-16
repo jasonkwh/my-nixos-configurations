@@ -136,6 +136,7 @@
       libreoffice-qt
       zoom-us
       brave
+      sparrow
       code-cursor
       buildah
       skopeo
