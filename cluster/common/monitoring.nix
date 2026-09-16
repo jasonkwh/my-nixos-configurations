@@ -1,19 +1,25 @@
-# Fleet monitoring: node_exporter everywhere; Prometheus + Grafana on the
+# Fleet monitoring: node_exporter everywhere; Prometheus/Grafana/Loki on the
 # isFleetHub host. All traffic stays on the tailnet.
 #
-# NOTE: the module body is lib.mkMerge — do NOT switch to attrset `//`:
-# a `//` between blocks would shallow-replace `exporters` and silently drop
-# exporters.node on the server host (2026-09-10, bcm2711).
-{ config, pkgs, lib, name, hostDefs, isFleetHub, tailscaleDomain, homeDirectory, ... }:
+# Module body is lib.mkMerge, NOT attrset `//`: `//` shallow-replaces the
+# `exporters` subtree and silently drops node exporter on the hub.
+{ config, pkgs, lib, hostDefs, isFleetHub, tailscaleDomain, homeDirectory, ... }:
 
+let
+  # Hub MagicDNS name (from hostDefs, so hub migration only touches the flake).
+  # Consumers: Alloy log push :3100, Grafana UI :3001.
+  fleetHubUrl = "${
+    builtins.head (builtins.attrNames
+      (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs))
+  }.${tailscaleDomain}";
+in
 lib.mkMerge [
   {
     services.prometheus.exporters.node = {
       enable = true;
       listenAddress = "0.0.0.0";
       enabledCollectors = [ "systemd" "textfile" ];
-      # Single shared textfile dir: monitoring server writes openrouter.prom,
-      # hermes hosts write llm.prom (see the units below).
+      # Shared dir: hub writes openrouter.prom, hermes hosts write llm.prom.
       extraFlags = [ "--collector.textfile.directory=/var/lib/prometheus-textfile" ];
     };
     systemd.tmpfiles.rules = [
@@ -27,8 +33,8 @@ lib.mkMerge [
       listenAddress = "127.0.0.1";
       configFile = pkgs.writeText "blackbox.yml" (
         builtins.toJSON {
-          # HTTP 200 is not enough: /health stays 200 while status is
-          # disconnected/degraded (pairing, flap). Require the JSON status.
+          # 200 alone isn't enough: /health stays 200 while disconnected —
+          # also require status:"connected".
           modules.whatsapp_connected = {
             prober = "http";
             timeout = "5s";
@@ -52,8 +58,8 @@ lib.mkMerge [
             headers = { };
             metrics = [
               {
-                # json_exporter v0.7.0 rejects type: gauge (upstream bug #393);
-                # omit type (defaults untyped) and use k8s-style {.field} paths.
+                # json_exporter v0.7.0 rejects type: gauge (upstream bug);
+                # omit type, use k8s-style {.field} paths.
                 name = "hermes_whatsapp_queue_length";
                 path = "{.queueLength}";
                 help = "WhatsApp gateway message queue backlog";
@@ -87,19 +93,18 @@ lib.mkMerge [
           ];
         }
         {
-          # Hub /metrics already includes every peer.
+          # Hub's own /metrics already aggregates every peer.
           job_name = "syncthing";
           static_configs = [{ targets = [ "127.0.0.1:8384" ]; }];
         }
         {
-          # WhatsApp gateway health: blackbox probe of /health that requires
-          # HTTP 200 and status:"connected". Gateway is hub-only (loopback).
+          # Gateway health: require 200 AND status:"connected"; gateway is
+          # loopback-only, so probe via 127.0.0.1.
           job_name = "whatsapp-gateway";
           metrics_path = "/probe";
           params = { module = [ "whatsapp_connected" ]; };
           static_configs = [
             {
-              # Gateway runs on this host (bcm2711) — probe via loopback.
               targets = [ "127.0.0.1:3000/health" ];
             }
           ];
@@ -110,8 +115,7 @@ lib.mkMerge [
           ];
         }
         {
-          # Gateway /health JSON (queueLength, uptime) as numeric metrics.
-          # Runs on the same host; json exporter polls loopback directly.
+          # Same /health via json exporter for numeric fields (queue, uptime).
           job_name = "whatsapp-gateway-json";
           metrics_path = "/probe";
           params = { module = [ "whatsapp_gateway" ]; };
@@ -128,7 +132,7 @@ lib.mkMerge [
     };
 
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 ]
-      ++ lib.optionals isFleetHub [ 3001 ];
+      ++ lib.optionals isFleetHub [ 3001 3100 ]; # 3100: Loki log push
 
     services.grafana = lib.mkIf isFleetHub {
       enable = true;
@@ -136,8 +140,8 @@ lib.mkMerge [
         server = {
           http_addr = "0.0.0.0";
           http_port = 3001; # 3000 is the WhatsApp bridge
-          domain = "jasonkwh-${name}.${tailscaleDomain}";
-          root_url = "http://jasonkwh-${name}.${tailscaleDomain}:3001/";
+          domain = fleetHubUrl;
+          root_url = "http://${fleetHubUrl}:3001/";
         };
         security = {
           admin_user = "jasonkwh";
@@ -152,6 +156,11 @@ lib.mkMerge [
           type = "prometheus";
           url = "http://127.0.0.1:9090";
           isDefault = true;
+        }
+        {
+          name = "Loki";
+          type = "loki";
+          url = "http://127.0.0.1:3100";
         }
       ];
       provision.dashboards.settings.providers = [
@@ -178,7 +187,7 @@ lib.mkMerge [
   }
 
   # OpenRouter balance -> textfile. EnvironmentFile is read by systemd as
-  # root; hermes has no ACL on ~/.secrets/hermes-env (only gmail-app-password).
+  # root; hermes has no ACL on ~/.secrets/hermes-env.
   {
     systemd.services.prometheus-openrouter-credits = lib.mkIf isFleetHub {
       description = "Poll OpenRouter credit balance into node_exporter textfile";
@@ -226,9 +235,83 @@ lib.mkMerge [
     };
   }
 
-  # Per-host LLM token usage from the hermes agent log, written to the shared
-  # textfile dir. Daily totals: scans today's lines across log rotations and
-  # resets at midnight. Gated on hermes being enabled on the host.
+  # Loki on the hub receives every fleet host's journald via Alloy.
+  {
+    services.loki = lib.mkIf isFleetHub {
+      enable = true;
+      configuration = {
+        server = {
+          http_listen_address = "0.0.0.0";
+          http_listen_port = 3100;
+        };
+        auth_enabled = false;
+        ingester = {
+          wal.dir = "/var/lib/loki/wal";
+          chunk_idle_period = "5m";
+          chunk_retain_period = "30s";
+        };
+        schema_config.configs = [
+          {
+            from = "2018-01-01";
+            store = "tsdb";
+            object_store = "filesystem";
+            schema = "v13";
+            index = {
+              prefix = "index_";
+              period = "24h";
+            };
+          }
+        ];
+        storage_config = {
+          filesystem.directory = "/var/lib/loki/chunks";
+          tsdb_shipper = {
+            active_index_directory = "/var/lib/loki/tsdb-index";
+            cache_location = "/var/lib/loki/tsdb-cache";
+          };
+        };
+        # Same 14d stance as Prometheus; spelled 336h because some Loki
+        # versions (Go durations) reject "d".
+        limits_config.retention_period = "336h"; # 336h == 14d
+        compactor = {
+          working_directory = "/var/lib/loki/compactor";
+          retention_enabled = true;
+          delete_request_store = "filesystem";
+        };
+      };
+    };
+  }
+
+  # Every fleet host ships its local journald to the hub's Loki via Alloy.
+  {
+    services.alloy = {
+      enable = true;
+      configPath = "/etc/alloy/config.alloy";
+    };
+    environment.etc."alloy/config.alloy".text = ''
+      loki.write "default" {
+        endpoint { url = "http://${fleetHubUrl}:3100/loki/api/v1/push" }
+      }
+      loki.process "journal" {
+        stage.labels {
+          values = {
+            unit = "__journal__systemd_unit",
+            host = "__journal__hostname",
+          }
+        }
+        forward_to = [loki.write.default.receiver]
+      }
+      loki.source.journal "journal" {
+        max_age  = "24h"
+        labels   = { job = "systemd-journal" }
+        forward_to = [loki.process.journal.receiver]
+      }
+    '';
+    # Alloy module runs under DynamicUser, which already grants
+    # SupplementaryGroups = [ "systemd-journal" ] — no user override here.
+  }
+
+  # Per-host LLM token usage: daily totals from agent.log rotations into
+  # the shared textfile dir. Gated on hermes being enabled on the host.
   {
     systemd.services.prometheus-hermes-llm-tokens = lib.mkIf config.services.hermes-agent.enable {
       description = "Sum today's hermes LLM API calls/tokens from agent.log into node_exporter textfile";
@@ -250,9 +333,8 @@ lib.mkMerge [
         if [ -z "$files" ]; then
           : > "$tmp"
         else
-          # One awk over every readable rotation so HELP/TYPE/samples are
-          # emitted once. Per-file appends duplicate names and node_exporter
-          # drops the whole textfile.
+          # One awk over all rotations: per-file appends duplicate metric
+          # names and node_exporter drops the whole textfile.
           ${pkgs.gawk}/bin/awk -v d="$today" '
             $1 == d && /agent.conversation_loop: API call/ && !/API call failed/ {
               seen++
