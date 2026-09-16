@@ -58,8 +58,8 @@ cross-build the Pi SD image.
 | **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB |
 
-`jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus (14d),
-and Grafana. Every host exports `node_exporter` on `tailscale0:9100`;
+`jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
+Grafana, and Loki (per-host Alloy pushes journald to it). Every host exports `node_exporter` on `tailscale0:9100`;
 Prometheus scrapes all `hostDefs` targets via MagicDNS. Grafana (set the
 admin password on first login):
 `http://jasonkwh-bcm2711.tail0c0276.ts.net:3001`.
