@@ -6,8 +6,7 @@
 { config, pkgs, lib, hostDefs, isFleetHub, tailscaleDomain, homeDirectory, ... }:
 
 let
-  # Hub MagicDNS name (from hostDefs, so hub migration only touches the flake).
-  # Consumers: Alloy log push :3100, Grafana UI :3001.
+  # Hub MagicDNS name from hostDefs (Grafana :3001, Alloy -> Loki :3100).
   fleetHubUrl = "${
     builtins.head (builtins.attrNames
       (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs))
@@ -172,6 +171,7 @@ lib.mkMerge [
               (pkgs.writeTextDir "grafana-fleet-overview.json" (builtins.readFile ../../misc/grafana-fleet-overview.json))
               (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../misc/grafana-syncthing.json))
               (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../misc/grafana-agent-status.json))
+              (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../misc/grafana-logs.json))
             ];
           };
           options.foldersFromFilesStructure = false;
@@ -269,9 +269,8 @@ lib.mkMerge [
             cache_location = "/var/lib/loki/tsdb-cache";
           };
         };
-        # Same 14d stance as Prometheus; spelled 336h because some Loki
-        # versions (Go durations) reject "d".
-        limits_config.retention_period = "336h"; # 336h == 14d
+        # 14d like Prometheus; Loki Go durations reject "d".
+        limits_config.retention_period = "336h";
         compactor = {
           working_directory = "/var/lib/loki/compactor";
           retention_enabled = true;
@@ -281,7 +280,8 @@ lib.mkMerge [
     };
   }
 
-  # Every fleet host ships its local journald to the hub's Loki via Alloy.
+  # Alloy on every host: journald -> hub Loki. Relabel before push —
+  # Alloy strips __journal_* and grafana-logs filters on host/unit.
   {
     services.alloy = {
       enable = true;
@@ -291,23 +291,25 @@ lib.mkMerge [
       loki.write "default" {
         endpoint { url = "http://${fleetHubUrl}:3100/loki/api/v1/push" }
       }
-      loki.process "journal" {
-        stage.labels {
-          values = {
-            unit = "__journal__systemd_unit",
-            host = "__journal__hostname",
-          }
+      loki.relabel "journal" {
+        forward_to = []
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
         }
-        forward_to = [loki.write.default.receiver]
+        rule {
+          source_labels = ["__journal__hostname"]
+          target_label  = "host"
+        }
       }
       loki.source.journal "journal" {
-        max_age  = "24h"
-        labels   = { job = "systemd-journal" }
-        forward_to = [loki.process.journal.receiver]
+        max_age       = "24h"
+        labels        = { job = "systemd-journal" }
+        relabel_rules = loki.relabel.journal.rules
+        forward_to    = [loki.write.default.receiver]
       }
     '';
-    # Alloy module runs under DynamicUser, which already grants
-    # SupplementaryGroups = [ "systemd-journal" ] — no user override here.
+    # DynamicUser already gets systemd-journal; don't override the user.
   }
 
   # Per-host LLM token usage: daily totals from agent.log rotations into
