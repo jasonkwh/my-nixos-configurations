@@ -7,7 +7,7 @@
     {
       "id": 1,
       "type": "logs",
-      "title": "Fleet error stream (all hosts)",
+      "title": "Error stream",
       "datasource": {
         "type": "loki",
         "uid": "${ds_loki}"
@@ -20,7 +20,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"systemd-journal\"} |~ \"(?i)error|fail|fatal\"",
+          "expr": "{job=\"systemd-journal\", host=~\"$host\", level=~\"error|crit|alert|emerg\"}",
           "refId": "A",
           "queryType": "range"
         }
@@ -31,7 +31,7 @@
         "showCommonLabels": false,
         "wrapLogMessage": true,
         "prettifyLogMessage": false,
-        "enableLogDetails": false,
+        "enableLogDetails": true,
         "sortOrder": "Descending",
         "dedupStrategy": "none"
       },
@@ -56,7 +56,7 @@
       },
       "targets": [
         {
-          "expr": "{host=~\"$host\", unit=~\"$unit\"}",
+          "expr": "{job=\"systemd-journal\", host=~\"$host\", unit=~\"$unit\"}",
           "refId": "A",
           "queryType": "range"
         }
@@ -67,7 +67,7 @@
         "showCommonLabels": false,
         "wrapLogMessage": true,
         "prettifyLogMessage": false,
-        "enableLogDetails": false,
+        "enableLogDetails": true,
         "sortOrder": "Descending",
         "dedupStrategy": "none"
       },
@@ -101,8 +101,8 @@
           "type": "loki",
           "uid": "${ds_loki}"
         },
-        "query": "label_values(host)",
-        "definition": "label_values(host)",
+        "query": "label_values({job=\"systemd-journal\"}, host)",
+        "definition": "label_values({job=\"systemd-journal\"}, host)",
         "refresh": 1,
         "includeAll": true,
         "allValue": ".*",
@@ -120,8 +120,8 @@
           "type": "loki",
           "uid": "${ds_loki}"
         },
-        "query": "label_values(unit)",
-        "definition": "label_values(unit)",
+        "query": "label_values({job=\"systemd-journal\", host=~\"$host\"}, unit)",
+        "definition": "label_values({job=\"systemd-journal\", host=~\"$host\"}, unit)",
         "refresh": 1,
         "includeAll": true,
         "allValue": ".*",

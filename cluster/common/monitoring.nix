@@ -240,8 +240,17 @@ lib.mkMerge [
         server = {
           http_listen_address = "0.0.0.0";
           http_listen_port = 3100;
+          grpc_listen_address = "127.0.0.1";
         };
         auth_enabled = false;
+        analytics.reporting_enabled = false;
+        common = {
+          replication_factor = 1;
+          ring = {
+            instance_addr = "127.0.0.1";
+            kvstore.store = "inmemory";
+          };
+        };
         ingester = {
           wal.dir = "/var/lib/loki/wal";
           chunk_idle_period = "5m";
@@ -277,7 +286,7 @@ lib.mkMerge [
     };
   }
 
-  # Journald -> hub Loki. Relabel host/unit before Alloy strips __journal_*.
+  # Journald -> hub Loki. Relabel host/unit/level before Alloy strips __journal_*.
   {
     services.alloy = {
       enable = true;
@@ -296,6 +305,10 @@ lib.mkMerge [
         rule {
           source_labels = ["__journal__hostname"]
           target_label  = "host"
+        }
+        rule {
+          source_labels = ["__journal_priority_keyword"]
+          target_label  = "level"
         }
       }
       loki.source.journal "journal" {
