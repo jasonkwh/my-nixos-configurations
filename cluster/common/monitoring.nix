@@ -97,8 +97,7 @@ lib.mkMerge [
           static_configs = [{ targets = [ "127.0.0.1:8384" ]; }];
         }
         {
-          # Gateway health: require 200 AND status:"connected"; gateway is
-          # loopback-only, so probe via 127.0.0.1.
+          # Loopback /health; module already requires status:connected.
           job_name = "whatsapp-gateway";
           metrics_path = "/probe";
           params = { module = [ "whatsapp_connected" ]; };
@@ -131,7 +130,7 @@ lib.mkMerge [
     };
 
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 9100 ]
-      ++ lib.optionals isFleetHub [ 3001 3100 ]; # 3100: Loki log push
+      ++ lib.optionals isFleetHub [ 3001 3100 ]; # Grafana :3001, Loki :3100
 
     services.grafana = lib.mkIf isFleetHub {
       enable = true;
@@ -144,7 +143,6 @@ lib.mkMerge [
         };
         security = {
           admin_user = "jasonkwh";
-          # Random per-host key, generated once by the preStart below.
           secret_key = "$__file{/var/lib/grafana/secret_key}";
         };
         analytics.reporting_enabled = false;
@@ -235,7 +233,6 @@ lib.mkMerge [
     };
   }
 
-  # Loki on the hub receives every fleet host's journald via Alloy.
   {
     services.loki = lib.mkIf isFleetHub {
       enable = true;
@@ -280,8 +277,7 @@ lib.mkMerge [
     };
   }
 
-  # Alloy on every host: journald -> hub Loki. Relabel before push —
-  # Alloy strips __journal_* and grafana-logs filters on host/unit.
+  # Journald -> hub Loki. Relabel host/unit before Alloy strips __journal_*.
   {
     services.alloy = {
       enable = true;
@@ -312,8 +308,7 @@ lib.mkMerge [
     # DynamicUser already gets systemd-journal; don't override the user.
   }
 
-  # Per-host LLM token usage: daily totals from agent.log rotations into
-  # the shared textfile dir. Gated on hermes being enabled on the host.
+  # Daily LLM totals from agent.log rotations; hermes-only.
   {
     systemd.services.prometheus-hermes-llm-tokens = lib.mkIf config.services.hermes-agent.enable {
       description = "Sum today's hermes LLM API calls/tokens from agent.log into node_exporter textfile";
