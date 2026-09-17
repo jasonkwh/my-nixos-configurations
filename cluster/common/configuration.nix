@@ -96,6 +96,10 @@
       };
     };
 
+  # remote-builders.sh only offers remotes at least as fast as this host.
+  environment.etc."nix/local-speed".text =
+    toString ((hostDefs.${config.networking.hostName} or { }).buildSpeed or 1);
+
   # Root-initiated builder SSH (sudo nixos-rebuild --builders) verifies host
   # keys against /etc/ssh/ssh_known_hosts — Tailscale SSH identity checks
   # don't apply to root. Keys are pinned per-host in flake.nix (hostDefs).

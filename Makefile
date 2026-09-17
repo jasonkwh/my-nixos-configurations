@@ -76,7 +76,7 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # --impure on nix build: SECRETS_* and REPO_GIT_ARCHIVE enter via
 # builtins.getEnv at eval time. Nix filters .git from flake sources, so the
 # image recipe adds it to the store separately and the image restores it.
-# Live --builders from the generation machines file (Tailscale filter).
+# Live --builders: generation machines file, Tailscale, speed >= this host.
 # Empty = local-only. Skip this for lightweight targets (update, secrets, …).
 BUILDER_TARGETS := upgrade boot deploy build gc image $(HOSTS)
 REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
