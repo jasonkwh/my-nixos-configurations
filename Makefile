@@ -21,8 +21,9 @@ help:
 		'make secrets-restore     restore ~/.secrets, including modes and ACLs' \
 		'make $(HOSTS)  upgrade that host'
 
+# Root skips nix-daemon and fails the sandbox probe; keep builds on the daemon.
 define nixos-rebuild
-	sudo /run/current-system/sw/bin/nixos-rebuild $(1) --impure $(REBUILD_BUILDERS) --flake $$(pwd)/#$(2)
+	sudo NIX_REMOTE=daemon /run/current-system/sw/bin/nixos-rebuild $(1) --impure --option sandbox-fallback true $(REBUILD_BUILDERS) --flake $$(pwd)/#$(2)
 endef
 
 # `make build <host>` is a no-op; the host target runs the rebuild.
