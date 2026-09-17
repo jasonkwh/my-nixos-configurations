@@ -62,7 +62,8 @@
         system-features = featuresFor thisHost;
         # Same cap we advertise to peers; hosts without maxBuildJobs stay auto.
         max-jobs = thisHost.maxBuildJobs or "auto";
-        cores = 0;
+        # Several jobs × all-cores thrashes RAM. One job (or auto) may use the machine.
+        cores = if (thisHost.maxBuildJobs or 0) > 1 then 1 else 0;
       };
 
       # Daemon ignores /etc/nix/machines (no re-dispatch deadlock).
