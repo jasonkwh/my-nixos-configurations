@@ -62,7 +62,9 @@
     buildMachines =
       let
         builders = lib.filterAttrs (_: def:
-          def.isBuilder or false && def.hostSystem == pkgs.stdenv.hostPlatform.system) hostDefs;
+          def.isBuilder or false
+          && (def.hostSystem == pkgs.stdenv.hostPlatform.system
+              || lib.elem def.hostSystem config.boot.binfmt.emulatedSystems)) hostDefs;
         mkBuilder = host: def: {
           hostName = "${host}";
           sshUser = username;

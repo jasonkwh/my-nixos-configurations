@@ -18,7 +18,7 @@ HOST  ?= $(LOCAL_HOST)
 SECRETS_ARCHIVE ?= secrets.tar.enc
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
-.PHONY: help upgrade boot build update gc image syncthing-init headless-env secrets-backup secrets-restore $(HOSTS)
+.PHONY: help upgrade boot deploy build update gc image syncthing-init headless-env secrets-backup secrets-restore $(HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -26,6 +26,7 @@ help:
 		'HOST=$(HOST)  (override: make upgrade HOST=jasonkwh-7520u)' \
 		'' \
 		'make upgrade             rebuild and activate' \
+		'make deploy <host>      build locally, push closure + switch on target' \
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
@@ -53,6 +54,9 @@ endif
 boot:
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
+deploy:
+	$(call nixos-rebuild,switch --target-host $(or $(EXPLICIT_HOST),$(HOST)),$(or $(EXPLICIT_HOST),$(HOST)))
+
 update:
 	nix flake update
 
@@ -78,7 +82,7 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # Only evaluate the flake and probe builders for targets that can actually
 # build. Doing this unconditionally delays even lightweight targets such as
 # `update` and `syncthing-init`, especially on slower boards.
-BUILDER_TARGETS := upgrade boot build gc image $(HOSTS)
+BUILDER_TARGETS := upgrade boot deploy build gc image $(HOSTS)
 REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
 ifneq ($(REQUESTED_BUILDER_TARGETS),)
 BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
@@ -151,4 +155,4 @@ secrets-restore:
 	@printf 'Secrets restored to %s\n' "$$HOME/.secrets"
 
 $(HOSTS):
-	$(if $(filter image,$(MAKECMDGOALS)),@:,$(call nixos-rebuild,switch,$@))
+	$(if $(filter image deploy,$(MAKECMDGOALS)),@:,$(call nixos-rebuild,switch,$@))

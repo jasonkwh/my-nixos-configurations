@@ -26,7 +26,8 @@ the fleet. Hermes can operate a host, but it may only activate store paths
 the owner has verified with `shengos-switch`.
 
 - **Lockstep fleet** — Tailscale SSH + Syncthing; `isBuilder` hosts share
-  same-architecture builds.
+  same-architecture builds, and binfmt-enabled x86 hosts can also build for
+  aarch64 peers (e.g. help the Pi) via emulated builders.
 - **Desktop or board** — Plasma (theming, shortcuts, Fcitx5) on laptops and
   the Mac Pro; headless boards skip the GUI/Steam/GPU stack, use zram, and
   enrol from `~/.secrets/headless-env`.
@@ -72,6 +73,7 @@ the WhatsApp gateway lives only on the hub.
 | Command | Description |
 |---------|-------------|
 | `meow upgrade` | Rebuild + activate this host |
+| `meow deploy <host>` | Build locally, push + switch on target, e.g. `meow deploy jasonkwh-bcm2711` |
 | `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
 | `meow update` | `nix flake update` |
 | `meow gc` | Delete old generations + refresh bootloader |

@@ -110,7 +110,7 @@
           isHeadless = true;
           isFleetHub = true;
           isBuilder = true;
-          buildSpeed = 3;
+          buildSpeed = 1;
           maxBuildJobs = 2;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
           hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMliakPvWur4Rh8cPKw83mEFGwfS/2OlsfO5g9p+BztM";
