@@ -26,7 +26,7 @@ help:
 		'HOST=$(HOST)  (override: make upgrade HOST=jasonkwh-7520u)' \
 		'' \
 		'make upgrade             rebuild and activate' \
-		'make deploy <host>      build locally, push closure + switch on target' \
+		'make deploy <host>      build (local + online builders), push + switch on target' \
 		'make boot                rebuild for next reboot (cleans /boot)' \
 		'make update              nix flake update' \
 		'make gc                  nix-collect-garbage -d + boot refresh' \
@@ -76,20 +76,15 @@ IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS)
 # --impure on nix build: SECRETS_* and REPO_GIT_ARCHIVE enter via
 # builtins.getEnv at eval time. Nix filters .git from flake sources, so the
 # image recipe adds it to the store separately and the image restores it.
-# Probe flake builders (from hostDefs.isBuilder — no hardcoding) with a short
-# TCP check; only reachable hosts go into --builders so an offline peer never
-# stalls the build on SSH timeout. Empty list = local-only.
-# Only evaluate the flake and probe builders for targets that can actually
-# build. Doing this unconditionally delays even lightweight targets such as
-# `update` and `syncthing-init`, especially on slower boards.
+# Live --builders from the generation machines file (Tailscale filter).
+# Empty = local-only. Skip this for lightweight targets (update, secrets, …).
 BUILDER_TARGETS := upgrade boot deploy build gc image $(HOSTS)
 REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
 ifneq ($(REQUESTED_BUILDER_TARGETS),)
 BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
 REMOTE_BUILDERS := $(shell bash misc/remote-builders.sh '$(BUILDER_HOST)')
 BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
-# Same probe for nixos-rebuild: --builders is a nix.conf-style key, supported
-# as a CLI option on rebuild too.
+# Same --builders list for nixos-rebuild (CLI override, not nix.conf).
 REBUILD_BUILDERS := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
 endif
 

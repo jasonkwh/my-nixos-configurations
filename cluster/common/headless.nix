@@ -42,9 +42,6 @@
   # No container runtime on small boards.
   virtualisation.podman.enable = lib.mkForce false;
 
-  # No KVM on ARM boards (x86 hosts keep the common default).
-  nix.settings.system-features = lib.mkForce [ "nixos-test" "big-parallel" ];
-
   # SD card trim is unreliable/pointless on cheap cards (zram swap too).
   services.fstrim.enable = lib.mkForce false;
 

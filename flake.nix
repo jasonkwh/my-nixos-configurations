@@ -61,18 +61,9 @@
         ];
       };
 
-      # Per-host arch so non-x86 boards can join the fleet.
-      # Hardware layout comes from each host's directory in this repo,
-      # never from /etc/nixos.
-      # Host definitions shared between nixosConfigurations, the hermes
-      # agent-to-agent peer list (bot_peers), and Syncthing device ids.
-      # syncthingId is the machine's Syncthing device fingerprint
-      # (`syncthing -device-id`); omit it for hosts that don't sync.
-      # isBuilder gates who joins buildMachines (cluster/common/configuration.nix).
-      # hostPublicKey is the machine's SSH host key (read ON-BOARD via
-      # cat /etc/ssh/ssh_host_ed25519_key.pub — never ssh-keyscan); it pins
-      # the key for root-initiated builder SSH (programs.ssh.knownHosts).
-      # Omit it for hosts whose key hasn't been read yet.
+      # Fleet inventory. Hardware lives in cluster/<name>/, not /etc/nixos.
+      # maxBuildJobs = min(cores, RAM_GB/4); Pi is 1 (hub services).
+      # hostPublicKey: on-board ssh_host_ed25519_key.pub — never ssh-keyscan.
       hostDefs = {
         "jasonkwh-7300u" = {
           name = "7300u";
@@ -100,7 +91,7 @@
           isLaptop = true;
           isBuilder = true;
           buildSpeed = 1;
-          maxBuildJobs = 4;
+          maxBuildJobs = 2;
           hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG+KOrVNYK6dBw+Ucv53poZ2Ptszaav5ZpFA+j/5+FKP";
           syncthingId = "WGQMBDR-UDX7MWW-JMDKKSQ-PRSIE6H-WJXKGGU-PMPCZKA-JV6VJL6-C6YBSAN";
         };
@@ -111,7 +102,7 @@
           isFleetHub = true;
           isBuilder = true;
           buildSpeed = 1;
-          maxBuildJobs = 2;
+          maxBuildJobs = 1;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
           hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMliakPvWur4Rh8cPKw83mEFGwfS/2OlsfO5g9p+BztM";
           syncthingId = "3HVJKXT-JBAOZME-7IO7IXE-ZVA3RPU-NVZ37PL-G26C3V7-JFAETLE-ZOFKBAB";
@@ -132,21 +123,6 @@
           isLaptop = false;
         };
       };
-
-      # Lightweight metadata for Make's reachability probe. Reading this
-      # output avoids evaluating an entire NixOS + Home Manager configuration
-      # before nixos-rebuild performs the real evaluation.
-      builderHosts = builtins.mapAttrs
-        (targetHost: targetDef:
-          builtins.map
-            (host: "${host}.${tailscaleDomain}")
-            (builtins.attrNames (lib.filterAttrs
-              (host: def:
-                def.isBuilder or false
-                && host != targetHost
-                && def.hostSystem == targetDef.hostSystem)
-              hostDefs)))
-        hostDefs;
 
       hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
 
@@ -256,8 +232,6 @@
 
     in
     {
-      fleetBuilderHosts = builderHosts;
-
       nixosConfigurations = builtins.mapAttrs
         (hostName: def: mkHost (def // { inherit hostName; }))
         hostDefs;

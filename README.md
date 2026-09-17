@@ -73,7 +73,7 @@ the WhatsApp gateway lives only on the hub.
 | Command | Description |
 |---------|-------------|
 | `meow upgrade` | Rebuild + activate this host |
-| `meow deploy <host>` | Build locally, push + switch on target, e.g. `meow deploy jasonkwh-bcm2711` |
+| `meow deploy <host>` | Build with local + online builders, push + switch on target, e.g. `meow deploy jasonkwh-bcm2711` |
 | `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
 | `meow update` | `nix flake update` |
 | `meow gc` | Delete old generations + refresh bootloader |

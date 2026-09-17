@@ -46,75 +46,52 @@
     };
   };
 
-  nix = {
-    settings = {
-      sandbox = true;
-      experimental-features = [ "nix-command" "flakes" ];
-      auto-optimise-store = true;
-      system-features = [ "kvm" ];
-      # Use all available CPU cores for parallel Nix builds
-      max-jobs = "auto";
-      cores = 0;
-    };
+  nix =
+    let
+      thisHost = hostDefs.${config.networking.hostName} or { };
+      # kvm only on machines that actually have it (not headless ARM).
+      featuresFor = def:
+        [ "big-parallel" "nixos-test" ]
+        ++ lib.optionals (!(def.isHeadless or false)) [ "kvm" ];
+    in
+    {
+      settings = {
+        sandbox = true;
+        experimental-features = [ "nix-command" "flakes" ];
+        auto-optimise-store = true;
+        system-features = featuresFor thisHost;
+        # Same cap we advertise to peers; hosts without maxBuildJobs stay auto.
+        max-jobs = thisHost.maxBuildJobs or "auto";
+        cores = 0;
+      };
 
-    # false: nix.conf builders entry on a builder host re-dispatches back and deadlocks
-    distributedBuilds = false;
-    buildMachines =
-      let
-        builders = lib.filterAttrs (_: def:
-          def.isBuilder or false
-          && (def.hostSystem == pkgs.stdenv.hostPlatform.system
-              || lib.elem def.hostSystem config.boot.binfmt.emulatedSystems)) hostDefs;
-        mkBuilder = host: def: {
-          hostName = "${host}";
-          sshUser = username;
-          system = def.hostSystem;
-          maxJobs = def.maxBuildJobs;
-          speedFactor = def.buildSpeed;
-          supportedFeatures = [ "kvm" "big-parallel" "nixos-test" ];
-        };
-      in
-      lib.filter (m: m.hostName != config.networking.hostName)
-        (lib.mapAttrsToList mkBuilder builders);
-  };
+      # Daemon ignores /etc/nix/machines (no re-dispatch deadlock).
+      # Make passes a live --builders list from remote-builders.sh.
+      distributedBuilds = false;
+      buildMachines =
+        let
+          builders = lib.filterAttrs (_: def:
+            def.isBuilder or false
+            && (def.hostSystem == pkgs.stdenv.hostPlatform.system
+                || lib.elem def.hostSystem config.boot.binfmt.emulatedSystems)) hostDefs;
+          mkBuilder = host: def: {
+            hostName = "${host}";
+            sshUser = username;
+            system = builtins.concatStringsSep "," ([ def.hostSystem ]
+              ++ lib.optionals (def.hostSystem == "x86_64-linux" && !(def.isHeadless or false))
+                [ "aarch64-linux" ]);
+            maxJobs = def.maxBuildJobs;
+            speedFactor = def.buildSpeed;
+            supportedFeatures = featuresFor def;
+          };
+        in
+        lib.filter (m: m.hostName != config.networking.hostName)
+          (lib.mapAttrsToList mkBuilder builders);
 
-  # Re-filter the generation's builder list from tailscale state so offline
-  # peers drop out and returning peers are restored. Nix re-reads per build.
-  systemd.services.nix-machines-sync = lib.mkIf
-    (config.nix.buildMachines != [ ]) {
-      description = "Drop offline peers from /etc/nix/machines";
-      serviceConfig.Type = "oneshot";
-      path = with pkgs; [ tailscale gawk gnugrep gnused coreutils diffutils ];
-      script = ''
-        dest=/etc/nix/machines
-        src=/run/current-system/etc/nix/machines
-        [ -r "$src" ] || src=/etc/static/nix/machines
-        [ -r "$src" ] || exit 0
-        online=$(tailscale status 2>/dev/null | awk '$0 !~ /offline/ {print $2}' | tr '\n' ' ')
-        [ -n "$online" ] || exit 0
-        tmp=$(mktemp)
-        while read -r line; do
-          [ -n "$line" ] || continue
-          host=$(printf '%s' "$line" | sed -E 's#.*@([^: ]+).*#\1#')
-          short="''${host%%.*}"
-          case " $online " in
-            *" $short "*|*" $host "*) printf '%s\n' "$line" ;;
-          esac
-        done < "$src" > "$tmp"
-        if ! cmp -s "$tmp" "$dest"; then
-          chmod 0444 "$tmp"
-          mv "$tmp" "$dest"
-        else
-          rm -f "$tmp"
-        fi
-      '';
-    };
-  systemd.timers.nix-machines-sync = lib.mkIf
-    (config.nix.buildMachines != [ ]) {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnBootSec = "5min";
-        OnUnitActiveSec = "5min";
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 1w";
       };
     };
 
@@ -312,12 +289,6 @@
         enable = true;
       };
     };
-  };
-
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 1w";
   };
 
   programs = {
