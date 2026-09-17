@@ -1,17 +1,3 @@
-# NixOS flake helpers
-#
-#   make upgrade                # rebuild + activate current hostname
-#   make boot                   # install for next reboot (also cleans /boot)
-#   make jasonkwh-7520u         # explicit host
-#   make build jasonkwh-7520u   # same (build is a no-op when a host is named)
-#   make update                 # update flake inputs
-#   make gc                     # delete old generations + refresh bootloader
-
-#   make syncthing-init         # one-time: pre-generate syncthing identity + print device ID
-#   make headless-env           # export Wi-Fi/Tailscale secrets for headless boards (~/.secrets/headless-env)
-#   make secrets-backup         # encrypt ~/.secrets as ./secrets.tar.enc
-#   make secrets-restore        # restore ~/.secrets from ./secrets.tar.enc
-
 HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-3210m jasonkwh-1650v2 jasonkwh-bcm2711
 LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
@@ -39,8 +25,7 @@ define nixos-rebuild
 	sudo /run/current-system/sw/bin/nixos-rebuild $(1) --impure $(REBUILD_BUILDERS) --flake $$(pwd)/#$(2)
 endef
 
-# `make build` alone → upgrade current host
-# `make build jasonkwh-7520u` → host target does the work; build is a no-op
+# `make build <host>` is a no-op; the host target runs the rebuild.
 ifeq ($(EXPLICIT_HOST),)
 upgrade build:
 	$(call nixos-rebuild,switch,$(HOST))
@@ -65,32 +50,19 @@ gc:
 	sudo "$$NCG" -d
 	$(call nixos-rebuild,boot,$(or $(EXPLICIT_HOST),$(HOST)))
 
-# SD-card image: make image HOST=jasonkwh-bcm2711
-# `make image jasonkwh-bcm2711` is also supported. Cross-built natively on
-# x86 (no QEMU); flash the resulting .img.zst to a card:
-# zstd -d <img> && sudo dd if=<img> of=/dev/sdX bs=4M
-# Prompts once for the machine password: ~/.secrets is sealed with it and
-# baked into the image (ciphertext), and it becomes the login password of
-# both jasonkwh and root on the board.  SECRETS_SKIP=1 builds without.
+# Image: make image jasonkwh-bcm2711 (or HOST=). Cross-built on x86; SECRETS_SKIP=1 skips ~/.secrets.
 IMG_HOST := $(if $(filter command line,$(origin HOST)),$(HOST),$(filter $(HOSTS),$(filter-out image,$(MAKECMDGOALS))))
-# --impure on nix build: SECRETS_* and REPO_GIT_ARCHIVE enter via
-# builtins.getEnv at eval time. Nix filters .git from flake sources, so the
-# image recipe adds it to the store separately and the image restores it.
-# Live --builders: generation machines file, Tailscale, speed >= this host.
-# Empty = local-only. Skip this for lightweight targets (update, secrets, …).
+# --builders from remote-builders.sh (speed >= this host). Skip for update/secrets/….
 BUILDER_TARGETS := upgrade boot deploy build gc image $(HOSTS)
 REQUESTED_BUILDER_TARGETS := $(filter $(BUILDER_TARGETS),$(MAKECMDGOALS))
 ifneq ($(REQUESTED_BUILDER_TARGETS),)
 BUILDER_HOST := $(or $(EXPLICIT_HOST),$(HOST))
 REMOTE_BUILDERS := $(shell bash misc/remote-builders.sh '$(BUILDER_HOST)')
 BUILDERS_FLAG := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
-# Same --builders list for nixos-rebuild (CLI override, not nix.conf).
 REBUILD_BUILDERS := $(if $(REMOTE_BUILDERS),--builders '$(REMOTE_BUILDERS)',--builders '')
 endif
 
-# The encrypted archive must first become a store input: build sandboxes
-# cannot read a bare /tmp path. Dollar signs are doubled for Make so command
-# substitution and shell variables reach the shell unchanged.
+# $$ so Make leaves command substitution and env vars for the shell.
 image:
 	@test -n "$(IMG_HOST)" || { echo 'usage: make image HOST=jasonkwh-<host>'; exit 1; }
 	@set -e; \
@@ -123,22 +95,14 @@ image:
 	fi
 	@printf '\nImage: ls result/sd-image/*.img.zst\n'
 
-# One-time bootstrap for services.syncthing: generate the device identity
-# before the first `make upgrade`, so the real device ID can be pasted into
-# the host's `syncthingId` in flake.nix. Safe to re-run (idempotent).
 syncthing-init:
 	sudo nix run nixpkgs#syncthing -- generate --home=/var/lib/syncthing-hermes/.config/syncthing
 	sudo chown -R hermes:hermes /var/lib/syncthing-hermes
 	@printf '\n^^^ Device ID for $(HOST) is on the "Calculated device ID" line above — paste it into flake.nix hostDefs\n'
 
-# Export the build host's live Wi-Fi credentials (and optionally a Tailscale
-# auth key) into ~/.secrets/headless-env, read by wifi-home.nix /
-# tailscale-enrol.nix on headless boards and baked into SD images.
 headless-env:
 	bash misc/export-headless-env.sh
 
-# Stream directly through OpenSSL so no unencrypted archive is written to disk.
-# GNU tar's ACL and xattr flags preserve the access required by service users.
 secrets-backup:
 	@test -d "$$HOME/.secrets" || { echo 'secrets-backup: ~/.secrets does not exist'; exit 1; }
 	@bash -o pipefail -c 'umask 077; tar --create --acls --xattrs --file=- -C "$$HOME" .secrets | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -out "$(SECRETS_ARCHIVE)"'
