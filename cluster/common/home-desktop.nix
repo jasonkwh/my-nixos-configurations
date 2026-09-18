@@ -32,7 +32,7 @@
     enable = true;
 
     workspace = {
-      wallpaper = ../../assets/wallpapers/DSCF4098.JPG;
+      wallpaper = "${config.home.homeDirectory}/Documents/my-nixos-configurations/assets/wallpapers/DSCF4098.JPG";
       lookAndFeel = "org.kde.breezedark.desktop";
       colorScheme = "BreezeDark";
     };
