@@ -40,7 +40,7 @@
       # cluster/common/configuration.nix via specialArgs.
       hermesModel = {
         provider = "openrouter";
-        default = "deepseek/deepseek-v4.1-flash";
+        default = "stealth/union-alpha";
         base_url = "https://openrouter.ai/api/v1";
       };
 
