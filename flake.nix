@@ -40,7 +40,7 @@
       # cluster/common/configuration.nix via specialArgs.
       hermesModel = {
         provider = "openrouter";
-        default = "z-ai/glm-5.3-flash";
+        default = "stealth/union-alpha";
         base_url = "https://openrouter.ai/api/v1";
       };
 
