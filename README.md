@@ -50,14 +50,14 @@ Hosts are declared in `flake.nix` (`hostDefs`). `isLaptop` / `isHeadless` /
 `isFleetHub` / `isBuilder` select the shared modules. x86 hosts can
 cross-build the Pi SD image.
 
-| Host | Hardware |
-|------|----------|
-| **`jasonkwh-7520u`** | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB |
-| **`jasonkwh-7300u`** | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB |
-| **`jasonkwh-2450m`** | Intel Core i5-2450M · AMD Radeon HD 6630M · 16GB |
-| **`jasonkwh-3210m`** | Intel Core i3-3210M · Intel HD Graphics 4000 + NVIDIA GeForce GT 640M LE · 12GB |
-| **`jasonkwh-1650v2`** | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB |
-| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB |
+| Host                   | Hardware                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| **`jasonkwh-7520u`**   | AMD Ryzen 5 7520U · AMD Radeon 610M · 16GB                                      |
+| **`jasonkwh-7300u`**   | Intel Core i5-7300U · Intel HD Graphics 620 · 8GB                               |
+| **`jasonkwh-2450m`**   | Intel Core i5-2450M · AMD Radeon HD 6630M · 16GB                                |
+| **`jasonkwh-3210m`**   | Intel Core i5-3210M · Intel HD Graphics 4000 + NVIDIA GeForce GT 640M LE · 12GB |
+| **`jasonkwh-1650v2`**  | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB                              |
+| **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB                                  |
 
 `jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
 Grafana, and Loki (per-host Alloy pushes journald to it). Every host exports `node_exporter` on `tailscale0:9100`;
@@ -70,19 +70,19 @@ the WhatsApp gateway lives only on the hub.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `meow upgrade` | Rebuild + activate this host |
-| `meow deploy <host>` | Build with local + online builders, push + switch on target, e.g. `meow deploy jasonkwh-bcm2711` |
-| `meow boot` | Rebuild for next reboot (also cleans `/boot`) |
-| `meow update` | `nix flake update` |
-| `meow gc` | Delete old generations + refresh bootloader |
-| `meow image <host>` | SD image, e.g. `jasonkwh-bcm2711` → `result/sd-image/*.img.zst` |
-| `meow headless-env` | Write Wi-Fi (+ optional Tailscale key) into `~/.secrets/headless-env` |
-| `meow syncthing-init` | Bootstrap Syncthing identity; print device ID for `hostDefs` |
-| `meow secrets-backup` | Encrypt `~/.secrets` to `secrets.tar.enc` |
-| `meow secrets-restore` | Restore `~/.secrets` (modes + ACLs) |
-| `meow <hostname>` | Rebuild a named host (e.g. `jasonkwh-7520u`) |
+| Command                | Description                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `meow upgrade`         | Rebuild + activate this host                                                                     |
+| `meow deploy <host>`   | Build with local + online builders, push + switch on target, e.g. `meow deploy jasonkwh-bcm2711` |
+| `meow boot`            | Rebuild for next reboot (also cleans `/boot`)                                                    |
+| `meow update`          | `nix flake update`                                                                               |
+| `meow gc`              | Delete old generations + refresh bootloader                                                      |
+| `meow image <host>`    | SD image, e.g. `jasonkwh-bcm2711` → `result/sd-image/*.img.zst`                                  |
+| `meow headless-env`    | Write Wi-Fi (+ optional Tailscale key) into `~/.secrets/headless-env`                            |
+| `meow syncthing-init`  | Bootstrap Syncthing identity; print device ID for `hostDefs`                                     |
+| `meow secrets-backup`  | Encrypt `~/.secrets` to `secrets.tar.enc`                                                        |
+| `meow secrets-restore` | Restore `~/.secrets` (modes + ACLs)                                                              |
+| `meow <hostname>`      | Rebuild a named host (e.g. `jasonkwh-7520u`)                                                     |
 
 `upgrade` uses the machine hostname unless you set `HOST=` or pass a host
 target.
