@@ -8,6 +8,20 @@ groups:
           severity: warning
         annotations:
           summary: "{{ $labels.instance }} has less than 10% memory available"
+      - alert: HostTemperatureHigh
+        expr: |
+          (
+            node_hwmon_temp_celsius{job="node"}
+            >= on(instance, chip, sensor) group_left()
+            (node_hwmon_temp_crit_celsius{job="node"} * 0.9)
+          )
+          and on(instance, chip, sensor)
+          (node_hwmon_temp_crit_celsius{job="node"} > 0)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} {{ $labels.chip }} {{ $labels.sensor }} is {{ $value }}°C"
       - alert: HostDiskSpaceLow
         expr: |
           node_filesystem_avail_bytes{job="node",fstype=~"ext4|xfs|btrfs|zfs",mountpoint!~"/boot.*"}
@@ -62,6 +76,13 @@ groups:
           severity: warning
         annotations:
           summary: "OpenRouter balance is ${{ $value }}"
+      - alert: OpenRouterDailySpendHigh
+        expr: hermes_openrouter_usage_daily > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OpenRouter spend today is ${{ $value }}"
       - alert: LlmLogFormatChanged
         expr: hermes_llm_tokens_parse_errors > 0
         for: 30m
