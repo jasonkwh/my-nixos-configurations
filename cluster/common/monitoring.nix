@@ -184,6 +184,67 @@ lib.mkMerge [
     '';
   }
 
+  {
+    services.prometheus.alertmanager = lib.mkIf isFleetHub {
+      enable = true;
+      listenAddress = "127.0.0.1";
+      port = 9093;
+      extraFlags = [ "--cluster.listen-address=" ];
+      configuration = {
+        route = {
+          receiver = "hermes-whatsapp";
+          group_by = [ "..." ];
+          group_wait = "0s";
+          group_interval = "5m";
+          repeat_interval = "4h";
+          routes = [
+            {
+              matchers = [ ''severity="critical"'' ];
+              repeat_interval = "1h";
+            }
+          ];
+        };
+        inhibit_rules = [
+          {
+            source_matchers = [ ''alertname="HermesAgentDown"'' ];
+            target_matchers = [
+              ''alertname="SystemdUnitFailed"''
+              ''name="hermes-agent.service"''
+            ];
+            equal = [ "instance" ];
+          }
+          {
+            source_matchers = [ ''alertname="HostDiskSpaceLow"'' ];
+            target_matchers = [ ''alertname="HostDiskWillFillIn24Hours"'' ];
+            equal = [ "instance" "mountpoint" ];
+          }
+        ];
+        receivers = [
+          {
+            name = "hermes-whatsapp";
+            webhook_configs = [
+              {
+                url = "http://127.0.0.1:8644/webhooks/alertmanager";
+                send_resolved = true;
+                timeout = "15s";
+              }
+            ];
+          }
+        ];
+      };
+    };
+
+    services.prometheus.alertmanagers = lib.mkIf isFleetHub [
+      {
+        static_configs = [ { targets = [ "127.0.0.1:9093" ]; } ];
+      }
+    ];
+
+    services.prometheus.ruleFiles = lib.mkIf isFleetHub [
+      ../../misc/prometheus-fleet-rules.yml
+    ];
+  }
+
   # OpenRouter balance -> textfile. EnvironmentFile is read by systemd as
   # root; hermes has no ACL on ~/.secrets/hermes-env.
   {

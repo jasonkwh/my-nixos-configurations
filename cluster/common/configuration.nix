@@ -426,6 +426,25 @@
 
         # Values come from flake.nix (hermesModel) via specialArgs.
         model = hermesModel;
+        platforms = lib.optionalAttrs isFleetHub {
+          webhook = {
+            enabled = true;
+            extra = {
+              host = "127.0.0.1";
+              port = 8644;
+              routes.alertmanager = {
+                secret = "INSECURE_NO_AUTH";
+                prompt = ''
+                  [{status}] {commonLabels.alertname} ({commonLabels.severity})
+                  {commonLabels.instance}
+                  {commonAnnotations.summary}
+                '';
+                deliver = "whatsapp";
+                deliver_only = true;
+              };
+            };
+          };
+        };
         memory = {
           memory_enabled = true;
           user_profile_enabled = true;

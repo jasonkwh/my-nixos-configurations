@@ -1,0 +1,78 @@
+groups:
+  - name: shengos-fleet
+    rules:
+      - alert: HostMemoryLow
+        expr: node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"} < 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} has less than 10% memory available"
+      - alert: HostDiskSpaceLow
+        expr: |
+          node_filesystem_avail_bytes{job="node",fstype=~"ext4|xfs|btrfs|zfs",mountpoint!~"/boot.*"}
+          / node_filesystem_size_bytes{job="node",fstype=~"ext4|xfs|btrfs|zfs",mountpoint!~"/boot.*"}
+          < 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} {{ $labels.mountpoint }} has less than 10% free"
+      - alert: HostDiskWillFillIn24Hours
+        expr: |
+          (
+            predict_linear(node_filesystem_avail_bytes{job="node",fstype=~"ext4|xfs|btrfs|zfs",mountpoint!~"/boot.*"}[6h], 24 * 3600) < 0
+          )
+          and
+          (
+            node_filesystem_avail_bytes{job="node",fstype=~"ext4|xfs|btrfs|zfs",mountpoint!~"/boot.*"}
+            / node_filesystem_size_bytes{job="node",fstype=~"ext4|xfs|btrfs|zfs",mountpoint!~"/boot.*"}
+            < 0.15
+          )
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} filesystem {{ $labels.mountpoint }} is predicted to fill within 24 hours"
+      - alert: WhatsAppQueueBacklog
+        expr: hermes_whatsapp_queue_length > 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WhatsApp gateway queue is {{ $value }}"
+      - alert: HermesAgentDown
+        expr: node_systemd_unit_state{job="node",name="hermes-agent.service",state="active"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "hermes-agent is not active on {{ $labels.instance }}"
+      - alert: SystemdUnitFailed
+        expr: node_systemd_unit_state{job="node",state="failed",name=~"hermes-agent.service|syncthing.service|tailscaled.service|prometheus.service|alertmanager.service|grafana.service|loki.service|alloy.service"} == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Systemd unit {{ $labels.name }} is failed on {{ $labels.instance }}"
+      - alert: OpenRouterCreditsLow
+        expr: hermes_openrouter_credits_remaining < 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OpenRouter balance is ${{ $value }}"
+      - alert: LlmLogFormatChanged
+        expr: hermes_llm_tokens_parse_errors > 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "agent.log API-call lines no longer parse on {{ $labels.instance }}"
+      - alert: TextfileCollectorBroken
+        expr: node_textfile_scrape_error{job="node"} == 1
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "node_exporter rejected the textfile on {{ $labels.instance }}"
