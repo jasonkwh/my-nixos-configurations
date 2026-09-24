@@ -60,8 +60,13 @@ cross-build the Pi SD image.
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB                                  |
 
 `jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
-Grafana, and Loki (per-host Alloy pushes journald to it). Every host exports `node_exporter` on `tailscale0:9100`;
-Prometheus scrapes all `hostDefs` targets via MagicDNS. Grafana (set the
+Alertmanager, Grafana, and Loki (per-host Alloy pushes journald to it).
+Every host exports `node_exporter` on `tailscale0:9100`; Prometheus scrapes
+all `hostDefs` targets via MagicDNS. Alertmanager posts to the hub's Hermes
+webhook, which forwards the message to WhatsApp. Rules are in
+`misc/prometheus-fleet-rules.yml`: memory, disk, predicted disk fill,
+temperature, and a stopped Hermes agent on any host that is up; WhatsApp
+queue, OpenRouter balance, and daily spend on the hub. Grafana (set the
 admin password on first login):
 `http://jasonkwh-bcm2711.tail0c0276.ts.net:3001`.
 
@@ -94,7 +99,7 @@ flake.nix              # inputs + hostDefs
 cluster/               # NixOS + Home Manager
   common/              # shared modules
   7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/
-misc/                  # SOUL.md, Grafana dashboards, helper scripts
+misc/                  # SOUL.md, Grafana dashboards, Prometheus rules, helper scripts
 docs/install.md
 assets/
 version.yaml           # bumped on push to main
