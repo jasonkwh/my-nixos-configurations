@@ -1,6 +1,13 @@
 groups:
   - name: shengos-fleet
     rules:
+      - alert: HostDown
+        expr: up{job="node"} == 0 and max_over_time(up{job="node"}[1h]) == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} was up and has been unreachable for 5 minutes"
       - alert: HostMemoryLow
         expr: node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"} < 0.1
         for: 10m

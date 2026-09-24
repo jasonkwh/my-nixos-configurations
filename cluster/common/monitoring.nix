@@ -199,6 +199,11 @@ lib.mkMerge [
           repeat_interval = "4h";
           routes = [
             {
+              matchers = [ ''alertname="HostDown"'' ];
+              receiver = "hermes-whatsapp-once";
+              repeat_interval = "8760h";
+            }
+            {
               matchers = [ ''severity="critical"'' ];
               repeat_interval = "1h";
             }
@@ -226,6 +231,16 @@ lib.mkMerge [
               {
                 url = "http://127.0.0.1:8644/webhooks/alertmanager";
                 send_resolved = true;
+                timeout = "15s";
+              }
+            ];
+          }
+          {
+            name = "hermes-whatsapp-once";
+            webhook_configs = [
+              {
+                url = "http://127.0.0.1:8644/webhooks/alertmanager";
+                send_resolved = false;
                 timeout = "15s";
               }
             ];

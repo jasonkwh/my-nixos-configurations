@@ -64,9 +64,10 @@ Alertmanager, Grafana, and Loki (per-host Alloy pushes journald to it).
 Every host exports `node_exporter` on `tailscale0:9100`; Prometheus scrapes
 all `hostDefs` targets via MagicDNS. Alertmanager posts to the hub's Hermes
 webhook, which forwards the message to WhatsApp. Rules are in
-`misc/prometheus-fleet-rules.yml`: memory, disk, predicted disk fill,
-temperature, and a stopped Hermes agent on any host that is up; WhatsApp
-queue, OpenRouter balance, and daily spend on the hub. Grafana (set the
+`misc/prometheus-fleet-rules.yml`: one WhatsApp when a host that was up
+becomes unreachable; memory, disk, predicted disk fill, temperature, and a
+stopped Hermes agent on any host that is up; WhatsApp queue, OpenRouter
+balance, and daily spend on the hub. Grafana (set the
 admin password on first login):
 `http://jasonkwh-bcm2711.tail0c0276.ts.net:3001`.
 
