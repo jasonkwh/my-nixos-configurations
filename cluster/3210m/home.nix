@@ -46,7 +46,7 @@
     Install.WantedBy = [ "default.target" ];
     Unit.Description = "xmrig Monero miner";
     Service = {
-      ExecStart = "${pkgs.xmrig}/bin/xmrig --no-color --config=$HOME/.config/xmrig/config.json";
+      ExecStart = "${pkgs.xmrig}/bin/xmrig --no-color --config=%h/.config/xmrig/config.json";
       Restart = "always";
       RestartSec = 30;
       Nice = -5;
