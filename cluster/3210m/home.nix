@@ -34,7 +34,7 @@
         threads = null;
         hugepages = true;
       };
-      retry-delay = 30;
+      retry-delay = 10;
       syslog = false;
     };
     onChange = ''
@@ -54,7 +54,7 @@
       Restart = "always";
       RestartSec = 30;
       Nice = -5;
-      CPUQuota = "300%";
+      CPUQuota = "200%";
     };
   };
 }
