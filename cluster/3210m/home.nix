@@ -43,14 +43,12 @@
   };
 
   systemd.user.services.xmrig = {
-    Unit.Description = "xmrig Monero miner";
     Install.WantedBy = [ "default.target" ];
-    serviceConfig = {
+    Unit.Description = "xmrig Monero miner";
+    Service = {
       ExecStart = "${pkgs.xmrig}/bin/xmrig --no-color --config=$HOME/.config/xmrig/config.json";
       Restart = "always";
       RestartSec = 30;
-    };
-    processConfig = {
       Nice = -5;
       CPUQuota = "300%";
     };
