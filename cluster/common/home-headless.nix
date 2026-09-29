@@ -39,6 +39,8 @@ in
     address = email;
     realName = fullName;
     flavor = "gmail.com";
+    imap.authentication = "plain";
+    smtp.authentication = "plain";
     passwordCommand = [
       "${pkgs.coreutils}/bin/cat"
       "${homeDirectory}/.secrets/gmail-app-password"

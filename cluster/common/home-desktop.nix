@@ -2,6 +2,7 @@
 # autostart. Imported by common/home.nix only when !isHeadless.
 {
   config,
+  osConfig,
   pkgs,
   lib,
   ...
@@ -27,6 +28,15 @@
   '';
 
   xdg.autostart.enable = true;
+
+  programs.thunderbird = {
+    enable = true;
+    profiles.default.isDefault = true;
+  };
+
+  accounts.email.accounts.gmail = lib.mkIf osConfig.services.hermes-agent.enable {
+    thunderbird.enable = true;
+  };
 
   programs.plasma = {
     enable = true;
