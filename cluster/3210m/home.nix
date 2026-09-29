@@ -20,7 +20,7 @@
       log = { enabled = true; };
       pools = [
         {
-          url = "supportxmr.com:5555";
+          url = "supportxmr.com:443";
           user = "88A5zQJj99VEtRUPCZ4jP3cNqKKam2Y25frhMVrNFUvdFQPhxpbJg4DB3qjZRxfjmhfneVm5KV1Jc8tVeHcZL76vNmKFPzk";
           nicehash = false;
           keepalive = true;
@@ -29,7 +29,7 @@
       ];
       print-time = false;
       randomx = {
-        init = false;
+        init = true;
         mode = "auto";
         threads = null;
         hugepages = true;
