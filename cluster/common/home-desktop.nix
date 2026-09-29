@@ -157,6 +157,7 @@
       ollama
       podman-compose
       kdePackages.isoimagewriter
+      feather
     ];
 
   # Aliases ride along with the tools they point at (zsh is configured
