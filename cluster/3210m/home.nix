@@ -20,7 +20,7 @@
       log = { enabled = true; };
       pools = [
         {
-          url = "supportxmr.com:443";
+          url = "supportxmr.com:5555";
           user = "88A5zQJj99VEtRUPCZ4jP3cNqKKam2Y25frhMVrNFUvdFQPhxpbJg4DB3qjZRxfjmhfneVm5KV1Jc8tVeHcZL76vNmKFPzk";
           nicehash = false;
           keepalive = true;
@@ -44,7 +44,11 @@
 
   systemd.user.services.xmrig = {
     Install.WantedBy = [ "default.target" ];
-    Unit.Description = "xmrig Monero miner";
+    Unit = {
+      Description = "xmrig Monero miner";
+      After = [ "network-online.target" "tailscaled.service" ];
+      Wants = [ "network-online.target" ];
+    };
     Service = {
       ExecStart = "${pkgs.xmrig}/bin/xmrig --no-color --config=%h/.config/xmrig/config.json";
       Restart = "always";
