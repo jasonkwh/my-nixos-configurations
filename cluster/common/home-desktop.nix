@@ -36,6 +36,10 @@
 
   accounts.email.accounts.gmail = lib.mkIf osConfig.services.hermes-agent.enable {
     thunderbird.enable = true;
+    thunderbird.settings = id: {
+      "mail.server.server_${id}.offline_download" = false;
+      "mail.server.server_${id}.autosync_offline_stores" = false;
+    };
   };
 
   programs.plasma = {
