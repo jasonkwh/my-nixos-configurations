@@ -52,6 +52,7 @@
     };
     processConfig = {
       Nice = -5;
+      CPUQuota = "300%";
     };
   };
 }
