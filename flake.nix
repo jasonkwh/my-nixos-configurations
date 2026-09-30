@@ -36,6 +36,14 @@
       homeDirectory = "/home/${username}";
       tailscaleDomain = "tail0c0276.ts.net";
 
+      # XMRig / MoneroOcean mining — consumed by cluster/common/xmrig.nix.
+      # 2xxxx ports are TLS; a 1xxxx port with tls = true will not connect.
+      monero = {
+        wallet = "88A5zQJj99VEtRUPCZ4jP3cNqKKam2Y25frhMVrNFUvdFQPhxpbJg4DB3qjZRxfjmhfneVm5KV1Jc8tVeHcZL76vNmKFPzk";
+        pool.url = "gulf.moneroocean.stream:20004";
+        pool.tls = true;
+      };
+
       # Hermes model config — single source of truth; passed into
       # cluster/common/configuration.nix via specialArgs.
       hermesModel = {
@@ -134,6 +142,7 @@
           inherit hermesPeerHosts;
           inherit hermesModel;
           inherit hostDefs;
+          inherit monero;
           # Syncthing device ids for all fleet members that sync, from hostDefs.
           # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).
           syncthingDevices = builtins.mapAttrs

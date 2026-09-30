@@ -6,6 +6,7 @@ in
 {
   imports = [
     ../common/configuration.nix
+    ../common/xmrig.nix
   ];
 
   home-manager.users.${username} = {
@@ -71,8 +72,4 @@ in
   ];
 
   services.thermald.enable = true;
-
-  # RandomX dataset init wants ~2.3GiB in 2MiB pages; without them xmrig
-  # falls back to 4KiB pages and loses ~20% hashrate.
-  boot.kernel.sysctl."vm.nr_hugepages" = 1200;
 }
