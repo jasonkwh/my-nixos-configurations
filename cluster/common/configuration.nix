@@ -19,6 +19,7 @@
   };
 
   imports = [ hardwareConfig ./monitoring.nix ]
+    ++ lib.optionals (!isHeadless) [ ./xmrig.nix ]
     ++ lib.optionals isLaptop [ ./laptop.nix ]
     ++ lib.optionals isHeadless [ ./headless.nix ./tailscale-enrol.nix ./wifi-home.nix ];
 

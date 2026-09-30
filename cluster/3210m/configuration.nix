@@ -6,7 +6,6 @@ in
 {
   imports = [
     ../common/configuration.nix
-    ../common/xmrig.nix
   ];
 
   home-manager.users.${username} = {
