@@ -1,17 +1,20 @@
-# XMRig (Monero) — shared by hosts that mine. Import at NixOS level:
-# the RandomX hugepage sysctl and the Home Manager config file are
-# different module systems, so this file carries both.
+# Hugepages are NixOS; the miner config is Home Manager.
 { config, lib, pkgs, username, monero, ... }:
 
-let
-  worker = config.networking.hostName;
-in
 {
-  # RandomX dataset init wants ~2.3GiB in 2MiB pages; without them xmrig
-  # falls back to 4KiB pages and loses ~20% hashrate.
+  # ~2.3GiB of 2MiB pages. Without them RandomX falls back and loses ~20%.
   boot.kernel.sysctl."vm.nr_hugepages" = 1200;
 
-  # Started by hand: plain `xmrig` reads this file from its default path.
+  # MSR mod needs the device node and CAP_SYS_RAWIO. The wrapper is first on PATH.
+  boot.kernelModules = [ "msr" ];
+
+  security.wrappers.xmrig = {
+    owner = "root";
+    group = "root";
+    capabilities = "cap_sys_rawio+ep";
+    source = "${pkgs.xmrig}/bin/xmrig";
+  };
+
   home-manager.users.${username} = {
     home.packages = [ pkgs.xmrig ];
 
@@ -19,38 +22,32 @@ in
       text = builtins.toJSON {
         autosave = false;
         cpu = {
+          huge-pages = true; # 6.x ignores a top-level huge-pages key
           max-threads-hint = 100;
           priority = null;
           yield = true;
         };
-        donate-level = 0;
-        focus = true;
+        donate-level = 0; # nixpkgs already patches the minimum to 0
         http = { enabled = false; };
-        huge-pages = true;
-        log = { enabled = true; };
         pools = [
           {
             url = monero.pool.url;
-            user = monero.wallet + "+" + worker;
+            user = monero.wallet;
+            pass = config.networking.hostName; # MoneroOcean worker name
             nicehash = false;
             keepalive = true;
             coin = "monero";
             tls = monero.pool.tls;
           }
         ];
-        print-time = false;
+        print-time = 0;
         randomx = {
-          init = true;
+          init = -1; # auto dataset-init threads; mining threads come from max-threads-hint
           mode = "auto";
-          threads = null;
-          hugepages = true;
         };
-        retry-delay = 10;
+        retry-pause = 10;
         syslog = false;
       };
-      onChange = ''
-        chmod 600 "$target"
-      '';
     };
   };
 }
