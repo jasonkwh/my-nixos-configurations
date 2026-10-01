@@ -15,6 +15,8 @@
   ·
   <a href="#fleet">Fleet</a>
   ·
+  <a href="#mining">Mining</a>
+  ·
   <a href="#commands">Commands</a>
 </p>
 
@@ -32,6 +34,8 @@ the owner has verified with `shengos-switch`.
   the Mac Pro; headless boards skip the GUI/Steam/GPU stack, use zram, and
   enrol from `~/.secrets/headless-env`.
 - **Dev-ready** — Podman, Kubernetes tooling, cloud CLIs, language runtimes.
+- **Monero mining** — XMRig on every desktop host (headless boards skip it).
+  Wallet and pool live in `flake.nix` (`monero`).
 
 ## Quick start
 
@@ -73,6 +77,24 @@ admin password on first login):
 
 小升升 runs on Hermes-enabled hosts. Memories and skills sync over Syncthing;
 the WhatsApp gateway lives only on the hub.
+
+## Mining
+
+Desktop hosts (`!isHeadless` — laptops and the Mac Pro) install XMRig and
+write `~/.config/xmrig.json` from `cluster/common/xmrig.nix`. The headless
+hub does not mine.
+
+Pool URL, TLS, and wallet are the `monero` attrset in `flake.nix`. Ports in
+the `2xxxx` range are TLS; a `1xxxx` port with `tls = true` will not connect.
+
+The module reserves 1200 huge pages, loads `msr` with writes allowed, and
+wraps `xmrig` with `cap_sys_rawio` so RandomX can use MSR and huge pages.
+CPU threads yield so the desktop stays usable. The HTTP API listens on
+`127.0.0.1:16000`.
+
+```bash
+xmrig
+```
 
 ## Commands
 

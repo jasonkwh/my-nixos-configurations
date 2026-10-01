@@ -30,7 +30,12 @@
           yield = true;
         };
         donate-level = 0;
-        http = { enabled = false; };
+        http = {
+          enabled = true;
+          host = "127.0.0.1";
+          port = 16000;
+          restricted = true;
+        };
         pools = [
           {
             url = monero.pool.url;
