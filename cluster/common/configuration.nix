@@ -113,8 +113,6 @@
     };
   };
 
-  # Permit direct Resilio peers only over the private Tailscale interface;
-  # do not expose the sync port on public/Wi-Fi interfaces.
   networking.firewall.interfaces.tailscale0 = {
     allowedTCPPorts = [
       22 # fleet ssh (key-only)

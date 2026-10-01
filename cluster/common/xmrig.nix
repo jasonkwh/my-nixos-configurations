@@ -17,6 +17,8 @@
     source = "${pkgs.xmrig}/bin/xmrig";
   };
 
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 16000 ];
+
   home-manager.users.${username} = {
     home.packages = [ pkgs.xmrig ];
 
@@ -32,7 +34,7 @@
         donate-level = 0;
         http = {
           enabled = true;
-          host = "127.0.0.1";
+          host = "0.0.0.0";
           port = 16000;
           restricted = true;
         };

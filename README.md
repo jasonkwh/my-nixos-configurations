@@ -90,7 +90,7 @@ the `2xxxx` range are TLS; a `1xxxx` port with `tls = true` will not connect.
 The module reserves 1200 huge pages, loads `msr` with writes allowed, and
 wraps `xmrig` with `cap_sys_rawio` so RandomX can use MSR and huge pages.
 CPU threads yield so the desktop stays usable. The HTTP API listens on
-`127.0.0.1:16000`.
+port `16000`, reachable from other Tailscale machines.
 
 ```bash
 xmrig
