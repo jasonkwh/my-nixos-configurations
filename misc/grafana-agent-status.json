@@ -210,7 +210,7 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 8,
+        "h": 4,
         "w": 6,
         "x": 12,
         "y": 0
@@ -481,6 +481,70 @@
           "refId": "A",
           "expr": "hermes_openrouter_usage_daily",
           "legendFormat": "spent today"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Free Stealth Model",
+      "description": "The newest free stealth model on OpenRouter, or none. Click the name to open its page. Polled every 10 minutes.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${ds_prometheus}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 4
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "name",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "yellow"
+              },
+              {
+                "value": 1,
+                "color": "green"
+              }
+            ]
+          },
+          "links": [
+            {
+              "title": "OpenRouter model page",
+              "url": "https://openrouter.ai/${__field.labels.model:raw}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(1, hermes_openrouter_free_stealth_model)",
+          "instant": true,
+          "legendFormat": "{{name}}"
         }
       ]
     },

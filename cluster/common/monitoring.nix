@@ -381,11 +381,12 @@ lib.mkMerge [
     ];
   }
 
-  # OpenRouter balance -> textfile. EnvironmentFile is read by systemd as
-  # root; hermes has no ACL on ~/.secrets/hermes-env.
+  # OpenRouter balance and current free stealth model -> textfile.
+  # EnvironmentFile is read by systemd as root; hermes has no ACL on
+  # ~/.secrets/hermes-env.
   {
     systemd.services.prometheus-openrouter-credits = lib.mkIf isFleetHub {
-      description = "Poll OpenRouter credit balance into node_exporter textfile";
+      description = "Poll OpenRouter credit balance and free stealth model into node_exporter textfile";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
@@ -405,6 +406,27 @@ lib.mkMerge [
         if [ -n "$keyjson" ]; then
           daily=$(${pkgs.jq}/bin/jq -er '.data.usage_daily | select(. != null)' <<<"$keyjson") || daily=
         fi
+        stealth=
+        models=$(${pkgs.curl}/bin/curl -sf --max-time 15 https://openrouter.ai/api/v1/models -H "$auth") || models=
+        if [ -n "$models" ]; then
+          stealth=$(${pkgs.jq}/bin/jq -r '
+            [.data[]
+              | select(.id | startswith("stealth/"))
+              | select((.pricing.prompt | tonumber) == 0 and (.pricing.completion | tonumber) == 0)
+              | select(.expiration_date == null or .expiration_date >= (now | strftime("%Y-%m-%d")))
+            ]
+            | sort_by(.created)
+            | last
+            | if . == null then
+                "hermes_openrouter_free_stealth_model{model=\"\",name=\"none\"} 0"
+              else
+                .id as $id | .name as $name
+                | "hermes_openrouter_free_stealth_model{model=\"\($id | @json | .[1:-1])\",name=\"\($name | @json | .[1:-1])\"} 1"
+              end
+          ' <<<"$models") || stealth=
+        elif [ -f "$out" ]; then
+          stealth=$(${pkgs.gnugrep}/bin/grep '^hermes_openrouter_free_stealth_model{' "$out" | ${pkgs.coreutils}/bin/head -1 || true)
+        fi
         {
           printf '%s\n' \
             '# HELP hermes_openrouter_credits_remaining OpenRouter balance (total_credits - total_usage)' \
@@ -415,6 +437,12 @@ lib.mkMerge [
               '# HELP hermes_openrouter_usage_daily OpenRouter API key spend today (UTC)' \
               '# TYPE hermes_openrouter_usage_daily gauge'
             ${pkgs.jq}/bin/jq -rn --argjson d "$daily" '"hermes_openrouter_usage_daily \($d)"'
+          fi
+          if [ -n "$stealth" ]; then
+            printf '%s\n' \
+              '# HELP hermes_openrouter_free_stealth_model Latest free OpenRouter stealth model (1 = one current, 0 = none)' \
+              '# TYPE hermes_openrouter_free_stealth_model gauge' \
+              "$stealth"
           fi
         } > "$tmp"
         ${pkgs.coreutils}/bin/mv "$tmp" "$out"
