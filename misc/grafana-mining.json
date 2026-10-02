@@ -26,7 +26,7 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 0,
         "y": 1
@@ -39,27 +39,40 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
           "decimals": 3,
-          "unit": "suffix:TH/s"
+          "unit": "suffix:TH/s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "red"
+              },
+              {
+                "value": 0.05,
+                "color": "green"
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(bitaxe_hashrate_1h) / 1000",
+          "expr": "sum(bitaxe_hashrate_10m) / 1000",
           "instant": true
         }
       ],
-      "description": "1h average across every Bitaxe on the LAN."
+      "description": "10m average across every Bitaxe on the LAN."
     },
     {
       "id": 2,
@@ -70,7 +83,7 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 6,
         "y": 1
@@ -83,27 +96,44 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
           "decimals": 2,
-          "unit": "suffix:J/TH"
+          "unit": "suffix:J/TH",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 18,
+                "color": "orange"
+              },
+              {
+                "value": 25,
+                "color": "red"
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(bitaxe_power) / (sum(bitaxe_hashrate_1h) > 0) * 1000",
+          "expr": "sum(bitaxe_power) / (sum(bitaxe_hashrate_10m) > 0) * 1000",
           "instant": true
         }
       ],
-      "description": "Fleet watts per TH/s, from the 1h hashrate."
+      "description": "Fleet watts per TH/s, from the 10m hashrate."
     },
     {
       "id": 3,
@@ -114,7 +144,7 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 12,
         "y": 1
@@ -127,17 +157,26 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "none",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
           "noValue": "no data",
           "unit": "short",
-          "decimals": 1
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -159,7 +198,7 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 18,
         "y": 1
@@ -172,10 +211,10 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "textMode": "value",
-        "colorMode": "value",
         "justifyMode": "auto",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
@@ -225,10 +264,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "options": {
         "reduceOptions": {
@@ -238,10 +277,10 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "targets": [
@@ -252,7 +291,17 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {}
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
+        }
       }
     },
     {
@@ -264,10 +313,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 6,
-        "y": 6
+        "y": 9
       },
       "options": {
         "reduceOptions": {
@@ -277,10 +326,10 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "targets": [
@@ -291,7 +340,17 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {}
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
+        }
       }
     },
     {
@@ -303,10 +362,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 12,
-        "y": 6
+        "y": 9
       },
       "options": {
         "reduceOptions": {
@@ -316,17 +375,26 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
           "noValue": "no data",
-          "unit": "short"
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -348,10 +416,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 8,
         "x": 0,
-        "y": 11
+        "y": 17
       },
       "options": {
         "reduceOptions": {
@@ -361,10 +429,10 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "area",
-        "colorMode": "value",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
@@ -409,10 +477,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 18,
-        "y": 6
+        "y": 9
       },
       "options": {
         "reduceOptions": {
@@ -422,10 +490,10 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "area",
-        "colorMode": "value",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
@@ -435,16 +503,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 16
-              },
-              {
-                "color": "red",
-                "value": 20
+                "value": 0,
+                "color": "blue"
               }
             ]
           },
@@ -458,7 +518,8 @@
           "expr": "sum(bitaxe_power)",
           "instant": true
         }
-      ]
+      ],
+      "description": "Total watts across every Bitaxe. Not a per-device limit."
     },
     {
       "id": 32,
@@ -469,10 +530,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 8,
         "x": 8,
-        "y": 11
+        "y": 17
       },
       "options": {
         "reduceOptions": {
@@ -482,10 +543,10 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "area",
-        "colorMode": "value",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
@@ -524,16 +585,16 @@
     {
       "id": 33,
       "type": "stat",
-      "title": "Fan / cores",
+      "title": "Fan",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 8,
         "x": 16,
-        "y": 11
+        "y": 17
       },
       "options": {
         "reduceOptions": {
@@ -543,10 +604,10 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "area",
-        "colorMode": "value",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
@@ -556,381 +617,77 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 4500
+                "color": "blue",
+                "value": 0
               }
             ]
           },
           "unit": "rpm"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "B"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_fan_rpm",
-          "instant": true,
-          "legendFormat": "{{instance}}"
-        },
-        {
-          "refId": "B",
-          "expr": "bitaxe_small_core_count",
-          "instant": true,
-          "legendFormat": "{{instance}} cores"
+          "expr": "max(bitaxe_fan_rpm)",
+          "instant": true
         }
-      ]
+      ],
+      "description": "Fastest fan in the fleet."
     },
     {
       "id": 10,
       "type": "timeseries",
-      "title": "Hashrate",
+      "title": "Hashrate vs Expected",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
-        "y": 16
+        "y": 25
       },
       "options": {
         "legend": {
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
+          "showLegend": true
         }
       },
       "fieldConfig": {
         "defaults": {
           "min": 0,
           "custom": {
-            "fillOpacity": 12,
+            "fillOpacity": 10,
             "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
+            "lineWidth": 1,
+            "showPoints": "never"
           },
-          "unit": "suffix:GH/s"
+          "unit": "suffix:GH/s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_hashrate_1h",
-          "legendFormat": "{{instance}} 1h"
-        },
-        {
-          "refId": "B",
           "expr": "bitaxe_hashrate_10m",
-          "legendFormat": "{{instance}} 10m"
-        },
-        {
-          "refId": "C",
-          "expr": "bitaxe_hashrate_1m",
-          "legendFormat": "{{instance}} 1m"
+          "legendFormat": "{{instance}}"
         },
         {
           "refId": "D",
           "expr": "bitaxe_expected_hashrate",
           "legendFormat": "{{instance}} expected"
-        }
-      ]
-    },
-    {
-      "id": 11,
-      "type": "timeseries",
-      "title": "Power and efficiency",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 12,
-            "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
-          },
-          "unit": "watt"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "B"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "suffix:J/TH"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          }
-        ]
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "bitaxe_power",
-          "legendFormat": "{{instance}}"
-        },
-        {
-          "refId": "B",
-          "expr": "bitaxe_power / (bitaxe_hashrate_1h > 0) * 1000",
-          "legendFormat": "{{instance}} J/TH"
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "type": "timeseries",
-      "title": "Temperature",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 24
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 12,
-            "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 65
-              },
-              {
-                "color": "red",
-                "value": 75
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "bitaxe_temp",
-          "legendFormat": "{{instance}} ASIC"
-        },
-        {
-          "refId": "B",
-          "expr": "bitaxe_vr_temp",
-          "legendFormat": "{{instance}} VRM"
-        }
-      ]
-    },
-    {
-      "id": 13,
-      "type": "timeseries",
-      "title": "Shares and error rate",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 24
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "min": 0,
-          "custom": {
-            "fillOpacity": 12,
-            "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
-          },
-          "unit": "cpm"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "C"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          }
-        ]
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "rate(bitaxe_shares_accepted[10m]) * 60",
-          "legendFormat": "{{instance}} accepted"
-        },
-        {
-          "refId": "B",
-          "expr": "rate(bitaxe_shares_rejected[10m]) * 60",
-          "legendFormat": "{{instance}} rejected"
-        },
-        {
-          "refId": "C",
-          "expr": "bitaxe_error_percentage",
-          "legendFormat": "{{instance}} error"
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "type": "timeseries",
-      "title": "Best diff",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 24
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 12,
-            "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "bitaxe_best_diff",
-          "legendFormat": "{{instance}} best"
-        },
-        {
-          "refId": "B",
-          "expr": "bitaxe_best_session_diff",
-          "legendFormat": "{{instance}} session"
         }
       ]
     },
@@ -942,7 +699,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 33
       },
       "collapsed": false,
       "panels": []
@@ -950,16 +707,16 @@
     {
       "id": 50,
       "type": "stat",
-      "title": "15m hashrate",
+      "title": "Hashrate",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
         "x": 0,
-        "y": 33
+        "y": 34
       },
       "options": {
         "reduceOptions": {
@@ -969,17 +726,26 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
           "decimals": 0,
           "noValue": "0",
-          "unit": "suffix:H/s"
+          "unit": "suffix:H/s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -990,102 +756,12 @@
           "instant": true
         }
       ],
-      "description": "Sum of 15-minute hashrates from miners that are running."
-    },
-    {
-      "id": 51,
-      "type": "stat",
-      "title": "1m hashrate",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 6,
-        "y": 33
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "value",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "noValue": "0",
-          "unit": "suffix:H/s"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(xmrig_hashrate_1m)",
-          "instant": true
-        }
-      ],
-      "description": "Sum of 1-minute hashrates from miners that are running."
-    },
-    {
-      "id": 52,
-      "type": "stat",
-      "title": "10s hashrate",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 12,
-        "y": 33
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "value",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "noValue": "0",
-          "unit": "suffix:H/s"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(xmrig_hashrate_10s)",
-          "instant": true
-        }
-      ],
-      "description": "Sum of 10-second hashrates from miners that are running."
+      "description": "15-minute average, summed across miners that are running."
     },
     {
       "id": 40,
       "type": "timeseries",
-      "title": "Hashrate by miner",
+      "title": "Hashrate by Miner",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
@@ -1094,32 +770,34 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 38
+        "y": 42
       },
       "options": {
         "legend": {
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
+          "showLegend": true
         }
       },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 12,
+            "fillOpacity": 10,
             "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
+            "lineWidth": 1,
+            "showPoints": "never"
           },
           "min": 0,
-          "unit": "suffix:H/s"
+          "unit": "suffix:H/s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -1127,59 +805,6 @@
         {
           "refId": "A",
           "expr": "xmrig_hashrate_15m",
-          "legendFormat": "{{instance}} 15m"
-        },
-        {
-          "refId": "B",
-          "expr": "xmrig_hashrate_10s",
-          "legendFormat": "{{instance}} 10s"
-        }
-      ]
-    },
-    {
-      "id": 49,
-      "type": "timeseries",
-      "title": "Best diff by miner",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 38
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 12,
-            "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "xmrig_best_diff",
           "legendFormat": "{{instance}}"
         }
       ]
@@ -1187,16 +812,16 @@
     {
       "id": 43,
       "type": "stat",
-      "title": "Share of network",
+      "title": "Share of Network",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 0,
-        "y": 46
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 34
       },
       "options": {
         "reduceOptions": {
@@ -1206,41 +831,51 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "area",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
-          "decimals": 8,
+          "decimals": 0,
           "noValue": "no data",
-          "unit": "percentunit"
+          "unit": "suffix:ppb",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "moneroocean_wallet_hashrate / moneroocean_network_hashrate",
+          "expr": "moneroocean_wallet_hashrate / moneroocean_network_hashrate * 1e9",
           "instant": true
         }
-      ]
+      ],
+      "description": "Parts per billion of the Monero network hashrate."
     },
     {
       "id": 44,
       "type": "stat",
-      "title": "Valid shares",
+      "title": "Valid Shares",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 8,
-        "y": 46
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 34
       },
       "options": {
         "reduceOptions": {
@@ -1250,15 +885,24 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
-          "noValue": "no data"
+          "noValue": "no data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -1279,10 +923,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
-        "w": 12,
+        "h": 8,
+        "w": 8,
         "x": 0,
-        "y": 51
+        "y": 50
       },
       "options": {
         "reduceOptions": {
@@ -1292,17 +936,26 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
           "decimals": 8,
           "noValue": "no data",
-          "unit": "none"
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -1323,10 +976,10 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
-        "w": 12,
-        "x": 12,
-        "y": 51
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 50
       },
       "options": {
         "reduceOptions": {
@@ -1336,17 +989,26 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
           "decimals": 8,
           "noValue": "0",
-          "unit": "none"
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -1361,16 +1023,16 @@
     {
       "id": 47,
       "type": "stat",
-      "title": "Invalid shares",
+      "title": "Invalid Shares",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 8,
         "x": 16,
-        "y": 46
+        "y": 50
       },
       "options": {
         "reduceOptions": {
@@ -1380,15 +1042,24 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "none",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
-          "noValue": "no data"
+          "noValue": "no data",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -1403,16 +1074,16 @@
     {
       "id": 48,
       "type": "stat",
-      "title": "Miners online",
+      "title": "Miners Online",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 8,
         "w": 6,
-        "x": 18,
-        "y": 33
+        "x": 6,
+        "y": 34
       },
       "options": {
         "reduceOptions": {
@@ -1422,15 +1093,24 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "background",
         "graphMode": "none",
-        "colorMode": "value",
         "justifyMode": "auto",
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
-          "noValue": "0"
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "blue"
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -1439,125 +1119,6 @@
           "refId": "A",
           "expr": "count(up{job=\"xmrig\"} == 1)",
           "instant": true
-        }
-      ]
-    },
-    {
-      "id": 24,
-      "type": "timeseries",
-      "title": "Shares per minute",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 56
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 12,
-            "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
-          },
-          "min": 0,
-          "unit": "cpm"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "rate(xmrig_shares_good[10m]) * 60",
-          "legendFormat": "{{instance}}"
-        }
-      ]
-    },
-    {
-      "id": 26,
-      "type": "timeseries",
-      "title": "Difficulty and ping",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 56
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 12,
-            "drawStyle": "line",
-            "lineWidth": 2,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": false
-          },
-          "unit": "ms"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID",
-              "options": "B"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "none"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          }
-        ]
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "xmrig_pool_ping",
-          "legendFormat": "ping {{instance}}"
-        },
-        {
-          "refId": "B",
-          "expr": "xmrig_diff_current",
-          "legendFormat": "diff {{instance}}"
         }
       ]
     },
@@ -1571,9 +1132,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 64
+        "w": 12,
+        "x": 12,
+        "y": 42
       },
       "options": {
         "showHeader": true,
@@ -1584,7 +1145,10 @@
         "defaults": {
           "custom": {
             "align": "auto",
-            "filterable": true
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto"
+            }
           }
         },
         "overrides": []
