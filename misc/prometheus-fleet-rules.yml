@@ -112,12 +112,15 @@ groups:
         annotations:
           summary: "Bitaxe ASIC on {{ $labels.instance }} is {{ $value }}°C (normal ~50°C at 525 MHz)"
       - alert: BitaxeMinerDown
-        # Unlike the xmrig miners (started by hand, so down is normal) the
-        # Bitaxe is left plugged in 24/7. If its API stops answering it is
-        # either off the network or wedged, and it mines nothing either way.
         expr: up{job="bitaxe"} == 0
         for: 5m
         labels:
           severity: warning
         annotations:
           summary: "Bitaxe at {{ $labels.instance }} has been unreachable for 5 minutes; it is left plugged in 24/7 and should always be mining"
+      - alert: BitaxeBlockFound
+        expr: bitaxe_block_found > 0 and delta(bitaxe_block_found[15m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Bitaxe at {{ $labels.instance }} found a block ({{ $value }} total)"

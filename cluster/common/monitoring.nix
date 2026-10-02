@@ -320,6 +320,11 @@ lib.mkMerge [
               repeat_interval = "8760h";
             }
             {
+              matchers = [ ''alertname="BitaxeBlockFound"'' ];
+              receiver = "hermes-whatsapp-once";
+              repeat_interval = "8760h";
+            }
+            {
               matchers = [ ''severity="critical"'' ];
               repeat_interval = "1h";
             }
