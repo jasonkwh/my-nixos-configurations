@@ -33,7 +33,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(bitaxe_hashrate_10m) / 1000",
+                        "expr": "sum(bitaxe_hashrate_1m) / 1000",
                         "instant": false,
                         "range": true,
                         "format": "time_series"
@@ -87,7 +87,7 @@
               }
             }
           },
-          "description": "10m average across every Bitaxe on the LAN."
+          "description": "1m average across every Bitaxe on the LAN."
         }
       },
       "panel-2": {
@@ -114,7 +114,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(bitaxe_power) / (sum(bitaxe_hashrate_10m) > 0) * 1000",
+                        "expr": "sum(bitaxe_power) / (sum(bitaxe_hashrate_1m) > 0) * 1000",
                         "instant": false,
                         "range": true,
                         "format": "time_series"
@@ -172,7 +172,7 @@
               }
             }
           },
-          "description": "Fleet watts per TH/s, from the 10m hashrate."
+          "description": "Fleet watts per TH/s, from the 1m hashrate."
         }
       },
       "panel-3": {
@@ -916,7 +916,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "bitaxe_hashrate_10m",
+                        "expr": "bitaxe_hashrate_1m",
                         "instant": false,
                         "range": true,
                         "legendFormat": "{{instance}}",
