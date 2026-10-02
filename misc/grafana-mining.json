@@ -705,7 +705,7 @@
                   "fields": "",
                   "values": false
                 },
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "area",
                 "justifyMode": "auto",
                 "textMode": "auto",
@@ -865,7 +865,7 @@
                   "fields": "",
                   "values": false
                 },
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "auto",
                 "textMode": "auto",
