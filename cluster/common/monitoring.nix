@@ -509,11 +509,6 @@ lib.mkMerge [
           "$base/miner/${monero.wallet}/stats") || exit 0
         diff=$($jq -r '.["18081"].difficulty // empty' <<<"$net") || exit 0
         [ -n "$diff" ] || exit 0
-        wh=$($jq -r '.hash // empty' <<<"$w")
-        vs=$($jq -r '.validShares // empty' <<<"$w")
-        inv=$($jq -r '.invalidShares // empty' <<<"$w")
-        paid=$($jq -r '.amtPaid // 0' <<<"$w")
-        due=$($jq -r '.amtDue // 0' <<<"$w")
         {
           printf '%s\n' \
             '# HELP moneroocean_network_hashrate XMR network hashrate derived from difficulty/120 (H/s)' \
@@ -535,11 +530,15 @@ lib.mkMerge [
             '# TYPE moneroocean_wallet_unpaid_xmr gauge' \
             '# HELP moneroocean_wallet_paid_xmr Total already paid out (XMR, atomic units/1e12)' \
             '# TYPE moneroocean_wallet_paid_xmr gauge'
-          printf 'moneroocean_wallet_hashrate %s\n' "${wh:-0}"
-          printf 'moneroocean_wallet_valid_shares %s\n' "${vs:-0}"
-          printf 'moneroocean_wallet_invalid_shares %s\n' "${inv:-0}"
-          $jq -rn --argjson p "${paid:-0}" --argjson d "${due:-0}" \
-            '"moneroocean_wallet_paid_xmr \(($p/1e12))" , "moneroocean_wallet_unpaid_xmr \(($d/1e12))"'
+          # Wallet numbers stay inside jq. Bash defaults in this Nix string are
+          # rewritten before the script runs, so jq would see the literal text.
+          $jq -r '
+            "moneroocean_wallet_hashrate \(.hash // 0)",
+            "moneroocean_wallet_valid_shares \(.validShares // 0)",
+            "moneroocean_wallet_invalid_shares \(.invalidShares // 0)",
+            "moneroocean_wallet_paid_xmr \((.amtPaid // 0) / 1e12)",
+            "moneroocean_wallet_unpaid_xmr \((.amtDue // 0) / 1e12)"
+          ' <<<"$w"
         } > "$tmp"
         ${pkgs.coreutils}/bin/mv "$tmp" "$out"
       '';
