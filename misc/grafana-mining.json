@@ -7,7 +7,7 @@
     {
       "id": 100,
       "type": "row",
-      "title": "BTC — Bitaxe 601 (BM1370, solo)",
+      "title": "BTC (solo)",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -20,13 +20,13 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "Hashrate (TH/s, 1h avg)",
+      "title": "Hashrate",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 6,
         "x": 0,
         "y": 1
@@ -35,8 +35,15 @@
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
-        }
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -48,21 +55,22 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_hashrate_1h / 1000",
+          "expr": "sum(bitaxe_hashrate_1h) / 1000",
           "instant": true
         }
-      ]
+      ],
+      "description": "1h average across every Bitaxe on the LAN."
     },
     {
       "id": 2,
       "type": "stat",
-      "title": "Efficiency (J/TH)",
+      "title": "Efficiency",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 6,
         "x": 6,
         "y": 1
@@ -71,8 +79,15 @@
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
-        }
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -84,21 +99,22 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_power / (bitaxe_hashrate_1h > 0) * 1000",
+          "expr": "sum(bitaxe_power) / (sum(bitaxe_hashrate_1h) > 0) * 1000",
           "instant": true
         }
-      ]
+      ],
+      "description": "Fleet watts per TH/s, from the 1h hashrate."
     },
     {
       "id": 3,
       "type": "stat",
-      "title": "Best Diff (best lottery ticket)",
+      "title": "Best diff",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 6,
         "x": 12,
         "y": 1
@@ -107,33 +123,43 @@
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
-        }
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
-          "noValue": "no data"
+          "noValue": "no data",
+          "unit": "short",
+          "decimals": 1
         },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_best_diff",
+          "expr": "max(bitaxe_best_diff)",
           "instant": true
         }
-      ]
+      ],
+      "description": "Best share difficulty any Bitaxe has found."
     },
     {
       "id": 4,
       "type": "stat",
-      "title": "Blocks Won",
+      "title": "Blocks found",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 6,
         "x": 18,
         "y": 1
@@ -142,10 +168,15 @@
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
         "graphMode": "none",
-        "textMode": "value"
+        "textMode": "value",
+        "colorMode": "value",
+        "justifyMode": "auto",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -180,7 +211,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_block_found",
+          "expr": "sum(bitaxe_block_found)",
           "instant": true
         }
       ]
@@ -188,121 +219,153 @@
     {
       "id": 6,
       "type": "stat",
-      "title": "Valid Shares",
+      "title": "Accepted shares",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
-        "w": 8,
+        "h": 5,
+        "w": 6,
         "x": 0,
-        "y": 7
+        "y": 6
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "none",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_shares_accepted",
+          "expr": "sum(bitaxe_shares_accepted)",
           "instant": true
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {}
+      }
     },
     {
       "id": 7,
       "type": "stat",
-      "title": "Rejected Shares",
+      "title": "Rejected shares",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
-        "y": 7
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 6
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "none"
+        "graphMode": "none",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_shares_rejected",
+          "expr": "sum(bitaxe_shares_rejected)",
           "instant": true
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {}
+      }
     },
     {
       "id": 8,
       "type": "stat",
-      "title": "Distance to a Block",
+      "title": "Distance to a block",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 16,
-        "y": 7
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 6
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "none"
+        "graphMode": "none",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
-          "decimals": 0,
-          "noValue": "no data"
+          "decimals": 1,
+          "noValue": "no data",
+          "unit": "short"
         },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_network_difficulty / (bitaxe_best_diff > 0)",
+          "expr": "max(bitaxe_network_difficulty) / (max(bitaxe_best_diff) > 0)",
           "instant": true
         }
-      ]
+      ],
+      "description": "Network difficulty divided by the best share. Smaller is closer."
     },
     {
       "id": 30,
       "type": "stat",
-      "title": "ASIC Temp",
+      "title": "ASIC temp",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
-        "w": 6,
+        "h": 5,
+        "w": 8,
         "x": 0,
-        "y": 13
+        "y": 11
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "area",
+        "colorMode": "value",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -331,10 +394,11 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_temp",
+          "expr": "max(bitaxe_temp)",
           "instant": true
         }
-      ]
+      ],
+      "description": "Hottest ASIC in the fleet."
     },
     {
       "id": 31,
@@ -345,18 +409,24 @@
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 6,
-        "x": 6,
-        "y": 13
+        "x": 18,
+        "y": 6
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "area",
+        "colorMode": "value",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -385,7 +455,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_power",
+          "expr": "sum(bitaxe_power)",
           "instant": true
         }
       ]
@@ -393,24 +463,30 @@
     {
       "id": 32,
       "type": "stat",
-      "title": "WiFi RSSI",
+      "title": "WiFi",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 12,
-        "y": 13
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 11
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "area",
+        "colorMode": "value",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -439,32 +515,39 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "bitaxe_wifi_rssi",
+          "expr": "min(bitaxe_wifi_rssi)",
           "instant": true
         }
-      ]
+      ],
+      "description": "Weakest WiFi signal in the fleet."
     },
     {
       "id": 33,
       "type": "stat",
-      "title": "Fan RPM / Cores",
+      "title": "Fan / cores",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 18,
-        "y": 13
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 11
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "area",
+        "colorMode": "value",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -487,8 +570,8 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
-              "options": "Cores"
+              "id": "byFrameRefID",
+              "options": "B"
             },
             "properties": [
               {
@@ -507,125 +590,53 @@
         {
           "refId": "A",
           "expr": "bitaxe_fan_rpm",
-          "instant": true
+          "instant": true,
+          "legendFormat": "{{instance}}"
         },
         {
           "refId": "B",
           "expr": "bitaxe_small_core_count",
           "instant": true,
-          "legendFormat": "Cores"
-        }
-      ]
-    },
-    {
-      "id": 9,
-      "type": "table",
-      "title": "Stratum Pool",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 19
-      },
-      "options": {
-        "showHeader": true
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Role"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "type": "value",
-                    "options": {
-                      "active": {
-                        "text": "ACTIVE",
-                        "color": "green"
-                      },
-                      "idle": {
-                        "text": "idle",
-                        "color": "text"
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "label_replace(bitaxe_pool_info and on() (bitaxe_using_fallback == 0), \"role\", \"active\", \"url\", \".+\") or label_replace(bitaxe_fallback_pool_info and on() (bitaxe_using_fallback == 1), \"role\", \"active\", \"url\", \".+\") or label_replace(bitaxe_pool_info and on() (bitaxe_using_fallback == 1), \"role\", \"idle\", \"url\", \".+\") or label_replace(bitaxe_fallback_pool_info and on() (bitaxe_using_fallback == 0), \"role\", \"idle\", \"url\", \".+\")",
-          "instant": true,
-          "format": "table"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "job": true,
-              "instance": true,
-              "Value": true
-            },
-            "renameByName": {
-              "role": "Role",
-              "url": "Pool URL",
-              "port": "Port",
-              "protocol": "Protocol"
-            },
-            "indexByName": {
-              "Role": 0,
-              "Pool URL": 1,
-              "Port": 2,
-              "Protocol": 3
-            }
-          }
+          "legendFormat": "{{instance}} cores"
         }
       ]
     },
     {
       "id": 10,
       "type": "timeseries",
-      "title": "Hashrate vs Expected (1m / 10m / 1h)",
+      "title": "Hashrate",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 26
+        "y": 16
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "min": 0,
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "unit": "suffix:GH/s"
         },
@@ -635,52 +646,68 @@
         {
           "refId": "A",
           "expr": "bitaxe_hashrate_1h",
-          "legendFormat": "1h"
+          "legendFormat": "{{instance}} 1h"
         },
         {
           "refId": "B",
           "expr": "bitaxe_hashrate_10m",
-          "legendFormat": "10m"
+          "legendFormat": "{{instance}} 10m"
         },
         {
           "refId": "C",
           "expr": "bitaxe_hashrate_1m",
-          "legendFormat": "1m"
+          "legendFormat": "{{instance}} 1m"
         },
         {
           "refId": "D",
           "expr": "bitaxe_expected_hashrate",
-          "legendFormat": "expected"
+          "legendFormat": "{{instance}} expected"
         }
       ]
     },
     {
       "id": 11,
       "type": "timeseries",
-      "title": "Power and Efficiency",
+      "title": "Power and efficiency",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 16
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "unit": "watt"
         },
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
-              "options": "efficiency"
+              "id": "byFrameRefID",
+              "options": "B"
             },
             "properties": [
               {
@@ -699,34 +726,50 @@
         {
           "refId": "A",
           "expr": "bitaxe_power",
-          "legendFormat": "power"
+          "legendFormat": "{{instance}}"
         },
         {
           "refId": "B",
           "expr": "bitaxe_power / (bitaxe_hashrate_1h > 0) * 1000",
-          "legendFormat": "efficiency"
+          "legendFormat": "{{instance}} J/TH"
         }
       ]
     },
     {
       "id": 12,
       "type": "timeseries",
-      "title": "Temperature (ASIC / VRM)",
+      "title": "Temperature",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 8,
         "x": 0,
-        "y": 35
+        "y": 24
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "thresholds": {
             "mode": "absolute",
@@ -753,43 +796,59 @@
         {
           "refId": "A",
           "expr": "bitaxe_temp",
-          "legendFormat": "ASIC"
+          "legendFormat": "{{instance}} ASIC"
         },
         {
           "refId": "B",
           "expr": "bitaxe_vr_temp",
-          "legendFormat": "VRM"
+          "legendFormat": "{{instance}} VRM"
         }
       ]
     },
     {
       "id": 13,
       "type": "timeseries",
-      "title": "Shares Accepted / Rejected and Error Rate",
+      "title": "Shares and error rate",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 8,
         "x": 8,
-        "y": 35
+        "y": 24
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "min": 0,
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "unit": "cpm"
         },
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
-              "options": "error %"
+              "id": "byFrameRefID",
+              "options": "C"
             },
             "properties": [
               {
@@ -808,41 +867,57 @@
         {
           "refId": "A",
           "expr": "rate(bitaxe_shares_accepted[10m]) * 60",
-          "legendFormat": "accepted/min"
+          "legendFormat": "{{instance}} accepted"
         },
         {
           "refId": "B",
           "expr": "rate(bitaxe_shares_rejected[10m]) * 60",
-          "legendFormat": "rejected/min"
+          "legendFormat": "{{instance}} rejected"
         },
         {
           "refId": "C",
           "expr": "bitaxe_error_percentage",
-          "legendFormat": "error %"
+          "legendFormat": "{{instance}} error"
         }
       ]
     },
     {
       "id": 14,
       "type": "timeseries",
-      "title": "Best Diff Records",
+      "title": "Best diff",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 8,
         "x": 16,
-        "y": 35
+        "y": 24
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
-          "unit": "none"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -850,12 +925,12 @@
         {
           "refId": "A",
           "expr": "bitaxe_best_diff",
-          "legendFormat": "best ever"
+          "legendFormat": "{{instance}} best"
         },
         {
           "refId": "B",
           "expr": "bitaxe_best_session_diff",
-          "legendFormat": "best this session"
+          "legendFormat": "{{instance}} session"
         }
       ]
     },
@@ -867,30 +942,181 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 32
       },
       "collapsed": false,
       "panels": []
     },
     {
-      "id": 40,
-      "type": "timeseries",
-      "title": "Hashrate by Miner",
+      "id": 50,
+      "type": "stat",
+      "title": "15m hashrate",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 33
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "noValue": "0",
+          "unit": "suffix:H/s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(xmrig_hashrate_15m)",
+          "instant": true
+        }
+      ],
+      "description": "Sum of 15-minute hashrates from miners that are running."
+    },
+    {
+      "id": 51,
+      "type": "stat",
+      "title": "1m hashrate",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${ds_prometheus}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 33
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "noValue": "0",
+          "unit": "suffix:H/s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(xmrig_hashrate_1m)",
+          "instant": true
+        }
+      ],
+      "description": "Sum of 1-minute hashrates from miners that are running."
+    },
+    {
+      "id": 52,
+      "type": "stat",
+      "title": "10s hashrate",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${ds_prometheus}"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 33
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "noValue": "0",
+          "unit": "suffix:H/s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(xmrig_hashrate_10s)",
+          "instant": true
+        }
+      ],
+      "description": "Sum of 10-second hashrates from miners that are running."
+    },
+    {
+      "id": 40,
+      "type": "timeseries",
+      "title": "Hashrate by miner",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${ds_prometheus}"
+      },
+      "gridPos": {
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 45
+        "y": 38
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "min": 0,
           "unit": "suffix:H/s"
@@ -900,12 +1126,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "xmrig_hashrate_15m{instance=~\"$miner\"}",
+          "expr": "xmrig_hashrate_15m",
           "legendFormat": "{{instance}} 15m"
         },
         {
           "refId": "B",
-          "expr": "xmrig_hashrate_10s{instance=~\"$miner\"}",
+          "expr": "xmrig_hashrate_10s",
           "legendFormat": "{{instance}} 10s"
         }
       ]
@@ -913,22 +1139,38 @@
     {
       "id": 49,
       "type": "timeseries",
-      "title": "Best Diff by Miner",
+      "title": "Best diff by miner",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 45
+        "y": 38
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "unit": "none"
         },
@@ -937,7 +1179,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "xmrig_best_diff{instance=~\"$miner\"}",
+          "expr": "xmrig_best_diff",
           "legendFormat": "{{instance}}"
         }
       ]
@@ -945,24 +1187,30 @@
     {
       "id": 43,
       "type": "stat",
-      "title": "My Share of Network",
+      "title": "Share of network",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 5,
+        "w": 8,
         "x": 0,
-        "y": 54
+        "y": 46
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "none"
+        "graphMode": "area",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -983,24 +1231,30 @@
     {
       "id": 44,
       "type": "stat",
-      "title": "Valid Shares (MoneroOcean)",
+      "title": "Valid shares",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 54
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 46
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "none",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -1019,24 +1273,30 @@
     {
       "id": 45,
       "type": "stat",
-      "title": "XMR Balance (unpaid)",
+      "title": "Unpaid",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
+        "h": 5,
+        "w": 12,
         "x": 0,
-        "y": 62
+        "y": 51
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "none",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -1057,24 +1317,30 @@
     {
       "id": 46,
       "type": "stat",
-      "title": "XMR Paid Out",
+      "title": "Paid",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 62
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 51
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "area"
+        "graphMode": "none",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -1095,24 +1361,30 @@
     {
       "id": 47,
       "type": "stat",
-      "title": "Invalid Shares",
+      "title": "Invalid shares",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 62
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 46
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "none"
+        "graphMode": "none",
+        "colorMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -1131,24 +1403,30 @@
     {
       "id": 48,
       "type": "stat",
-      "title": "Miners Online",
+      "title": "Miners online",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 8,
+        "h": 5,
         "w": 6,
         "x": 18,
-        "y": 62
+        "y": 33
       },
       "options": {
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "fields": "",
+          "values": false
         },
-        "graphMode": "none"
+        "graphMode": "none",
+        "colorMode": "value",
+        "justifyMode": "auto",
+        "textMode": "value",
+        "wideLayout": true
       },
       "fieldConfig": {
         "defaults": {
@@ -1167,22 +1445,38 @@
     {
       "id": 24,
       "type": "timeseries",
-      "title": "Shares Accepted per Minute by Miner",
+      "title": "Shares per minute",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 70
+        "y": 56
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "min": 0,
           "unit": "cpm"
@@ -1192,7 +1486,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(xmrig_shares_good{instance=~\"$miner\"}[10m]) * 60",
+          "expr": "rate(xmrig_shares_good[10m]) * 60",
           "legendFormat": "{{instance}}"
         }
       ]
@@ -1200,22 +1494,38 @@
     {
       "id": 26,
       "type": "timeseries",
-      "title": "Share Difficulty and Pool Ping",
+      "title": "Difficulty and ping",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 70
+        "y": 56
       },
-      "options": {},
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 12,
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false
           },
           "unit": "ms"
         },
@@ -1241,12 +1551,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "xmrig_pool_ping{instance=~\"$miner\"}",
+          "expr": "xmrig_pool_ping",
           "legendFormat": "ping {{instance}}"
         },
         {
           "refId": "B",
-          "expr": "xmrig_diff_current{instance=~\"$miner\"}",
+          "expr": "xmrig_diff_current",
           "legendFormat": "diff {{instance}}"
         }
       ]
@@ -1254,46 +1564,53 @@
     {
       "id": 27,
       "type": "table",
-      "title": "XMR Miners ($miner)",
+      "title": "Miners",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 24,
         "x": 0,
-        "y": 79
+        "y": 64
       },
       "options": {
-        "showHeader": true
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": []
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "xmrig_hashrate_15m{instance=~\"$miner\"}",
+          "expr": "xmrig_hashrate_15m",
           "instant": true,
           "format": "table"
         },
         {
           "refId": "B",
-          "expr": "xmrig_shares_good{instance=~\"$miner\"}",
+          "expr": "xmrig_shares_good",
           "instant": true,
           "format": "table"
         },
         {
           "refId": "C",
-          "expr": "xmrig_best_diff{instance=~\"$miner\"}",
+          "expr": "xmrig_best_diff",
           "instant": true,
           "format": "table"
         },
         {
           "refId": "D",
-          "expr": "xmrig_pool_ping{instance=~\"$miner\"}",
+          "expr": "xmrig_pool_ping",
           "instant": true,
           "format": "table"
         }
@@ -1345,31 +1662,6 @@
           "value": "Prometheus"
         },
         "hide": 2
-      },
-      {
-        "name": "miner",
-        "type": "query",
-        "label": "Miner",
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${ds_prometheus}"
-        },
-        "definition": "label_values(xmrig_uptime, instance)",
-        "query": {
-          "query": "label_values(xmrig_uptime, instance)",
-          "refId": "miner-variable"
-        },
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "includeAll": true,
-        "multi": true,
-        "allValue": ".*",
-        "refresh": 2,
-        "sort": 1,
-        "hide": 0,
-        "options": []
       }
     ]
   },
@@ -1381,5 +1673,6 @@
   "title": "ShengOS Mining",
   "uid": "shengos-mining",
   "version": 11,
-  "refresh": "1m"
+  "refresh": "1m",
+  "graphTooltip": 1
 }

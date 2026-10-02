@@ -12,9 +12,6 @@ let
       (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs))
   }.${tailscaleDomain}";
 
-  # The pool-identity timer targets a single miner; take the first entry.
-  bitcoinMinerIp = (builtins.head bitcoin.miners).ip_address;
-
   # Hosts with xmrig.nix applied, i.e. everything not headless. xmrig is run
   # manually, so most of these will be down at any given time.
   xmrigHosts = builtins.attrNames
@@ -422,64 +419,6 @@ lib.mkMerge [
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnCalendar = "*:0/10";
-        AccuracySec = "10s";
-        Persistent = true;
-      };
-    };
-  }
-
-  # Bitaxe pool identity as textfile: json_exporter can only emit numeric
-  # gauges, so the pool URL/protocol ride along as labels on an info metric.
-  # Top-level stratumURL/Port/Protocol are the configured primary pool.
-  # isUsingFallbackStratum (0/1) is what says the fallback is the one mining.
-  {
-    systemd.services.prometheus-bitaxe-pool = lib.mkIf isFleetHub {
-      description = "Write Bitaxe active pool identity into node_exporter textfile";
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        User = "hermes";
-      };
-      script = ''
-        out=/var/lib/prometheus-textfile/bitaxe-pool.prom
-        tmp=$out.tmp
-        json=$(${pkgs.curl}/bin/curl -sf --max-time 10 \
-          "http://${bitcoinMinerIp}/api/system/info") || exit 0
-        esc() { ${pkgs.gnugrep}/bin/sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'; }
-        url=$(${pkgs.jq}/bin/jq -r '.stratumURL' <<<"$json") || exit 0
-        port=$(${pkgs.jq}/bin/jq -r '.stratumPort' <<<"$json") || exit 0
-        proto=$(${pkgs.jq}/bin/jq -r '.stratumProtocol' <<<"$json") || exit 0
-        furl=$(${pkgs.jq}/bin/jq -r '.fallbackStratumURL // "-"' <<<"$json") || exit 0
-        fport=$(${pkgs.jq}/bin/jq -r '.fallbackStratumPort // 0' <<<"$json") || exit 0
-        fproto=$(${pkgs.jq}/bin/jq -r '.fallbackStratumProtocol // "-"' <<<"$json") || exit 0
-        [ -n "$url" ] && [ "$url" != "null" ] || exit 0
-        # Bool or 0/1. A non-numeric value here makes node_exporter drop the whole file.
-        fb=$(${pkgs.jq}/bin/jq -r 'if (.isUsingFallbackStratum == true or .isUsingFallbackStratum == 1) then 1 else 0 end' <<<"$json") || exit 0
-        {
-          printf '%s\n' \
-            '# HELP bitaxe_pool_info Active stratum pool as reported by the Bitaxe (value always 1)' \
-            '# TYPE bitaxe_pool_info gauge'
-          printf 'bitaxe_pool_info{url="%s",port="%s",protocol="%s"} 1\n' \
-            "$(esc <<<"$url")" "$(esc <<<"$port")" "$(esc <<<"$proto")"
-          printf '%s\n' \
-            '# HELP bitaxe_fallback_pool_info Configured fallback stratum pool (value always 1)' \
-            '# TYPE bitaxe_fallback_pool_info gauge'
-          printf 'bitaxe_fallback_pool_info{url="%s",port="%s",protocol="%s"} 1\n' \
-            "$(esc <<<"$furl")" "$(esc <<<"$fport")" "$(esc <<<"$fproto")"
-          printf '%s\n' \
-            '# HELP bitaxe_using_fallback 1 when the Bitaxe is actually mining via the fallback pool' \
-            '# TYPE bitaxe_using_fallback gauge'
-          printf 'bitaxe_using_fallback %s\n' "$fb"
-        } > "$tmp"
-        ${pkgs.coreutils}/bin/mv "$tmp" "$out"
-      '';
-    };
-    systemd.timers.prometheus-bitaxe-pool = lib.mkIf isFleetHub {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnCalendar = "*:0/1";
         AccuracySec = "10s";
         Persistent = true;
       };
