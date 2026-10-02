@@ -1044,7 +1044,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(xmrig_hashrate_15m)",
+                        "expr": "sum(xmrig_hashrate_1m)",
                         "instant": false,
                         "range": true,
                         "format": "time_series"
@@ -1095,7 +1095,7 @@
               }
             }
           },
-          "description": "15-minute average, summed across miners that are running."
+          "description": "1-minute average, summed across miners that are running."
         }
       },
       "panel-40": {
@@ -1122,7 +1122,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "xmrig_hashrate_15m",
+                        "expr": "xmrig_hashrate_1m",
                         "instant": false,
                         "range": true,
                         "legendFormat": "{{instance}}",
@@ -1581,7 +1581,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(up{job=\"xmrig\"} == 1)",
+                        "expr": "count(up{job=\"xmrig\"} == 1) or vector(0)",
                         "instant": true,
                         "range": false
                       }
@@ -1620,6 +1620,10 @@
                     "steps": [
                       {
                         "value": 0,
+                        "color": "yellow"
+                      },
+                      {
+                        "value": 1,
                         "color": "green"
                       }
                     ]
@@ -1655,7 +1659,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "xmrig_hashrate_15m",
+                        "expr": "xmrig_hashrate_1m",
                         "instant": true,
                         "range": false,
                         "format": "table"
@@ -1756,7 +1760,7 @@
                         "job": true
                       },
                       "renameByName": {
-                        "Value #A": "Hashrate 15m (H/s)",
+                        "Value #A": "Hashrate 1m (H/s)",
                         "Value #B": "Shares good",
                         "Value #C": "Best diff",
                         "Value #D": "Ping (ms)"
