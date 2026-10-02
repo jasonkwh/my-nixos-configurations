@@ -1,1242 +1,2212 @@
 {
-  "annotations": {
-    "list": []
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "shengos-mining"
   },
-  "editable": false,
-  "panels": [
-    {
-      "id": 100,
-      "type": "row",
-      "title": "BTC (solo)",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "collapsed": false,
-      "panels": []
-    },
-    {
-      "id": 1,
-      "type": "stat",
-      "title": "Hashrate",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 0,
-        "y": 1
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 3,
-          "unit": "suffix:TH/s",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "red"
-              },
-              {
-                "value": 0.05,
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(bitaxe_hashrate_10m) / 1000",
-          "instant": true
-        }
-      ],
-      "description": "10m average across every Bitaxe on the LAN."
-    },
-    {
-      "id": 2,
-      "type": "stat",
-      "title": "Efficiency",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 1
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 2,
-          "unit": "suffix:J/TH",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "green"
-              },
-              {
-                "value": 18,
-                "color": "orange"
-              },
-              {
-                "value": 25,
-                "color": "red"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(bitaxe_power) / (sum(bitaxe_hashrate_10m) > 0) * 1000",
-          "instant": true
-        }
-      ],
-      "description": "Fleet watts per TH/s, from the 10m hashrate."
-    },
-    {
-      "id": 3,
-      "type": "stat",
-      "title": "Best diff",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 1
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "noValue": "no data",
-          "unit": "short",
-          "decimals": 1,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(bitaxe_best_diff)",
-          "instant": true
-        }
-      ],
-      "description": "Best share difficulty any Bitaxe has found."
-    },
-    {
-      "id": 4,
-      "type": "stat",
-      "title": "Blocks found",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 1
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "type": "value",
+  "spec": {
+    "annotations": [],
+    "cursorSync": "Crosshair",
+    "editable": false,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Hashrate",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(bitaxe_hashrate_10m) / 1000",
+                        "instant": false,
+                        "range": true,
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
               "options": {
-                "0": {
-                  "text": "none yet",
-                  "color": "text"
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "background_solid",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 3,
+                  "unit": "suffix:TH/s",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "red"
+                      },
+                      {
+                        "value": 0.05,
+                        "color": "green"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "10m average across every Bitaxe on the LAN."
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Efficiency",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(bitaxe_power) / (sum(bitaxe_hashrate_10m) > 0) * 1000",
+                        "instant": false,
+                        "range": true,
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "background_solid",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 2,
+                  "unit": "suffix:J/TH",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 18,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 25,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Fleet watts per TH/s, from the 10m hashrate."
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Best diff",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max(bitaxe_best_diff)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "no data",
+                  "unit": "short",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Best share difficulty any Bitaxe has found."
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Blocks found",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(bitaxe_block_found)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "none yet",
+                          "color": "text"
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "text",
+                        "value": null
+                      },
+                      {
+                        "color": "green",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  "noValue": "no data"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Accepted shares",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(bitaxe_shares_accepted)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
                 }
               }
             }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Rejected shares",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(bitaxe_shares_rejected)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
           },
-          "noValue": "no data"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(bitaxe_block_found)",
-          "instant": true
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "type": "stat",
-      "title": "Accepted shares",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 0,
-        "y": 9
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(bitaxe_shares_accepted)",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                }
               }
-            ]
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Distance to a block",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max(bitaxe_network_difficulty) / (max(bitaxe_best_diff) > 0)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "noValue": "no data",
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Network difficulty divided by the best share. Smaller is closer."
+        }
+      },
+      "panel-30": {
+        "kind": "Panel",
+        "spec": {
+          "id": 30,
+          "title": "ASIC temp",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max(bitaxe_temp)",
+                        "instant": false,
+                        "range": true,
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "background_solid",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": null
+                      },
+                      {
+                        "color": "yellow",
+                        "value": 65
+                      },
+                      {
+                        "color": "red",
+                        "value": 75
+                      }
+                    ]
+                  },
+                  "unit": "celsius"
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Hottest ASIC in the fleet."
+        }
+      },
+      "panel-31": {
+        "kind": "Panel",
+        "spec": {
+          "id": 31,
+          "title": "Power",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(bitaxe_power)",
+                        "instant": false,
+                        "range": true,
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 2,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  },
+                  "unit": "watt"
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Total watts across every Bitaxe. Not a per-device limit."
+        }
+      },
+      "panel-32": {
+        "kind": "Panel",
+        "spec": {
+          "id": 32,
+          "title": "WiFi",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "min(bitaxe_wifi_rssi)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "red",
+                        "value": null
+                      },
+                      {
+                        "color": "yellow",
+                        "value": -75
+                      },
+                      {
+                        "color": "green",
+                        "value": -65
+                      }
+                    ]
+                  },
+                  "unit": "suffix:dBm"
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Weakest WiFi signal in the fleet."
+        }
+      },
+      "panel-33": {
+        "kind": "Panel",
+        "spec": {
+          "id": 33,
+          "title": "Fan",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max(bitaxe_fan_rpm)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "rpm"
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Fastest fan in the fleet."
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Hashrate vs Expected",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "bitaxe_hashrate_10m",
+                        "instant": false,
+                        "range": true,
+                        "legendFormat": "{{instance}}",
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "D",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "bitaxe_expected_hashrate",
+                        "instant": false,
+                        "range": true,
+                        "legendFormat": "{{instance}} expected",
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "min": 0,
+                  "custom": {
+                    "fillOpacity": 12,
+                    "drawStyle": "line",
+                    "lineWidth": 2,
+                    "showPoints": "never",
+                    "gradientMode": "opacity",
+                    "lineInterpolation": "linear"
+                  },
+                  "unit": "suffix:GH/s",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "D"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.lineStyle",
+                        "value": {
+                          "fill": "dash",
+                          "dash": [
+                            8,
+                            6
+                          ]
+                        }
+                      },
+                      {
+                        "id": "custom.fillOpacity",
+                        "value": 0
+                      },
+                      {
+                        "id": "custom.gradientMode",
+                        "value": "none"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-50": {
+        "kind": "Panel",
+        "spec": {
+          "id": 50,
+          "title": "Hashrate",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(xmrig_hashrate_15m)",
+                        "instant": false,
+                        "range": true,
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "noValue": "0",
+                  "unit": "suffix:H/s",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "15-minute average, summed across miners that are running."
+        }
+      },
+      "panel-40": {
+        "kind": "Panel",
+        "spec": {
+          "id": 40,
+          "title": "Hashrate by Miner",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "xmrig_hashrate_15m",
+                        "instant": false,
+                        "range": true,
+                        "legendFormat": "{{instance}}",
+                        "format": "time_series"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "fillOpacity": 12,
+                    "drawStyle": "line",
+                    "lineWidth": 2,
+                    "showPoints": "never",
+                    "gradientMode": "opacity",
+                    "lineInterpolation": "linear"
+                  },
+                  "min": 0,
+                  "unit": "suffix:H/s",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-43": {
+        "kind": "Panel",
+        "spec": {
+          "id": 43,
+          "title": "Share of Network",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "moneroocean_wallet_hashrate / moneroocean_network_hashrate * 1e9",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "noValue": "no data",
+                  "unit": "suffix:ppb",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          },
+          "description": "Parts per billion of the Monero network hashrate."
+        }
+      },
+      "panel-44": {
+        "kind": "Panel",
+        "spec": {
+          "id": 44,
+          "title": "Valid Shares",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "moneroocean_wallet_valid_shares",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "no data",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-45": {
+        "kind": "Panel",
+        "spec": {
+          "id": 45,
+          "title": "Unpaid",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "moneroocean_wallet_unpaid_xmr",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 8,
+                  "noValue": "no data",
+                  "unit": "none",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-46": {
+        "kind": "Panel",
+        "spec": {
+          "id": 46,
+          "title": "Paid",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "moneroocean_wallet_paid_xmr",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 8,
+                  "noValue": "0",
+                  "unit": "none",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-47": {
+        "kind": "Panel",
+        "spec": {
+          "id": 47,
+          "title": "Invalid Shares",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "moneroocean_wallet_invalid_shares",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "no data",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-48": {
+        "kind": "Panel",
+        "spec": {
+          "id": 48,
+          "title": "Miners Online",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(up{job=\"xmrig\"} == 1)",
+                        "instant": true,
+                        "range": false
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "0",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-27": {
+        "kind": "Panel",
+        "spec": {
+          "id": 27,
+          "title": "Miners",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "xmrig_hashrate_15m",
+                        "instant": true,
+                        "range": false,
+                        "format": "table"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "B",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "xmrig_shares_good",
+                        "instant": true,
+                        "range": false,
+                        "format": "table"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "C",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "xmrig_best_diff",
+                        "instant": true,
+                        "range": false,
+                        "format": "table"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "D",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "${ds_prometheus}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "xmrig_pool_ping",
+                        "instant": true,
+                        "range": false,
+                        "format": "table"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "instance",
+                      "mode": "outer"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "Time": true,
+                        "Time 1": true,
+                        "Time 2": true,
+                        "Time 3": true,
+                        "Time 4": true,
+                        "__name__": true,
+                        "job": true
+                      },
+                      "renameByName": {
+                        "Value #A": "Hashrate 15m (H/s)",
+                        "Value #B": "Shares good",
+                        "Value #C": "Best diff",
+                        "Value #D": "Ping (ms)"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "sortBy": []
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "filterable": true,
+                    "cellOptions": {
+                      "type": "auto"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
           }
         }
       }
     },
-    {
-      "id": 7,
-      "type": "stat",
-      "title": "Rejected shares",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 9
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(bitaxe_shares_rejected)",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
+    "layout": {
+      "kind": "RowsLayout",
+      "spec": {
+        "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "BTC",
+              "collapse": false,
+              "hideHeader": true,
+              "conditionalRendering": {
+                "kind": "ConditionalRenderingGroup",
+                "spec": {
+                  "visibility": "show",
+                  "condition": "and",
+                  "items": [
+                    {
+                      "kind": "ConditionalRenderingVariable",
+                      "spec": {
+                        "variable": "crypto",
+                        "operator": "equals",
+                        "value": "BTC"
+                      }
+                    }
+                  ]
+                }
+              },
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 8,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 8,
+                        "y": 0,
+                        "width": 4,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-2"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-3"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 4,
+                        "y": 8,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 8,
+                        "y": 8,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-6"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 8,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-7"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 8,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 4,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-30"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 4,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-31"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 0,
+                        "width": 4,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-32"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 8,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-33"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 12,
+                        "width": 24,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-10"
+                        }
+                      }
+                    }
+                  ]
+                }
               }
-            ]
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "XMR",
+              "collapse": false,
+              "hideHeader": true,
+              "conditionalRendering": {
+                "kind": "ConditionalRenderingGroup",
+                "spec": {
+                  "visibility": "show",
+                  "condition": "and",
+                  "items": [
+                    {
+                      "kind": "ConditionalRenderingVariable",
+                      "spec": {
+                        "variable": "crypto",
+                        "operator": "equals",
+                        "value": "XMR"
+                      }
+                    }
+                  ]
+                }
+              },
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 8,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-50"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 12,
+                        "width": 12,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-40"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 0,
+                        "width": 4,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-43"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 8,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-44"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 8,
+                        "y": 0,
+                        "width": 8,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-45"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 8,
+                        "y": 8,
+                        "width": 8,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-46"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 8,
+                        "width": 8,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-47"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 4,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-48"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 12,
+                        "width": 12,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-27"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
-        }
+        ]
       }
     },
-    {
-      "id": 8,
-      "type": "stat",
-      "title": "Distance to a block",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 9
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 1,
-          "noValue": "no data",
-          "unit": "short",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(bitaxe_network_difficulty) / (max(bitaxe_best_diff) > 0)",
-          "instant": true
-        }
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [
+      "shengos",
+      "mining"
+    ],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-6h",
+      "to": "now",
+      "autoRefresh": "1m",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
       ],
-      "description": "Network difficulty divided by the best share. Smaller is closer."
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
     },
-    {
-      "id": 30,
-      "type": "stat",
-      "title": "ASIC temp",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 17
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 1,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 65
-              },
-              {
-                "color": "red",
-                "value": 75
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(bitaxe_temp)",
-          "instant": true
-        }
-      ],
-      "description": "Hottest ASIC in the fleet."
-    },
-    {
-      "id": 31,
-      "type": "stat",
-      "title": "Power",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 9
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 2,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          },
-          "unit": "watt"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(bitaxe_power)",
-          "instant": true
-        }
-      ],
-      "description": "Total watts across every Bitaxe. Not a per-device limit."
-    },
-    {
-      "id": 32,
-      "type": "stat",
-      "title": "WiFi",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 17
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": -75
-              },
-              {
-                "color": "green",
-                "value": -65
-              }
-            ]
-          },
-          "unit": "suffix:dBm"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "min(bitaxe_wifi_rssi)",
-          "instant": true
-        }
-      ],
-      "description": "Weakest WiFi signal in the fleet."
-    },
-    {
-      "id": 33,
-      "type": "stat",
-      "title": "Fan",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 17
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "rpm"
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(bitaxe_fan_rpm)",
-          "instant": true
-        }
-      ],
-      "description": "Fastest fan in the fleet."
-    },
-    {
-      "id": 10,
-      "type": "timeseries",
-      "title": "Hashrate vs Expected",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 25
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "min": 0,
-          "custom": {
-            "fillOpacity": 10,
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "showPoints": "never"
-          },
-          "unit": "suffix:GH/s",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "bitaxe_hashrate_10m",
-          "legendFormat": "{{instance}}"
-        },
-        {
-          "refId": "D",
-          "expr": "bitaxe_expected_hashrate",
-          "legendFormat": "{{instance}} expected"
-        }
-      ]
-    },
-    {
-      "id": 200,
-      "type": "row",
-      "title": "XMR — MoneroOcean miners (xmrig)",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 33
-      },
-      "collapsed": false,
-      "panels": []
-    },
-    {
-      "id": 50,
-      "type": "stat",
-      "title": "Hashrate",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 0,
-        "y": 34
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "noValue": "0",
-          "unit": "suffix:H/s",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(xmrig_hashrate_15m)",
-          "instant": true
-        }
-      ],
-      "description": "15-minute average, summed across miners that are running."
-    },
-    {
-      "id": 40,
-      "type": "timeseries",
-      "title": "Hashrate by Miner",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 42
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        }
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 10,
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "showPoints": "never"
-          },
-          "min": 0,
-          "unit": "suffix:H/s",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "xmrig_hashrate_15m",
-          "legendFormat": "{{instance}}"
-        }
-      ]
-    },
-    {
-      "id": 43,
-      "type": "stat",
-      "title": "Share of Network",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 34
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "noValue": "no data",
-          "unit": "suffix:ppb",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "moneroocean_wallet_hashrate / moneroocean_network_hashrate * 1e9",
-          "instant": true
-        }
-      ],
-      "description": "Parts per billion of the Monero network hashrate."
-    },
-    {
-      "id": 44,
-      "type": "stat",
-      "title": "Valid Shares",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 34
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "noValue": "no data",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "moneroocean_wallet_valid_shares",
-          "instant": true
-        }
-      ]
-    },
-    {
-      "id": 45,
-      "type": "stat",
-      "title": "Unpaid",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 50
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 8,
-          "noValue": "no data",
-          "unit": "none",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "moneroocean_wallet_unpaid_xmr",
-          "instant": true
-        }
-      ]
-    },
-    {
-      "id": 46,
-      "type": "stat",
-      "title": "Paid",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 50
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 8,
-          "noValue": "0",
-          "unit": "none",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "moneroocean_wallet_paid_xmr",
-          "instant": true
-        }
-      ]
-    },
-    {
-      "id": 47,
-      "type": "stat",
-      "title": "Invalid Shares",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 50
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "noValue": "no data",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "moneroocean_wallet_invalid_shares",
-          "instant": true
-        }
-      ]
-    },
-    {
-      "id": 48,
-      "type": "stat",
-      "title": "Miners Online",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 34
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "fieldConfig": {
-        "defaults": {
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "value": 0,
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "count(up{job=\"xmrig\"} == 1)",
-          "instant": true
-        }
-      ]
-    },
-    {
-      "id": 27,
-      "type": "table",
-      "title": "Miners",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${ds_prometheus}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 42
-      },
-      "options": {
-        "showHeader": true,
-        "cellHeight": "sm",
-        "sortBy": []
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "filterable": true,
-            "cellOptions": {
-              "type": "auto"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "xmrig_hashrate_15m",
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "refId": "B",
-          "expr": "xmrig_shares_good",
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "refId": "C",
-          "expr": "xmrig_best_diff",
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "refId": "D",
-          "expr": "xmrig_pool_ping",
-          "instant": true,
-          "format": "table"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "joinByField",
-          "options": {
-            "byField": "instance",
-            "mode": "outer"
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "Time 1": true,
-              "Time 2": true,
-              "Time 3": true,
-              "Time 4": true,
-              "__name__": true,
-              "job": true
-            },
-            "renameByName": {
-              "Value #A": "Hashrate 15m (H/s)",
-              "Value #B": "Shares good",
-              "Value #C": "Best diff",
-              "Value #D": "Ping (ms)"
-            }
-          }
-        }
-      ]
-    }
-  ],
-  "schemaVersion": 39,
-  "tags": [
-    "shengos",
-    "mining"
-  ],
-  "templating": {
-    "list": [
+    "title": "ShengOS Mining",
+    "variables": [
       {
-        "name": "ds_prometheus",
-        "type": "datasource",
-        "query": "prometheus",
-        "current": {
-          "text": "Prometheus",
-          "value": "Prometheus"
-        },
-        "hide": 2
+        "kind": "DatasourceVariable",
+        "spec": {
+          "name": "ds_prometheus",
+          "pluginId": "prometheus",
+          "refresh": "onDashboardLoad",
+          "regex": "",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          },
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "label": "Datasource",
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "allowCustomValue": false
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "crypto",
+          "query": "BTC,XMR",
+          "current": {
+            "text": "BTC",
+            "value": "BTC",
+            "selected": true
+          },
+          "options": [
+            {
+              "text": "BTC",
+              "value": "BTC",
+              "selected": true
+            },
+            {
+              "text": "XMR",
+              "value": "XMR",
+              "selected": false
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "label": "Cryptocurrency",
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": false,
+          "valuesFormat": "csv"
+        }
       }
     ]
-  },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
-  },
-  "timezone": "browser",
-  "title": "ShengOS Mining",
-  "uid": "shengos-mining",
-  "version": 11,
-  "refresh": "1m",
-  "graphTooltip": 1
+  }
 }
