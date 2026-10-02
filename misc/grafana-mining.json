@@ -314,8 +314,8 @@
                       "type": "value",
                       "options": {
                         "0": {
-                          "text": "none yet",
-                          "color": "text"
+                          "text": "None",
+                          "color": "yellow"
                         }
                       }
                     }
@@ -324,12 +324,8 @@
                     "mode": "absolute",
                     "steps": [
                       {
-                        "color": "text",
-                        "value": null
-                      },
-                      {
                         "color": "green",
-                        "value": 1
+                        "value": 0
                       }
                     ]
                   },
@@ -476,6 +472,10 @@
                       {
                         "value": 0,
                         "color": "green"
+                      },
+                      {
+                        "value": 1,
+                        "color": "red"
                       }
                     ]
                   }
@@ -551,6 +551,14 @@
                       {
                         "value": 0,
                         "color": "green"
+                      },
+                      {
+                        "value": 1000,
+                        "color": "yellow"
+                      },
+                      {
+                        "value": 100000,
+                        "color": "red"
                       }
                     ]
                   }
@@ -559,7 +567,7 @@
               }
             }
           },
-          "description": "Network difficulty divided by the best share. Smaller is closer."
+          "description": "Network difficulty divided by the best share. Smaller is closer. Green under 1,000, yellow under 100,000, red beyond that."
         }
       },
       "panel-30": {
@@ -1535,6 +1543,10 @@
                       {
                         "value": 0,
                         "color": "green"
+                      },
+                      {
+                        "value": 1,
+                        "color": "red"
                       }
                     ]
                   }
