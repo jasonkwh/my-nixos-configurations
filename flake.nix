@@ -51,7 +51,7 @@
       bitcoin.miners = [
         {
           name = "Bitaxe Gamma 601";
-          ip_address = "192.168.4.53";
+          ip_address = "192.168.4.20";
         }
       ];
 
