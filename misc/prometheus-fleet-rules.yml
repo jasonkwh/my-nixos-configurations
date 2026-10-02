@@ -104,3 +104,20 @@ groups:
           severity: warning
         annotations:
           summary: "node_exporter rejected the textfile on {{ $labels.instance }}"
+      - alert: BitaxeOverheat
+        expr: bitaxe_temp > 75
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Bitaxe ASIC on {{ $labels.instance }} is {{ $value }}°C (normal ~50°C at 525 MHz)"
+      - alert: BitaxeMinerDown
+        # Unlike the xmrig miners (started by hand, so down is normal) the
+        # Bitaxe is left plugged in 24/7. If its API stops answering it is
+        # either off the network or wedged, and it mines nothing either way.
+        expr: up{job="bitaxe"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Bitaxe at {{ $labels.instance }} has been unreachable for 5 minutes; it is left plugged in 24/7 and should always be mining"

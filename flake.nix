@@ -44,6 +44,17 @@
         pool.tls = true;
       };
 
+      # SHA-256 miners — consumed by cluster/common/monitoring.nix. These run
+      # AxeOS, not NixOS, and have no Tailscale, so they are reached by LAN IP
+      # (the only non-MagicDNS target in the fleet). Set the address as a static
+      # IP on the device; on DHCP the scrape target drifts and the job goes down.
+      bitcoin.miners = [
+        {
+          name = "Bitaxe Gamma 601";
+          ip_address = "192.168.4.53";
+        }
+      ];
+
       # Hermes model config — single source of truth; passed into
       # cluster/common/configuration.nix via specialArgs.
       hermesModel = {
@@ -143,6 +154,7 @@
           inherit hermesModel;
           inherit hostDefs;
           inherit monero;
+          inherit bitcoin;
           # Syncthing device ids for all fleet members that sync, from hostDefs.
           # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).
           syncthingDevices = builtins.mapAttrs

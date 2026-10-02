@@ -3,7 +3,7 @@
 #
 # Module body is lib.mkMerge, NOT attrset `//`: `//` shallow-replaces the
 # `exporters` subtree and silently drops node exporter on the hub.
-{ config, pkgs, lib, hostDefs, isFleetHub, tailscaleDomain, homeDirectory, ... }:
+{ config, pkgs, lib, hostDefs, isFleetHub, tailscaleDomain, homeDirectory, monero, bitcoin, ... }:
 
 let
   # Hub MagicDNS name from hostDefs (Grafana :3001, Alloy -> Loki :3100).
@@ -11,6 +11,14 @@ let
     builtins.head (builtins.attrNames
       (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs))
   }.${tailscaleDomain}";
+
+  # The pool-identity timer targets a single miner; take the first entry.
+  bitcoinMinerIp = (builtins.head bitcoin.miners).ip_address;
+
+  # Hosts with xmrig.nix applied, i.e. everything not headless. xmrig is run
+  # manually, so most of these will be down at any given time.
+  xmrigHosts = builtins.attrNames
+    (lib.filterAttrs (_: d: !(d.isHeadless or false)) hostDefs);
 in
 lib.mkMerge [
   {
@@ -70,6 +78,68 @@ lib.mkMerge [
               }
             ];
           };
+
+          # Bitaxe (AxeOS /api/system/info). Targets come from bitcoin.miners.
+          modules.bitaxe = {
+            metrics = [
+              { name = "bitaxe_hashrate_1m"; path = "{.hashRate_1m}"; help = "Hashrate 1m avg (GH/s)"; }
+              { name = "bitaxe_hashrate_10m"; path = "{.hashRate_10m}"; help = "Hashrate 10m avg (GH/s)"; }
+              { name = "bitaxe_hashrate_1h"; path = "{.hashRate_1h}"; help = "Hashrate 1h avg (GH/s)"; }
+              { name = "bitaxe_expected_hashrate"; path = "{.expectedHashrate}"; help = "Expected hashrate (GH/s)"; }
+              { name = "bitaxe_temp"; path = "{.temp}"; help = "ASIC die temperature (C)"; }
+              { name = "bitaxe_vr_temp"; path = "{.vrTemp}"; help = "VRM temperature (C)"; }
+              { name = "bitaxe_power"; path = "{.power}"; help = "Power draw (W)"; }
+              { name = "bitaxe_wifi_rssi"; path = "{.wifiRSSI}"; help = "WiFi RSSI (dBm)"; }
+              { name = "bitaxe_error_percentage"; path = "{.errorPercentage}"; help = "Stale/reject error percentage"; }
+              { name = "bitaxe_shares_accepted"; path = "{.sharesAccepted}"; help = "Shares accepted"; }
+              { name = "bitaxe_shares_rejected"; path = "{.sharesRejected}"; help = "Shares rejected"; }
+              { name = "bitaxe_best_diff"; path = "{.bestDiff}"; help = "Best share difficulty (lottery ticket)"; }
+              { name = "bitaxe_best_session_diff"; path = "{.bestSessionDiff}"; help = "Best share difficulty this session"; }
+              { name = "bitaxe_network_difficulty"; path = "{.networkDifficulty}"; help = "BTC network difficulty"; }
+              { name = "bitaxe_pool_difficulty"; path = "{.poolDifficulty}"; help = "Pool share difficulty"; }
+              { name = "bitaxe_uptime_seconds"; path = "{.uptimeSeconds}"; help = "Stratum session uptime (s)"; }
+              { name = "bitaxe_total_uptime_seconds"; path = "{.totalUptimeSeconds}"; help = "Device lifetime uptime (s)"; }
+              { name = "bitaxe_fan_rpm"; path = "{.fanrpm}"; help = "Fan speed (RPM)"; }
+              { name = "bitaxe_frequency"; path = "{.actualFrequency}"; help = "Actual clock (MHz)"; }
+              { name = "bitaxe_core_voltage"; path = "{.coreVoltageActual}"; help = "Actual ASIC core voltage (mV)"; }
+              { name = "bitaxe_cpu_usage"; path = "{.cpuUsage}"; help = "ESP32 CPU usage (%)"; }
+              { name = "bitaxe_free_heap"; path = "{.freeHeap}"; help = "Free heap (bytes)"; }
+              { name = "bitaxe_block_height"; path = "{.blockHeight}"; help = "Current block height"; }
+              { name = "bitaxe_response_time"; path = "{.responseTime}"; help = "Stratum response time (ms)"; }
+              { name = "bitaxe_mining_paused"; path = "{.miningPaused}"; help = "1 = mining paused"; }
+              { name = "bitaxe_overheat_mode"; path = "{.overheat_mode}"; help = "1 = thermal throttle active"; }
+              { name = "bitaxe_small_core_count"; path = "{.smallCoreCount}"; help = "BM1370 small cores online"; }
+              { name = "bitaxe_block_found"; path = "{.blockFound}"; help = "Blocks found"; }
+              # NOT coinbaseValueUserSatoshis: it is the value of the coinbase
+              # if a block were solved right now (3.125 BTC + fees), not winnings.
+              # It drifts with every block while blockFound stays 0.
+            ];
+          };
+
+          # XMRig /2/summary on the MoneroOcean miners (tailnet :16000).
+          # hashrate.total windows are 10s, 60s, and 15m.
+          # Array indexes are k8s-jsonpath, which json_exporter understands.
+          modules.xmrig = {
+            metrics = [
+              { name = "xmrig_hashrate_10s"; path = "{.hashrate.total[0]}"; help = "Hashrate 10s avg (H/s)"; }
+              { name = "xmrig_hashrate_1m"; path = "{.hashrate.total[1]}"; help = "Hashrate 1m avg (H/s)"; }
+              { name = "xmrig_hashrate_15m"; path = "{.hashrate.total[2]}"; help = "Hashrate 15m avg (H/s)"; }
+              { name = "xmrig_hashrate_highest"; path = "{.hashrate.highest}"; help = "Highest hashrate seen (H/s)"; }
+              { name = "xmrig_shares_good"; path = "{.results.shares_good}"; help = "Good shares"; }
+              { name = "xmrig_shares_total"; path = "{.results.shares_total}"; help = "Total shares"; }
+              { name = "xmrig_diff_current"; path = "{.results.diff_current}"; help = "Current share difficulty"; }
+              { name = "xmrig_best_diff"; path = "{.results.best[0]}"; help = "Best share difficulty (lottery ticket)"; }
+              { name = "xmrig_avg_time"; path = "{.results.avg_time}"; help = "Avg seconds per share"; }
+              { name = "xmrig_pool_ping"; path = "{.connection.ping}"; help = "Pool ping (ms)"; }
+              { name = "xmrig_pool_failures"; path = "{.connection.failures}"; help = "Pool connection failures"; }
+              { name = "xmrig_connection_uptime"; path = "{.connection.uptime}"; help = "Pool connection uptime (s)"; }
+              { name = "xmrig_hashes_total"; path = "{.results.hashes_total}"; help = "Hashes since start"; }
+              { name = "xmrig_uptime"; path = "{.uptime}"; help = "XMRig process uptime (s)"; }
+              { name = "xmrig_paused"; path = "{.paused}"; help = "1 = miner paused"; }
+              { name = "xmrig_load_average"; path = "{.resources.load_average[0]}"; help = "1m load average"; }
+              { name = "xmrig_threads"; path = "{.cpu.threads}"; help = "Configured CPU threads"; }
+            ];
+          };
         }
       );
     };
@@ -126,6 +196,54 @@ lib.mkMerge [
             { target_label = "__address__"; replacement = "127.0.0.1:7979"; }
           ];
         }
+        {
+          # Bitaxe via AxeOS REST. Addresses come from bitcoin.miners in
+          # flake.nix; they are static IPs set on the devices themselves.
+          # instance is the device IP.
+          job_name = "bitaxe";
+          metrics_path = "/probe";
+          params = { module = [ "bitaxe" ]; };
+          static_configs = [
+            {
+              targets = map (m: "http://${m.ip_address}/api/system/info")
+                bitcoin.miners;
+            }
+          ];
+          relabel_configs = [
+            { source_labels = [ "__address__" ]; target_label = "__param_target"; }
+            {
+              source_labels = [ "__param_target" ];
+              regex = "http://([^/]+)/.*";
+              target_label = "instance";
+            }
+            { target_label = "__address__"; replacement = "127.0.0.1:7979"; }
+          ];
+        }
+        {
+          # MoneroOcean miners exposing xmrig's HTTP API on the tailnet.
+          # Targets follow hostDefs, not a hand-written list: xmrig.nix applies
+          # to every non-headless host, so a new machine joins automatically.
+          # xmrig runs manually, so down targets are expected, not a fault.
+          # instance is the hostDefs hostname.
+          job_name = "xmrig";
+          metrics_path = "/probe";
+          params = { module = [ "xmrig" ]; };
+          static_configs = [
+            {
+              targets = map (host: "http://${host}.${tailscaleDomain}:16000/2/summary")
+                xmrigHosts;
+            }
+          ];
+          relabel_configs = [
+            { source_labels = [ "__address__" ]; target_label = "__param_target"; }
+            {
+              source_labels = [ "__param_target" ];
+              regex = "http://([^.]+)\\..*";
+              target_label = "instance";
+            }
+            { target_label = "__address__"; replacement = "127.0.0.1:7979"; }
+          ];
+        }
       ];
     };
 
@@ -170,6 +288,7 @@ lib.mkMerge [
               (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../misc/grafana-syncthing.json))
               (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../misc/grafana-agent-status.json))
               (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../misc/grafana-logs.json))
+              (pkgs.writeTextDir "grafana-mining.json" (builtins.readFile ../../misc/grafana-mining.json))
             ];
           };
           options.foldersFromFilesStructure = false;
@@ -304,6 +423,132 @@ lib.mkMerge [
       timerConfig = {
         OnCalendar = "*:0/10";
         AccuracySec = "10s";
+        Persistent = true;
+      };
+    };
+  }
+
+  # Bitaxe pool identity as textfile: json_exporter can only emit numeric
+  # gauges, so the pool URL/protocol ride along as labels on an info metric.
+  # Top-level stratumURL/Port/Protocol are the configured primary pool.
+  # isUsingFallbackStratum (0/1) is what says the fallback is the one mining.
+  {
+    systemd.services.prometheus-bitaxe-pool = lib.mkIf isFleetHub {
+      description = "Write Bitaxe active pool identity into node_exporter textfile";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "hermes";
+      };
+      script = ''
+        out=/var/lib/prometheus-textfile/bitaxe-pool.prom
+        tmp=$out.tmp
+        json=$(${pkgs.curl}/bin/curl -sf --max-time 10 \
+          "http://${bitcoinMinerIp}/api/system/info") || exit 0
+        esc() { ${pkgs.gnugrep}/bin/sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'; }
+        url=$(${pkgs.jq}/bin/jq -r '.stratumURL' <<<"$json") || exit 0
+        port=$(${pkgs.jq}/bin/jq -r '.stratumPort' <<<"$json") || exit 0
+        proto=$(${pkgs.jq}/bin/jq -r '.stratumProtocol' <<<"$json") || exit 0
+        furl=$(${pkgs.jq}/bin/jq -r '.fallbackStratumURL // "-"' <<<"$json") || exit 0
+        fport=$(${pkgs.jq}/bin/jq -r '.fallbackStratumPort // 0' <<<"$json") || exit 0
+        fproto=$(${pkgs.jq}/bin/jq -r '.fallbackStratumProtocol // "-"' <<<"$json") || exit 0
+        [ -n "$url" ] && [ "$url" != "null" ] || exit 0
+        # Bool or 0/1. A non-numeric value here makes node_exporter drop the whole file.
+        fb=$(${pkgs.jq}/bin/jq -r 'if (.isUsingFallbackStratum == true or .isUsingFallbackStratum == 1) then 1 else 0 end' <<<"$json") || exit 0
+        {
+          printf '%s\n' \
+            '# HELP bitaxe_pool_info Active stratum pool as reported by the Bitaxe (value always 1)' \
+            '# TYPE bitaxe_pool_info gauge'
+          printf 'bitaxe_pool_info{url="%s",port="%s",protocol="%s"} 1\n' \
+            "$(esc <<<"$url")" "$(esc <<<"$port")" "$(esc <<<"$proto")"
+          printf '%s\n' \
+            '# HELP bitaxe_fallback_pool_info Configured fallback stratum pool (value always 1)' \
+            '# TYPE bitaxe_fallback_pool_info gauge'
+          printf 'bitaxe_fallback_pool_info{url="%s",port="%s",protocol="%s"} 1\n' \
+            "$(esc <<<"$furl")" "$(esc <<<"$fport")" "$(esc <<<"$fproto")"
+          printf '%s\n' \
+            '# HELP bitaxe_using_fallback 1 when the Bitaxe is actually mining via the fallback pool' \
+            '# TYPE bitaxe_using_fallback gauge'
+          printf 'bitaxe_using_fallback %s\n' "$fb"
+        } > "$tmp"
+        ${pkgs.coreutils}/bin/mv "$tmp" "$out"
+      '';
+    };
+    systemd.timers.prometheus-bitaxe-pool = lib.mkIf isFleetHub {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "*:0/1";
+        AccuracySec = "10s";
+        Persistent = true;
+      };
+    };
+  }
+
+  # MoneroOcean pool + wallet into textfile. The API has no network-hashrate
+  # endpoint, so derive it: RandomX network hashrate = difficulty / 120
+  # (cross-checked against minerstat's 730.21B -> 6.085 GH/s, ratio 1/120).
+  {
+    systemd.services.prometheus-moneroocean = lib.mkIf isFleetHub {
+      description = "Poll MoneroOcean for network hashrate and wallet totals";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "hermes";
+      };
+      script = ''
+        out=/var/lib/prometheus-textfile/moneroocean.prom
+        tmp=$out.tmp
+        base=https://api.moneroocean.stream
+        jq=${pkgs.jq}/bin/jq
+        net=$(${pkgs.curl}/bin/curl -sf --max-time 15 "$base/network/stats") || exit 0
+        w=$(${pkgs.curl}/bin/curl -sf --max-time 15 \
+          "$base/miner/${monero.wallet}/stats") || exit 0
+        diff=$($jq -r '.["18081"].difficulty // empty' <<<"$net") || exit 0
+        [ -n "$diff" ] || exit 0
+        wh=$($jq -r '.hash // empty' <<<"$w")
+        vs=$($jq -r '.validShares // empty' <<<"$w")
+        inv=$($jq -r '.invalidShares // empty' <<<"$w")
+        paid=$($jq -r '.amtPaid // 0' <<<"$w")
+        due=$($jq -r '.amtDue // 0' <<<"$w")
+        {
+          printf '%s\n' \
+            '# HELP moneroocean_network_hashrate XMR network hashrate derived from difficulty/120 (H/s)' \
+            '# TYPE moneroocean_network_hashrate gauge' \
+            '# HELP moneroocean_network_difficulty Current XMR network difficulty' \
+            '# TYPE moneroocean_network_difficulty gauge'
+          ${pkgs.gawk}/bin/awk -v d="$diff" 'BEGIN{
+            printf "moneroocean_network_hashrate %.0f\n", d/120
+            printf "moneroocean_network_difficulty %.0f\n", d
+          }'
+          printf '%s\n' \
+            '# HELP moneroocean_wallet_hashrate Combined hashrate of this wallet across miners (H/s)' \
+            '# TYPE moneroocean_wallet_hashrate gauge' \
+            '# HELP moneroocean_wallet_valid_shares Valid shares submitted by this wallet' \
+            '# TYPE moneroocean_wallet_valid_shares gauge' \
+            '# HELP moneroocean_wallet_invalid_shares Invalid/stale shares from this wallet' \
+            '# TYPE moneroocean_wallet_invalid_shares gauge' \
+            '# HELP moneroocean_wallet_unpaid_xmr Balance awaiting payout (XMR, atomic units/1e12)' \
+            '# TYPE moneroocean_wallet_unpaid_xmr gauge' \
+            '# HELP moneroocean_wallet_paid_xmr Total already paid out (XMR, atomic units/1e12)' \
+            '# TYPE moneroocean_wallet_paid_xmr gauge'
+          printf 'moneroocean_wallet_hashrate %s\n' "${wh:-0}"
+          printf 'moneroocean_wallet_valid_shares %s\n' "${vs:-0}"
+          printf 'moneroocean_wallet_invalid_shares %s\n' "${inv:-0}"
+          $jq -rn --argjson p "${paid:-0}" --argjson d "${due:-0}" \
+            '"moneroocean_wallet_paid_xmr \(($p/1e12))" , "moneroocean_wallet_unpaid_xmr \(($d/1e12))"'
+        } > "$tmp"
+        ${pkgs.coreutils}/bin/mv "$tmp" "$out"
+      '';
+    };
+    systemd.timers.prometheus-moneroocean = lib.mkIf isFleetHub {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "*:0/2";
+        AccuracySec = "15s";
         Persistent = true;
       };
     };
