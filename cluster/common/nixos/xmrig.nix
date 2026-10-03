@@ -1,4 +1,4 @@
-{ pkgs, username, ... }:
+{ config, pkgs, username, monero, ... }:
 
 {
   boot.kernel.sysctl."vm.nr_hugepages" = 1200;
@@ -19,5 +19,11 @@
 
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 16000 ];
 
-  home-manager.users.${username}.imports = [ ../home/xmrig.nix ];
+  # Assigned here, not imported as a Home Manager module, so the package
+  # stays in the same profile position as the previous inline definition.
+  home-manager.users.${username} = import ../home/xmrig.nix {
+    inherit pkgs monero;
+    hostName = config.networking.hostName;
+    isSteamMachine = false;
+  };
 }
