@@ -1,0 +1,51 @@
+name: Evaluate NixOS hosts
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - version.yaml
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: eval-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    name: ${{ matrix.host }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        host:
+          - jasonkwh-7300u
+          - jasonkwh-7520u
+          - jasonkwh-2450m
+          - jasonkwh-3210m
+          - jasonkwh-bcm2711
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+
+      - name: Eval ${{ matrix.host }} toplevel
+        run: |
+          set -euo pipefail
+          nix eval --raw \
+            ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel.drvPath" \
+            | tee /tmp/drvPath
+          test -s /tmp/drvPath
+          printf '%s eval ok -> %s\n' "${{ matrix.host }}" "$(cat /tmp/drvPath)"
