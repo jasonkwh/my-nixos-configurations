@@ -18,7 +18,9 @@
   <a href="#mining">Mining</a>
   ·
   <a href="#commands">Commands</a>
-  ·
+</p>
+
+<p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
 </p>
 
