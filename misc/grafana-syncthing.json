@@ -108,7 +108,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "count(syncthing_connections_active > 0)+1",
+          "expr": "(count(syncthing_connections_active > 0) or vector(0)) + 1",
           "instant": true
         }
       ]
