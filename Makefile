@@ -1,10 +1,11 @@
 HOSTS := jasonkwh-7520u jasonkwh-7300u jasonkwh-2450m jasonkwh-3210m jasonkwh-1650v2 jasonkwh-bcm2711
+HOME_HOSTS := jasonkwh-deck
 LOCAL_HOST := $(shell hostname)
 HOST  ?= $(LOCAL_HOST)
 SECRETS_ARCHIVE ?= secrets.tar.enc
 EXPLICIT_HOST := $(filter $(HOSTS),$(MAKECMDGOALS))
 
-.PHONY: help upgrade boot deploy build update gc image syncthing-init headless-env secrets-backup secrets-restore $(HOSTS)
+.PHONY: help upgrade boot deploy build update gc image syncthing-init headless-env secrets-backup secrets-restore $(HOSTS) $(HOME_HOSTS)
 .DEFAULT_GOAL := help
 
 help:
@@ -19,7 +20,9 @@ help:
 		'make image <host>        build that host SD-card image (e.g. jasonkwh-bcm2711)' \
 		'make secrets-backup      encrypt ~/.secrets (SECRETS_ARCHIVE=secrets.tar.enc)' \
 		'make secrets-restore     restore ~/.secrets, including modes and ACLs' \
-		'make $(HOSTS)  upgrade that host'
+		'make $(HOSTS)  upgrade that host' \
+		'make $(HOME_HOSTS)  activate that SteamOS home configuration' \
+		'make syncthing-init      print this machine'\''s Syncthing device ID'
 
 # Root skips nix-daemon and fails the sandbox probe; keep builds on the daemon.
 define nixos-rebuild
@@ -97,9 +100,14 @@ image:
 	@printf '\nImage: ls result/sd-image/*.img.zst\n'
 
 syncthing-init:
-	sudo nix run nixpkgs#syncthing -- generate --home=/var/lib/syncthing-hermes/.config/syncthing
-	sudo chown -R hermes:hermes /var/lib/syncthing-hermes
-	@printf '\n^^^ Device ID for $(HOST) is on the "Calculated device ID" line above — paste it into flake.nix hostDefs\n'
+	@if [ "$(HOST)" = "jasonkwh-deck" ] || [ "$$(id -un)" = "deck" ]; then \
+	  nix run nixpkgs#syncthing -- generate --home="$$HOME/.local/state/syncthing"; \
+	  printf '\n^^^ Device ID for jasonkwh-deck is on the "Calculated device ID" line above — paste it into flake.nix hostDefs\n'; \
+	else \
+	  sudo nix run nixpkgs#syncthing -- generate --home=/var/lib/syncthing-hermes/.config/syncthing; \
+	  sudo chown -R hermes:hermes /var/lib/syncthing-hermes; \
+	  printf '\n^^^ Device ID for $(HOST) is on the "Calculated device ID" line above — paste it into flake.nix hostDefs\n'; \
+	fi
 
 headless-env:
 	bash misc/export-headless-env.sh
@@ -116,3 +124,10 @@ secrets-restore:
 
 $(HOSTS):
 	$(if $(filter image deploy,$(MAKECMDGOALS)),@:,$(call nixos-rebuild,switch,$@))
+
+$(HOME_HOSTS):
+	result=$$(mktemp -d); \
+	nix build --accept-flake-config --out-link "$$result/activation" \
+	  ".#homeConfigurations.$@.activationPackage"; \
+	"$$result/activation/activate"; \
+	rm -rf "$$result"

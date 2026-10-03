@@ -7,7 +7,7 @@
   image.modules.sd-card = lib.mkForce {
     imports = [
       "${pkgs.path}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-      ./sd-image-secrets.nix
+      ./sd-image.nix
     ];
     image.baseName =
       "shengos-${name}-${config.system.nixos.release}-${pkgs.stdenv.hostPlatform.system}";

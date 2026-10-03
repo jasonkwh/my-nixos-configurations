@@ -12,10 +12,12 @@ let
       (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs))
   }.${tailscaleDomain}";
 
-  # Hosts with xmrig.nix applied, i.e. everything not headless. xmrig is run
-  # manually, so most of these will be down at any given time.
+  # Scrape lists stay the NixOS fleet. SteamOS is outside both jobs so
+  # adding a Deck does not change the hub's Prometheus config.
+  nixosHostNames = builtins.attrNames
+    (lib.filterAttrs (_: d: !(d.isSteamMachine or false)) hostDefs);
   xmrigHosts = builtins.attrNames
-    (lib.filterAttrs (_: d: !(d.isHeadless or false)) hostDefs);
+    (lib.filterAttrs (_: d: !(d.isHeadless or false) && !(d.isSteamMachine or false)) hostDefs);
 in
 lib.mkMerge [
   {
@@ -154,7 +156,7 @@ lib.mkMerge [
           static_configs = [
             {
               targets = map (host: "${host}.${tailscaleDomain}:9100")
-                (builtins.attrNames hostDefs);
+                nixosHostNames;
             }
           ];
         }
@@ -219,7 +221,8 @@ lib.mkMerge [
         {
           # MoneroOcean miners exposing xmrig's HTTP API on the tailnet.
           # Targets follow hostDefs, not a hand-written list: xmrig.nix applies
-          # to every non-headless host, so a new machine joins automatically.
+          # to every non-headless NixOS host, so a new machine joins automatically.
+          # SteamOS is excluded; the hub config stays the pre-Deck list.
           # xmrig runs manually, so down targets are expected, not a fault.
           # instance is the hostDefs hostname.
           job_name = "xmrig";
@@ -281,11 +284,11 @@ lib.mkMerge [
           options.path = pkgs.symlinkJoin {
             name = "grafana-fleet-dashboards";
             paths = [
-              (pkgs.writeTextDir "grafana-fleet-overview.json" (builtins.readFile ../../misc/grafana-fleet-overview.json))
-              (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../misc/grafana-syncthing.json))
-              (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../misc/grafana-agent-status.json))
-              (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../misc/grafana-logs.json))
-              (pkgs.writeTextDir "grafana-mining.json" (builtins.readFile ../../misc/grafana-mining.json))
+              (pkgs.writeTextDir "grafana-fleet-overview.json" (builtins.readFile ../../../misc/grafana-fleet-overview.json))
+              (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../../misc/grafana-syncthing.json))
+              (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../../misc/grafana-agent-status.json))
+              (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../../misc/grafana-logs.json))
+              (pkgs.writeTextDir "grafana-mining.json" (builtins.readFile ../../../misc/grafana-mining.json))
             ];
           };
           options.foldersFromFilesStructure = false;
@@ -377,7 +380,7 @@ lib.mkMerge [
     ];
 
     services.prometheus.ruleFiles = lib.mkIf isFleetHub [
-      ../../misc/prometheus-fleet-rules.yml
+      ../../../misc/prometheus-fleet-rules.yml
     ];
   }
 

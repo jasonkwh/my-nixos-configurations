@@ -5,6 +5,8 @@ Choose the path for the target hardware:
 - **x86 laptop/desktop** — follow Steps 1–5 using the official NixOS minimal ISO.
 - **ARM headless node** — skip the ISO and use the
   [headless board path](#headless-board-path-jasonkwh-bcm2711).
+- **Steam Deck** — keep SteamOS and follow the
+  [Steam Deck path](#steam-deck-jasonkwh-deck).
 
 Use an existing machine as the source of truth and transfer secrets only over
 an encrypted Tailscale connection.
@@ -26,13 +28,16 @@ an encrypted Tailscale connection.
   hostSystem = "x86_64-linux";   # or "aarch64-linux" for ARM boards
   isLaptop = true;               # laptops only: lid/Wayland/battery extras
   isHeadless = true;             # boards only: strips Plasma/GUI/Steam/GPU
+  isSteamMachine = true;         # SteamOS only: inventory, no NixOS generation
   syncthingId = "<device-id>";    # omit until the real ID is available
   # isFleetHub = true; # optional; exactly one fleet host (WhatsApp gateway + Prometheus/Grafana)
 };
 ```
 
-Set neither class flag for a regular x86 desktop. Home Manager file selection
-is automatic: `cluster/common/home.nix` routes the shared CLI core plus
+Set neither `isLaptop` nor `isHeadless` for a regular x86 desktop. Set
+`isSteamMachine` only on a SteamOS device (see the Steam Deck path); that
+flag keeps the host out of `nixosConfigurations`. Home Manager file selection
+is automatic: `cluster/common/home` routes the shared CLI core plus
 desktop/laptop layers based on these flags — only put machine-specific
 packages in the copied `cluster/<host>/home.nix`.
 
@@ -129,7 +134,7 @@ fastfetch         # check system info and that the branding reads "ShengOS"
 ## FAQ
 
 ### Q: Does the username have to be `jasonkwh`?
-**Yes.** The username and `/home/jasonkwh` path are hard-coded throughout the repository. Custom usernames are not currently supported.
+**Yes, on NixOS hosts.** The username and `/home/jasonkwh` path are hard-coded in `flake.nix` and passed through the NixOS and Home Manager modules. Custom usernames are not currently supported. The Steam Deck keeps SteamOS's `deck` account (`/home/deck`); it does not use this user.
 
 ### Q: How do I migrate secrets (e.g. `~/.secrets/`)?
 Prefer scp/rsync over an encrypted Tailscale link, never a plaintext USB stick:
@@ -254,3 +259,83 @@ The board uses the nixos-hardware Raspberry Pi 4 module. It boots through
 Broadcom firmware and extlinux (`boot.loader.generic-extlinux-compatible`),
 not UEFI. Its committed hardware configuration means a freshly flashed card
 does not need `nixos-generate-config`.
+
+## Steam Deck (jasonkwh-deck)
+
+`jasonkwh-deck` is already registered with `isSteamMachine = true`. SteamOS
+stays the operating system. The flake does not build a NixOS generation for
+it and does not scrape it for `node_exporter` or XMRig. Hermes runs as
+the `deck` user, with state in `/home/deck/.hermes`. NixOS peer lists stay
+unchanged. Syncthing runs as `deck` and syncs `/home/deck/.hermes`.
+
+Do this in Desktop Mode, as `deck`.
+
+1. Confirm SteamOS is storing the Nix store on the home partition (SteamOS 3.5+):
+
+   ```bash
+   findmnt /nix
+   ```
+
+   The source should be `/home/.steamos/offload/nix`. That directory survives
+   SteamOS updates. If `findmnt` prints nothing, update SteamOS before
+   installing Nix.
+
+2. Install single-user Nix. A multi-user install puts systemd units on the
+   root filesystem, and SteamOS updates drop those.
+
+   ```bash
+   sudo chown deck:deck /nix
+   curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
+   ```
+
+   Open a new terminal and check `nix --version`. Enable flakes in
+   `~/.config/nix/nix.conf`:
+
+   ```
+   experimental-features = nix-command flakes
+   ```
+
+3. Leave the login shell as bash. SteamOS session scripts expect it.
+
+`meow upgrade` targets a NixOS configuration and does not apply here.
+
+Home Manager for the `deck` user installs the shared CLI toolchain
+(`cluster/common/home/cli.nix`), the same desktop applications as the
+other machines (`cluster/common/home/apps.nix`, including Cursor), XMRig
+with huge pages off, and the Hermes gateway. SteamOS keeps its own Plasma
+session; the NixOS panel and theme are not applied. Hermes state lives in
+`/home/deck/.hermes`. The user service stops when the session ends, so
+enable linger once:
+
+```bash
+sudo loginctl enable-linger deck
+```
+
+From a clone of this repo:
+
+```bash
+nix run home-manager/release-26.05 -- switch --flake .#jasonkwh-deck
+```
+
+Tailscale on SteamOS is a root daemon. Install it with
+[deck-tailscale](https://github.com/tailscale-dev/deck-tailscale), then
+`tailscale up --qr --operator=deck --ssh`. A `pacman` install of Tailscale
+disappears on the next SteamOS update. The fleet reaches Syncthing at
+`jasonkwh-deck.tail0c0276.ts.net:22000`, so finish Tailscale before pairing.
+
+Syncthing is a user service from the Home Manager switch above. Its identity
+is under `/home/deck/.local/state/syncthing`, not the NixOS `hermes` directory.
+Print the device ID, paste it into `jasonkwh-deck.syncthingId` in `flake.nix`,
+then rebuild the other machines so they accept the Deck:
+
+```bash
+make syncthing-init
+```
+
+`make upgrade` on a NixOS host applies the new device. Activate the Deck
+again after that ID is committed:
+
+```bash
+nix run home-manager/release-26.05 -- switch --flake .#jasonkwh-deck
+systemctl --user status syncthing
+```

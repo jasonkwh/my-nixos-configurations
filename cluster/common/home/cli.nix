@@ -1,7 +1,9 @@
-# Headless-safe core: shared by all hosts; headless boards import only this.
+# CLI toolchain shared by every host. Headless boards import only this.
 {
   config,
-  osConfig,
+  # NixOS passes the system config. Standalone Home Manager (SteamOS)
+  # passes osConfig = null and turns mail on via the user Hermes service.
+  osConfig ? null,
   pkgs,
   lib,
   username,
@@ -12,7 +14,10 @@
 }:
 
 let
-  enableHermes = osConfig.services.hermes-agent.enable;
+  enableHermes =
+    if builtins.isAttrs osConfig
+    then osConfig.services.hermes-agent.enable or false
+    else (config.services.hermes-agent or { }).enable or false;
 in
 {
   targets.genericLinux.enable = true;
@@ -89,7 +94,7 @@ in
           separator = " | ";
         };
         logo = {
-          source = "${../../assets/logos/logo.png}";
+          source = "${../../../assets/logos/logo.png}";
           type = "chafa";
           chafa = {
             symbols = "block+space";
@@ -152,7 +157,7 @@ in
   fonts.fontconfig.enable = true;
 
   # Lean CLI core for every host; dev toolchains and GUI apps live in
-  # ../common/home-desktop.nix so ARM SD images stay small.
+  # home/apps.nix so ARM SD images stay small.
   home.packages = with pkgs;
     [
       tmux

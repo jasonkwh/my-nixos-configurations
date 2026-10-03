@@ -4,7 +4,7 @@
 #   - ts_auth_key          : Tailscale auth key (prompted; generate in the
 #     admin console as reusable=on, ephemeral=on, pre-approved, tag:fleet
 #     when the same file will enrol multiple boards)
-# Consumed by cluster/common/wifi-home.nix and tailscale-enrol.nix on
+# Consumed by cluster/common/nixos/wifi.nix and tailscale.nix on
 # headless boards via LoadCredential/environment file injection.
 # Run on a laptop, then rsync ~/.secrets to the board with the fleet secrets.
 set -euo pipefail

@@ -12,7 +12,7 @@
 # reads it, joins the tailnet, and marks itself done. From then on the node
 # is reachable at jasonkwh-<host>.$(tailscaleDomain) and fleet SSH works
 # immediately (Tailscale SSH handles identity; openssh stays key-only/
-# off-LAN per common/configuration.nix).
+# off-LAN per common/nixos).
 #
 # Rotating/re-enrolling: put a fresh key in headless-env and delete
 # /var/lib/tailscale on the board.

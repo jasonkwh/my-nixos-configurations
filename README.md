@@ -36,8 +36,9 @@ the owner has verified with `shengos-switch`.
   same-architecture builds, and binfmt-enabled x86 hosts can also build for
   aarch64 peers (e.g. help the Pi) via emulated builders.
 - **Desktop or board** — Plasma (theming, shortcuts, Fcitx5) on laptops and
-  the Mac Pro; headless boards skip the GUI/Steam/GPU stack, use zram, and
-  enrol from `~/.secrets/headless-env`.
+  the Mac Pro. The Steam Deck installs the same desktop applications and
+  leaves Desktop Mode's Plasma to SteamOS. Headless boards skip the
+  GUI/Steam/GPU stack, use zram, and enrol from `~/.secrets/headless-env`.
 - **Dev-ready** — Podman, Kubernetes tooling, cloud CLIs, language runtimes.
 - **Monero mining** — XMRig on every desktop host (headless boards skip it).
   Wallet and pool live in `flake.nix` (`monero`).
@@ -56,8 +57,11 @@ New machine: [docs/install.md](docs/install.md).
 ## Fleet
 
 Hosts are declared in `flake.nix` (`hostDefs`). `isLaptop` / `isHeadless` /
-`isFleetHub` / `isBuilder` select the shared modules. x86 hosts can
-cross-build the Pi SD image.
+`isSteamMachine` / `isFleetHub` / `isBuilder` select the shared modules.
+x86 NixOS hosts can cross-build the Pi SD image. `isSteamMachine` marks a
+SteamOS device: it stays in the inventory and is left out of
+`nixosConfigurations`, the Prometheus scrapes, and the NixOS Hermes
+peer list. The Deck still runs Hermes and XMRig on its own.
 
 | Host                   | Hardware                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------- |
@@ -67,12 +71,14 @@ cross-build the Pi SD image.
 | **`jasonkwh-3210m`**   | Intel Core i5-3210M · Intel HD Graphics 4000 + NVIDIA GeForce GT 640M LE · 12GB |
 | **`jasonkwh-1650v2`**  | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB                              |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB                                  |
+| **`jasonkwh-deck`**    | Valve Steam Deck (OLED) · 16GB                                                  |
 
 `jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
 Alertmanager, Grafana, and Loki (per-host Alloy pushes journald to it).
-Every host exports `node_exporter` on `tailscale0:9100`; Prometheus scrapes
-all `hostDefs` targets via MagicDNS. Alertmanager posts to the hub's Hermes
-webhook, which forwards the message to WhatsApp. Rules are in
+Every NixOS host exports `node_exporter` on `tailscale0:9100`; Prometheus
+scrapes those `hostDefs` targets via MagicDNS. SteamOS machines are omitted.
+Alertmanager posts to the hub's Hermes webhook, which forwards the message
+to WhatsApp. Rules are in
 `misc/prometheus-fleet-rules.yml`: one WhatsApp when a host that was up
 becomes unreachable; memory, disk, predicted disk fill, temperature, and a
 stopped Hermes agent on any host that is up; WhatsApp queue, OpenRouter
@@ -86,8 +92,10 @@ the WhatsApp gateway lives only on the hub.
 ## Mining
 
 Desktop hosts (`!isHeadless` — laptops and the Mac Pro) install XMRig and
-write `~/.config/xmrig.json` from `cluster/common/xmrig.nix`. The headless
-hub does not mine.
+write `~/.config/xmrig.json` from `cluster/common/nixos/xmrig.nix`. The Steam Deck
+gets the same file from `homeConfigurations.jasonkwh-deck`
+(`cluster/common/home/xmrig.nix`) with huge pages off. The headless hub
+does not mine.
 
 Pool URL, TLS, and wallet are the `monero` attrset in `flake.nix`. Ports in
 the `2xxxx` range are TLS; a `1xxxx` port with `tls = true` will not connect.
@@ -112,7 +120,7 @@ xmrig
 | `meow gc`              | Delete old generations + refresh bootloader                                                      |
 | `meow image <host>`    | SD image, e.g. `jasonkwh-bcm2711` → `result/sd-image/*.img.zst`                                  |
 | `meow headless-env`    | Write Wi-Fi (+ optional Tailscale key) into `~/.secrets/headless-env`                            |
-| `meow syncthing-init`  | Bootstrap Syncthing identity; print device ID for `hostDefs`                                     |
+| `meow syncthing-init`  | Print this machine's Syncthing device ID for `hostDefs`                                          |
 | `meow secrets-backup`  | Encrypt `~/.secrets` to `secrets.tar.enc`                                                        |
 | `meow secrets-restore` | Restore `~/.secrets` (modes + ACLs)                                                              |
 | `meow <hostname>`      | Rebuild a named host (e.g. `jasonkwh-7520u`)                                                     |
@@ -125,8 +133,8 @@ target.
 ```
 flake.nix              # inputs + hostDefs
 cluster/               # NixOS + Home Manager
-  common/              # shared modules
-  7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/
+  common/              # nixos/, home/, hermes/
+  7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/ deck/
 misc/                  # SOUL.md, Grafana dashboards, Prometheus rules, helper scripts
 docs/install.md
 assets/

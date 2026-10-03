@@ -30,7 +30,7 @@
     options = [ "fmask=0022" "dmask=0022" ];
   };
 
-  swapDevices = [ ]; # zramSwap instead — see common/headless.nix
+  swapDevices = [ ]; # zramSwap instead — see common/nixos/headless.nix
 
   # Enables DHCP on each ethernet and wireless interface.
   networking.useDHCP = lib.mkDefault true;

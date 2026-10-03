@@ -37,7 +37,7 @@ let
 
   repoBundle = pkgs.runCommand "my-nixos-configurations-bundle" { } ''
     mkdir -p "$out/share"
-    cp -R ${../..} "$out/share/my-nixos-configurations"
+    cp -R ${../../..} "$out/share/my-nixos-configurations"
     chmod -R u+rwX,go+rX "$out/share/my-nixos-configurations"
   '';
 

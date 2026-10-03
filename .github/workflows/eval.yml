@@ -1,4 +1,4 @@
-name: Evaluate NixOS hosts
+name: Evaluate hosts
 
 on:
   push:
@@ -30,6 +30,10 @@ jobs:
           - jasonkwh-2450m
           - jasonkwh-3210m
           - jasonkwh-bcm2711
+          - jasonkwh-deck
+        include:
+          - host: jasonkwh-deck
+            home: true
 
     steps:
       - name: Checkout repo
@@ -44,8 +48,12 @@ jobs:
       - name: Eval ${{ matrix.host }} toplevel
         run: |
           set -euo pipefail
-          nix eval --raw \
-            ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel.drvPath" \
+          if [ "${{ matrix.home }}" = "true" ]; then
+            attr="homeConfigurations.${{ matrix.host }}.activationPackage"
+          else
+            attr="nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
+          fi
+          nix eval --raw ".#${attr}.drvPath" \
             | tee /tmp/drvPath
           test -s /tmp/drvPath
           printf '%s eval ok -> %s\n' "${{ matrix.host }}" "$(cat /tmp/drvPath)"

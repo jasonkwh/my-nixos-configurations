@@ -5,12 +5,12 @@ in
 
 {
   imports = [
-    ../common/configuration.nix
+    ../common/nixos
   ];
 
   home-manager.users.${username} = {
     imports = [
-      ../common/home.nix
+      ../common/home
       ./home.nix
     ];
   };

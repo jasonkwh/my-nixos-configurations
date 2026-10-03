@@ -21,7 +21,7 @@
   imports = [ hardwareConfig ./monitoring.nix ]
     ++ lib.optionals (!isHeadless) [ ./xmrig.nix ]
     ++ lib.optionals isLaptop [ ./laptop.nix ]
-    ++ lib.optionals isHeadless [ ./headless.nix ./tailscale-enrol.nix ./wifi-home.nix ];
+    ++ lib.optionals isHeadless [ ./headless.nix ./tailscale.nix ./wifi.nix ];
 
   # Bootloader.
   boot = {
@@ -184,7 +184,7 @@
   environment.systemPackages = with pkgs; [
     (runCommand "shengos-branding" { } ''
       mkdir -p $out/share/pixmaps
-      cp ${../../assets/logos/logo.png} $out/share/pixmaps/shengos.png
+      cp ${../../../assets/logos/logo.png} $out/share/pixmaps/shengos.png
     '')
     (writeShellScriptBin "meow" ''
       exec ${gnumake}/bin/make -C ${homeDirectory}/Documents/my-nixos-configurations "$@"
@@ -338,51 +338,13 @@
       configDir = "/var/lib/syncthing-hermes/.config/syncthing";
       overrideDevices = true;
       overrideFolders = true;
-      settings = {
-        options = {
-          # Fleet is always behind Tailscale; no need for global
-          # discovery/relay/NAT traversal.
-          globalAnnounceEnabled = false;
-          localAnnounceEnabled = true;
-          relaysEnabled = false;
-          natEnabled = false;
-          urAccepted = -1;
-        };
-        # Pin peers by MagicDNS name (not raw 100.x IPs — those can change).
-        # "dynamic" discovery alone is not enough: local broadcast doesn't
-        # cross the Tailscale interface and global announce is disabled.
-        # Addresses are derived from the device hostname + tailnet domain,
-        # so adding a fleet member only requires its device id above.
-        devices = builtins.mapAttrs
-          (name: dev:
-            dev // {
-              addresses = [ "tcp://${name}.${tailscaleDomain}:22000" ];
-            })
-          syncthingDevices;
-        folders = let
-          # Every fleet member syncs every folder; versioning keeps a
-          # 14-day trashcan on both.
-          allDevices = builtins.attrNames syncthingDevices;
-          folderVersioning = {
-            type = "trashcan";
-            fsType = "simple";
-            params.cleanoutDays = "14";
-          };
-        in {
-          # ignorePerms: sync content, not permission bits — syncthing's
-          # chmod pass fails on dirs with per-host gids/ACLs.
-          hermes-memories = {
-            path = "/var/lib/hermes/.hermes/memories";
-            devices = allDevices;
-            versioning = folderVersioning;
-            ignorePerms = true;
-          };
-          hermes-skills = {
-            path = "/var/lib/hermes/.hermes/skills";
-            devices = allDevices;
-            versioning = folderVersioning;
-            ignorePerms = true;
-          };
+      # ignorePerms: sync content, not permission bits — syncthing's
+      # chmod pass fails on dirs with per-host gids/ACLs.
+      settings = import ../syncthing/settings.nix {
+        inherit syncthingDevices tailscaleDomain;
+        folderPaths = {
+          hermes-memories = "/var/lib/hermes/.hermes/memories";
+          hermes-skills = "/var/lib/hermes/.hermes/skills";
         };
       };
     };
@@ -391,97 +353,9 @@
       enable = true;
       container.enable = false;
       addToSystemPackages = true;
-      extraDependencyGroups = [ "messaging" ];
-      # Native mode cannot apt/pip install at runtime; these land on the
-      # hermes user's PATH for terminal tools, skills, and cron.
-      extraPackages = with pkgs; [
-        git
-        ripgrep
-        fd
-        file
-        himalaya
-      ];
-      # Personal WhatsApp account: self-chat mode, restricted to Jason's number.
-      # The gateway itself is host-specific (only one machine may hold the
-      # WhatsApp session at a time) — see cluster/<host>/configuration.nix.
-      # The home channel, however, is fleet-wide: cron/notifications should
-      # resolve to the same chat no matter which host fires them.
-      environment = {
-        WHATSAPP_HOME_CHANNEL_NAME = "Jason's ShengOS";
-        WHATSAPP_MODE = "self-chat";
-        HIMALAYA_CONFIG = "${homeDirectory}/.config/himalaya/config.toml";
-        HERMES_MACHINE_IDENTITY = "xiaoshengsheng @ ${config.networking.hostName}";
-      };
-      # WHATSAPP_HOME_CHANNEL and WHATSAPP_ALLOWED_USERS live in
-      # ~/.secrets/hermes-env (environmentFiles below) — keep personal
-      # identifiers out of this repo so it can be published safely.
-      settings = {
-        # Keep the generated config stamped with the schema version expected by
-        # the pinned Hermes Agent input, avoiding a perpetual migration warning.
-        _config_version = 38;
-
-        agent = {
-          api_max_retries = 6;
-        };
-
-        # Values come from flake.nix (hermesModel) via specialArgs.
-        model = hermesModel;
-        platforms = lib.optionalAttrs isFleetHub {
-          webhook = {
-            enabled = true;
-            extra = {
-              host = "127.0.0.1";
-              port = 8644;
-              routes.alertmanager = {
-                secret = "INSECURE_NO_AUTH";
-                prompt = ''
-                  [{status}] {commonLabels.alertname} ({commonLabels.severity})
-                  {commonLabels.instance}
-                  {commonAnnotations.summary}
-                '';
-                deliver = "whatsapp";
-                deliver_only = true;
-              };
-            };
-          };
-        };
-        memory = {
-          memory_enabled = true;
-          user_profile_enabled = true;
-          write_approval = true;
-        };
-        compression = {
-          enabled = true;
-          threshold = 0.35;
-          target_ratio = 0.15;
-        };
-        display = {
-          show_reasoning = false;
-        };
-        terminal = {
-          backend = "local";
-        };
-        web = {
-          # Tavily key (TAVILY_API_KEY) is in ~/.secrets/hermes-env.
-          search_backend = "tavily";
-          extract_backend = "tavily";
-        };
-        browser = {
-          cdp_url = "http://127.0.0.1:9222";
-          backend = "off";
-        };
-
-        # Agent-to-agent: peer gateways over tailscale (api_server on :8642).
-        # Peer keys are HERMES_PEER_<NAME>_KEY in ~/.secrets/hermes-env.
-        bot_peers = builtins.listToAttrs (map
-          (host: lib.nameValuePair host {
-            url = "http://${host}.${tailscaleDomain}:8642";
-          })
-          (lib.filter (h: h != config.networking.hostName) hermesPeerHosts));
-      };
-      environmentFiles = [
-        "${config.users.users.${username}.home}/.secrets/hermes-env"
-      ];
+    } // import ../hermes/settings.nix {
+      inherit lib pkgs hermesModel hermesPeerHosts tailscaleDomain homeDirectory isFleetHub;
+      hostName = config.networking.hostName;
     };
 
     # Periodic SSD TRIM to maintain write performance.
@@ -622,7 +496,7 @@
     deps = [ "users" ];
     text = ''
       install -o hermes -g hermes -m 0640 \
-        ${../../misc/SOUL.md} /var/lib/hermes/.hermes/SOUL.md
+        ${../../../misc/SOUL.md} /var/lib/hermes/.hermes/SOUL.md
     '';
   };
 

@@ -1,5 +1,5 @@
 # Laptop-only Home Manager configuration.
-# Imported by common/home.nix only when the host is created with
+# Imported by common/home only when the host is created with
 # isLaptop = true in flake.nix.
 { config, lib, ... }:
 

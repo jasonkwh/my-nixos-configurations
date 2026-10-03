@@ -36,7 +36,7 @@
       homeDirectory = "/home/${username}";
       tailscaleDomain = "tail0c0276.ts.net";
 
-      # XMRig / MoneroOcean mining — consumed by cluster/common/xmrig.nix.
+      # XMRig / MoneroOcean mining — consumed by cluster/common/nixos/xmrig.nix.
       # 2xxxx ports are TLS; a 1xxxx port with tls = true will not connect.
       monero = {
         wallet = "88A5zQJj99VEtRUPCZ4jP3cNqKKam2Y25frhMVrNFUvdFQPhxpbJg4DB3qjZRxfjmhfneVm5KV1Jc8tVeHcZL76vNmKFPzk";
@@ -44,7 +44,7 @@
         pool.tls = true;
       };
 
-      # SHA-256 miners — consumed by cluster/common/monitoring.nix. These run
+      # SHA-256 miners — consumed by cluster/common/nixos/monitoring.nix. These run
       # AxeOS, not NixOS, and have no Tailscale, so they are reached by LAN IP
       # (the only non-MagicDNS target in the fleet). Set the address as a static
       # IP on the device; on DHCP the scrape target drifts and the job goes down.
@@ -56,7 +56,7 @@
       ];
 
       # Hermes model config — single source of truth; passed into
-      # cluster/common/configuration.nix via specialArgs.
+      # cluster/common/nixos via specialArgs.
       hermesModel = {
         provider = "openrouter";
         default = "stealth/space-bunny-alpha";
@@ -64,16 +64,16 @@
       };
 
       # Home Manager entry point shared verbatim by every host (and the Live
-      # image). cluster/common/home.nix is a pure router: every host gets
-      # home-headless core; isLaptop/isHeadless flags (set per-host below)
-      # add home-desktop / home-laptop layers. Per-host extra packages live
+      # image). cluster/common/home is a pure router: every host gets
+      # home/cli.nix; isLaptop/isHeadless flags (set per-host below)
+      # add home/apps.nix, home/plasma.nix, and home/laptop.nix. Per-host extra packages live
       # in cluster/<host>/home.nix.
-      homeManagerModule = { isLaptop ? false, isHeadless ? false }: {
+      homeManagerModule = { isLaptop ? false, isHeadless ? false, isSteamMachine ? false, hostName }: {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.backupFileExtension = "backup";
         home-manager.extraSpecialArgs = {
-          inherit username fullName email homeDirectory isLaptop isHeadless;
+          inherit username fullName email homeDirectory isLaptop isHeadless isSteamMachine monero hostName;
         };
         home-manager.sharedModules = lib.mkIf (!isHeadless) [
           plasma-manager.homeModules.plasma-manager
@@ -141,13 +141,31 @@
           hostSystem = "x86_64-linux";
           isLaptop = false;
         };
+        "jasonkwh-deck" = {
+          name = "deck";
+          hostSystem = "x86_64-linux";
+          isSteamMachine = true;
+          username = "deck";
+          homeDirectory = "/home/deck";
+        };
       };
 
-      hermesPeerHosts = builtins.attrNames (lib.filterAttrs (_: def: def != null) hostDefs);
+      nixosHostDefs = lib.filterAttrs (_: def: !(def.isSteamMachine or false)) hostDefs;
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
+      # Shaped as Syncthing's settings.devices ({ <name>.id = ...; }).
+      # A host joins only after its syncthingId is set, so the Deck is absent
+      # until make syncthing-init has printed one.
+      syncthingDevices = builtins.mapAttrs
+        (_: def: { id = def.syncthingId; })
+        (lib.filterAttrs (_: def: def ? syncthingId) hostDefs);
+
+      # NixOS peer list stays the pre-Deck fleet. The Deck dials these hosts;
+      # adding it here would rewrite every NixOS Hermes config.
+      hermesPeerHosts = builtins.attrNames nixosHostDefs;
+
+      mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, isSteamMachine ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
-          inherit username fullName email homeDirectory isLaptop isHeadless tailscaleDomain;
+          inherit username fullName email homeDirectory isLaptop isHeadless isSteamMachine tailscaleDomain;
           inherit isFleetHub;
           inherit name;
           inherit hermesPeerHosts;
@@ -155,11 +173,7 @@
           inherit hostDefs;
           inherit monero;
           inherit bitcoin;
-          # Syncthing device ids for all fleet members that sync, from hostDefs.
-          # Shaped as the `settings.devices` attrset ({ <name>.id = ...; }).
-          syncthingDevices = builtins.mapAttrs
-            (_: def: { id = def.syncthingId; })
-            (lib.filterAttrs (_: def: def ? syncthingId) hostDefs);
+          inherit syncthingDevices;
           # Prefer the repo copy, fall back to /etc/nixos on first boot
           # (before nixos-generate-config output has been committed).
           hardwareConfig =
@@ -247,7 +261,29 @@
             nix.settings.trusted-users = [ username "hermes" ];
           }
           home-manager.nixosModules.home-manager
-          (homeManagerModule { inherit isLaptop isHeadless; })
+          (homeManagerModule { inherit isLaptop isHeadless isSteamMachine hostName; })
+        ];
+      };
+
+      # SteamOS keeps its own system. Home Manager follows home.nix with
+      # isSteamMachine, so the account lives on the hostDef, not here.
+      mkSteamHome = hostName: def: home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = def.hostSystem;
+          config.allowUnfree = true;
+        };
+        extraSpecialArgs = {
+          inherit monero fullName email hermesModel hermesPeerHosts tailscaleDomain syncthingDevices;
+          inherit (def) username homeDirectory;
+          inherit hostName;
+          isSteamMachine = true;
+          isHeadless = false;
+          isLaptop = false;
+        };
+        modules = [
+          inputs.hermes-agent.homeManagerModules.default
+          ./cluster/common/home
+          ./cluster/${def.name}/home.nix
         ];
       };
 
@@ -255,7 +291,10 @@
     {
       nixosConfigurations = builtins.mapAttrs
         (hostName: def: mkHost (def // { inherit hostName; }))
-        hostDefs;
+        nixosHostDefs;
+
+      homeConfigurations = lib.mapAttrs mkSteamHome
+        (lib.filterAttrs (_: def: def.isSteamMachine or false) hostDefs);
 
     };
 }
