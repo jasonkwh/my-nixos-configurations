@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/jasonkwh/my-nixos-configurations/actions/workflows/eval.yml"><img src="https://github.com/jasonkwh/my-nixos-configurations/actions/workflows/eval.yml/badge.svg" alt="Evaluate NixOS hosts"></a>
+  <a href="https://github.com/jasonkwh/my-nixos-configurations/actions/workflows/eval.yml"><img src="https://img.shields.io/github/actions/workflow/status/jasonkwh/my-nixos-configurations/eval.yml?label=eval" alt="eval"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
 </p>
 
