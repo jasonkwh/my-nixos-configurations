@@ -76,10 +76,10 @@ image:
 	  echo 'image: building WITHOUT baked secrets (SECRETS_SKIP=1)'; \
 	  REPO_GIT_ARCHIVE=$$GIT_PATH nix build $(BUILDERS_FLAG) --impure --accept-flake-config \
 	    .#nixosConfigurations.$(IMG_HOST).config.system.build.images.sd-card; \
-	elif [ -d /home/jasonkwh/.secrets ]; then \
+	elif [ -d "$$HOME/.secrets" ]; then \
 	  SEAL_TAR=$$(mktemp /tmp/.shengos-seal.XXXXXX); \
 	  SEAL_ENC=$$(mktemp /tmp/shengos-secrets.XXXXXX.tar.enc); \
-	  tar -cf "$$SEAL_TAR" -C /home/jasonkwh/.secrets .; \
+	  tar -cf "$$SEAL_TAR" -C "$$HOME/.secrets" .; \
 	  printf 'Machine password (board login/sudo for jasonkwh + root): '; \
 	  read -rs IMG_PASS; echo; \
 	  SEAL_PASS=$$IMG_PASS openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
