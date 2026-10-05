@@ -180,7 +180,13 @@
         "spec": {
           "id": 3,
           "title": "Best diff",
-          "links": [],
+          "links": [
+            {
+              "title": "Open Bitaxe scoreboard",
+              "url": "http://@bitaxeIp@/#/scoreboard",
+              "targetBlank": true
+            }
+          ],
           "data": {
             "kind": "QueryGroup",
             "spec": {
@@ -235,6 +241,13 @@
                   "noValue": "no data",
                   "unit": "short",
                   "decimals": 1,
+                  "links": [
+                    {
+                      "title": "Open Bitaxe scoreboard",
+                      "url": "http://@bitaxeIp@/#/scoreboard",
+                      "targetBlank": true
+                    }
+                  ],
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -249,7 +262,7 @@
               }
             }
           },
-          "description": "Best share difficulty any Bitaxe has found."
+          "description": "Best share difficulty any Bitaxe has found. Click to open the scoreboard."
         }
       },
       "panel-4": {
@@ -1414,7 +1427,14 @@
         "spec": {
           "id": 45,
           "title": "Unpaid",
-          "links": [],
+          "description": "Balance awaiting payout. Click to open this wallet on MoneroOcean.",
+          "links": [
+            {
+              "title": "Open wallet on MoneroOcean",
+              "url": "https://moneroocean.stream/#/wallet/@moneroWallet@",
+              "targetBlank": true
+            }
+          ],
           "data": {
             "kind": "QueryGroup",
             "spec": {
@@ -1467,6 +1487,13 @@
               "fieldConfig": {
                 "defaults": {
                   "decimals": 8,
+                  "links": [
+                    {
+                      "title": "Open wallet on MoneroOcean",
+                      "url": "https://moneroocean.stream/#/wallet/@moneroWallet@",
+                      "targetBlank": true
+                    }
+                  ],
                   "noValue": "no data",
                   "unit": "none",
                   "thresholds": {

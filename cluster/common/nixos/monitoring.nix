@@ -288,7 +288,13 @@ lib.mkMerge [
               (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../../misc/grafana-syncthing.json))
               (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../../misc/grafana-agent-status.json))
               (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../../misc/grafana-logs.json))
-              (pkgs.writeTextDir "grafana-mining.json" (builtins.readFile ../../../misc/grafana-mining.json))
+              # @moneroWallet@ and @bitaxeIp@ come from flake.nix.
+              (pkgs.writeTextDir "grafana-mining.json" (
+                lib.replaceStrings
+                  [ "@moneroWallet@" "@bitaxeIp@" ]
+                  [ monero.wallet (lib.head bitcoin.miners).ip_address ]
+                  (builtins.readFile ../../../misc/grafana-mining.json)
+              ))
             ];
           };
           options.foldersFromFilesStructure = false;
