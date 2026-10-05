@@ -59,7 +59,7 @@
       # cluster/common/nixos via specialArgs.
       hermesModel = {
         provider = "openrouter";
-        default = "stealth/space-bunny-alpha";
+        default = "deepseek/deepseek-v4.1-flash";
         base_url = "https://openrouter.ai/api/v1";
       };
 
