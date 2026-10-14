@@ -13,6 +13,8 @@ jobs:
     name: Update cursor.nix
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      needs_update: ${{ steps.check.outputs.needs_update }}
 
     steps:
       - name: Checkout repo
@@ -114,3 +116,13 @@ jobs:
           git add cluster/common/home/cursor.nix
           git commit -m "chore: bump Cursor to ${version}"
           git push origin HEAD
+
+  bump-patch:
+    name: Bump patch version
+    needs: update-cursor
+    if: needs.update-cursor.outputs.needs_update == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/bump-version.yml
+    with:
+      bump_type: patch
