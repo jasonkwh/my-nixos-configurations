@@ -5,7 +5,6 @@
   osConfig ? null,
   pkgs,
   lib,
-  cursor,
   ...
 }:
 
@@ -90,13 +89,14 @@ in
       zoom-us
       brave
       sparrow
+      code-cursor
       buildah
       skopeo
       ollama
       podman-compose
       kdePackages.isoimagewriter
       feather
-    ] ++ [ cursor ];
+    ];
 
   # Aliases ride along with the tools they point at (zsh is configured
   # in cli.nix).
