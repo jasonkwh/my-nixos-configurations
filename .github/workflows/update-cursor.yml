@@ -1,0 +1,116 @@
+name: Update Cursor
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-cursor:
+    name: Update cursor.nix
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Check for a newer Cursor
+        id: check
+        run: |
+          set -euo pipefail
+
+          meta="$(curl -fsSL "https://api2.cursor.sh/updates/api/download/stable/linux-x64/cursor")"
+          version="$(jq -r '.version' <<< "$meta")"
+          url="$(jq -r '.downloadUrl' <<< "$meta")"
+          commit="$(printf '%s\n' "$url" | sed -n 's|.*/production/\([0-9a-f]\{40\}\)/.*|\1|p')"
+
+          if [[ -z "$version" || "$version" == "null" || -z "$commit" ]]; then
+            echo "Cursor download metadata is incomplete"
+            echo "$meta"
+            exit 1
+          fi
+
+          file="cluster/common/home/cursor.nix"
+          current_version="$(sed -n 's/.*cursorVersion = "\([^"]*\)".*/\1/p' "$file")"
+
+          echo "installed=${current_version}"
+          echo "latest=${version}"
+          echo "url=${url}"
+
+          if [[ "$current_version" == "$version" ]] && grep -q "$commit" "$file"; then
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          printf '%s\n' "$version" > "$RUNNER_TEMP/cursor-version"
+          printf '%s\n' "$url" > "$RUNNER_TEMP/cursor-url"
+          printf '%s\n' "$commit" > "$RUNNER_TEMP/cursor-commit"
+          echo "needs_update=true" >> "$GITHUB_OUTPUT"
+
+      - name: Install Nix
+        if: steps.check.outputs.needs_update == 'true'
+        uses: cachix/install-nix-action@v31
+
+      - name: Update cursor.nix
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          set -euo pipefail
+
+          version="$(cat "$RUNNER_TEMP/cursor-version")"
+          url="$(cat "$RUNNER_TEMP/cursor-url")"
+          commit="$(cat "$RUNNER_TEMP/cursor-commit")"
+          file="cluster/common/home/cursor.nix"
+
+          hash="$(nix-prefetch-url --type sha256 "$url")"
+          sri="$(nix hash convert --hash-algo sha256 --to sri "$hash")"
+
+          python3 - "$file" "$version" "$commit" "$sri" <<'PY'
+          import pathlib, re, sys
+
+          path, version, commit, sri = sys.argv[1:]
+          file = pathlib.Path(path)
+          text = file.read_text()
+          original = text
+
+          text, n_version = re.subn(
+              r'cursorVersion = "[^"]+"',
+              f'cursorVersion = "{version}"',
+              text,
+              count=1,
+          )
+          text, n_commit = re.subn(
+              r'(https://downloads\.cursor\.com/production/)[0-9a-f]+(/linux/x64/)',
+              rf'\g<1>{commit}\2',
+              text,
+              count=1,
+          )
+          text, n_hash = re.subn(
+              r'sha256 = "sha256-[^"]+"',
+              f'sha256 = "{sri}"',
+              text,
+              count=1,
+          )
+
+          if n_version != 1 or n_commit != 1 or n_hash != 1:
+              raise SystemExit(
+                  f"cursor.nix update failed (version={n_version}, url={n_commit}, hash={n_hash})"
+              )
+          if text == original:
+              raise SystemExit("cursor.nix was not modified")
+          file.write_text(text)
+          PY
+
+      - name: Commit cursor.nix
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          set -euo pipefail
+          version="$(cat "$RUNNER_TEMP/cursor-version")"
+          git config user.name "github-actions[bot]"
+          git config user.email "noreply@github.com"
+          git add cluster/common/home/cursor.nix
+          git commit -m "chore: bump Cursor to ${version}"
+          git push origin HEAD
