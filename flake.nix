@@ -25,6 +25,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+    code-cursor-nix.url = "github:jacopone/code-cursor-nix";
   };
 
   outputs = { self, nixpkgs, home-manager, plasma-manager, nixos-hardware, ... }@inputs:
@@ -68,12 +69,14 @@
       # home/cli.nix; isLaptop/isHeadless flags (set per-host below)
       # add home/apps.nix, home/plasma.nix, and home/laptop.nix. Per-host extra packages live
       # in cluster/<host>/home.nix.
-      homeManagerModule = { isLaptop ? false, isHeadless ? false, isSteamMachine ? false, hostName }: {
+      homeManagerModule = { isLaptop ? false, isHeadless ? false, isSteamMachine ? false, hostName, hostSystem }: {
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.backupFileExtension = "backup";
         home-manager.extraSpecialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless isSteamMachine monero hostName;
+        } // lib.optionalAttrs (!isHeadless) {
+          cursor = inputs.code-cursor-nix.packages.${hostSystem}.cursor;
         };
         home-manager.sharedModules = lib.mkIf (!isHeadless) [
           plasma-manager.homeModules.plasma-manager
@@ -261,7 +264,7 @@
             nix.settings.trusted-users = [ username "hermes" ];
           }
           home-manager.nixosModules.home-manager
-          (homeManagerModule { inherit isLaptop isHeadless isSteamMachine hostName; })
+          (homeManagerModule { inherit isLaptop isHeadless isSteamMachine hostName hostSystem; })
         ];
       };
 
@@ -276,6 +279,7 @@
           inherit monero fullName email hermesModel hermesPeerHosts tailscaleDomain syncthingDevices;
           inherit (def) username homeDirectory;
           inherit hostName;
+          cursor = inputs.code-cursor-nix.packages.${def.hostSystem}.cursor;
           isSteamMachine = true;
           isHeadless = false;
           isLaptop = false;
