@@ -76,7 +76,7 @@ in
       cloc
       yamllint
       img2pdf
-      go_1_26
+      go_1_27
       protobuf
       rustup
       python3
