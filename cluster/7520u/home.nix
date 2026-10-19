@@ -12,6 +12,7 @@
     beekeeper-studio
     postman
     pulumi
+    pulumi-language-go
     vscode
     # nixpkgs calls wrapGAppsHook from buildCommand before the fixup phase,
     # where its required $output context is unavailable.  The hook still runs
