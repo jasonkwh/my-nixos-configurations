@@ -66,6 +66,7 @@ in
       awscli2
       ssm-session-manager-plugin
       awsebcli
+      google-cloud-sdk
       terraform
       kubernetes-helm
       helmfile
