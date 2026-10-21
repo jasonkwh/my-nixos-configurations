@@ -14,7 +14,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    hermes-agent.url = "github:NousResearch/hermes-agent/v0.21.7";
+    hermes-agent.url = "github:NousResearch/hermes-agent/v0.22.2";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
@@ -62,7 +62,7 @@
       # cluster/common/nixos via specialArgs.
       hermesModel = {
         provider = "openrouter";
-        default = "deepseek/deepseek-v4.1-flash";
+        default = "deepseek/deepseek-v4.1-flash-1017";
         base_url = "https://openrouter.ai/api/v1";
       };
 
