@@ -3,7 +3,7 @@
 #
 # Module body is lib.mkMerge, NOT attrset `//`: `//` shallow-replaces the
 # `exporters` subtree and silently drops node exporter on the hub.
-{ config, pkgs, lib, hostDefs, isFleetHub, tailscaleDomain, homeDirectory, monero, bitcoin, ... }:
+{ config, pkgs, lib, hostDefs, isFleetHub, tailscaleDomain, tensorRigHostnamePrefix, homeDirectory, monero, bitcoin, ... }:
 
 let
   # Hub MagicDNS name from hostDefs (Grafana :3001, Alloy -> Loki :3100).
@@ -159,6 +159,13 @@ lib.mkMerge [
                 nixosHostNames;
             }
           ];
+          # Online tailnet peers matching tensorRigHostnamePrefix (see timer below).
+          file_sd_configs = [
+            {
+              files = [ "/var/lib/prometheus/tensor-rig-targets.json" ];
+              refresh_interval = "30s";
+            }
+          ];
         }
         {
           # Hub's own /metrics already aggregates every peer.
@@ -307,6 +314,56 @@ lib.mkMerge [
       key=/var/lib/grafana/secret_key
       [ -s "$key" ] || ${pkgs.coreutils}/bin/head -c 32 /dev/urandom | ${pkgs.coreutils}/bin/base64 > "$key"
     '';
+
+    # Tailscale peer list -> Prometheus file_sd for ephemeral tensor rigs.
+    systemd.tmpfiles.rules = lib.mkIf isFleetHub [
+      "d /var/lib/prometheus 0755 prometheus prometheus -"
+      "f /var/lib/prometheus/tensor-rig-targets.json 0644 prometheus prometheus - []"
+    ];
+    systemd.services.prometheus-tensor-rig-targets = lib.mkIf isFleetHub {
+      description = "Write Prometheus file_sd targets for online tensor-rig Tailscale peers";
+      after = [ "tailscaled.service" "network-online.target" ];
+      wants = [ "tailscaled.service" "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+      before = [ "prometheus.service" ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        out=/var/lib/prometheus/tensor-rig-targets.json
+        tmp=$out.tmp.$$
+        ${pkgs.tailscale}/bin/tailscale status --json | ${pkgs.jq}/bin/jq \
+          --arg prefix ${lib.escapeShellArg tensorRigHostnamePrefix} \
+          --arg domain ${lib.escapeShellArg tailscaleDomain} \
+          --argjson registered ${builtins.toJSON nixosHostNames} '
+          def is_rig:
+            .HostName == $prefix or (.HostName | startswith($prefix + "-"));
+          def registered($h): $registered | index($h) != null;
+          [.Peer[]?
+            | select(.Online == true)
+            | select(is_rig)
+            | .HostName
+            | select(registered(.) | not)
+          ]
+          | unique
+          | map({
+              targets: ["\(.).\($domain):9100"],
+              labels: { ephemeral: "tensor-rig", host: . }
+            })
+        ' > "$tmp"
+        ${pkgs.coreutils}/bin/mv "$tmp" "$out"
+        ${pkgs.coreutils}/bin/chown prometheus:prometheus "$out"
+      '';
+    };
+    systemd.timers.prometheus-tensor-rig-targets = lib.mkIf isFleetHub {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "45s";
+        OnUnitActiveSec = "60s";
+        AccuracySec = "10s";
+      };
+    };
+    systemd.services.prometheus = lib.mkIf isFleetHub {
+      after = [ "prometheus-tensor-rig-targets.service" ];
+    };
   }
 
   {

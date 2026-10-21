@@ -76,7 +76,10 @@ peer list. The Deck still runs Hermes and XMRig on its own.
 `jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
 Alertmanager, Grafana, and Loki (per-host Alloy pushes journald to it).
 Every NixOS host exports `node_exporter` on `tailscale0:9100`; Prometheus
-scrapes those `hostDefs` targets via MagicDNS. SteamOS machines are omitted.
+scrapes those `hostDefs` targets via MagicDNS. Ephemeral GPU cloud boxes can
+join Tailscale as `jasonkwh-tensor-rig` / `jasonkwh-tensor-rig-N` (prefix in
+`flake.nix`); the hub refreshes Prometheus file_sd from `tailscale status`
+without adding each rig to `hostDefs`. SteamOS machines are omitted.
 Alertmanager posts to the hub's Hermes webhook, which forwards the message
 to WhatsApp. Rules are in
 `misc/prometheus-fleet-rules.yml`: one WhatsApp when a host that was up

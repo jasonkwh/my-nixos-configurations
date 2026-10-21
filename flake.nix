@@ -35,6 +35,9 @@
       email = "jasonkwh@gmail.com";
       homeDirectory = "/home/${username}";
       tailscaleDomain = "tail0c0276.ts.net";
+      # Ephemeral GPU cloud boxes join Tailscale as jasonkwh-tensor-rig(-N)?.
+      # The hub discovers them for Prometheus (file_sd); they need not be in hostDefs.
+      tensorRigHostnamePrefix = "jasonkwh-tensor-rig";
 
       # XMRig / MoneroOcean mining — consumed by cluster/common/nixos/xmrig.nix.
       # 2xxxx ports are TLS; a 1xxxx port with tls = true will not connect.
@@ -165,7 +168,7 @@
 
       mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, isSteamMachine ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
-          inherit username fullName email homeDirectory isLaptop isHeadless isSteamMachine tailscaleDomain;
+          inherit username fullName email homeDirectory isLaptop isHeadless isSteamMachine tailscaleDomain tensorRigHostnamePrefix;
           inherit isFleetHub;
           inherit name;
           inherit hermesPeerHosts;
