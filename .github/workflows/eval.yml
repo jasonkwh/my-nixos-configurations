@@ -18,9 +18,22 @@ permissions:
 
 jobs:
   eval:
-    name: NixOS + Home Manager eval
+    name: ${{ matrix.host }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        host:
+          - jasonkwh-7300u
+          - jasonkwh-7520u
+          - jasonkwh-2450m
+          - jasonkwh-3210m
+          - jasonkwh-bcm2711
+          - jasonkwh-deck
+        include:
+          - host: jasonkwh-deck
+            home: true
 
     steps:
       - name: Checkout repo
@@ -29,29 +42,18 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
           extra_nix_config: |
             accept-flake-config = true
 
-      # One runner, one fetch of github: inputs (hermes-agent, etc.). A per-host
-      # matrix hit GitHub tarball API in parallel and got HTTP 429.
-      - name: Prefetch flake inputs
-        run: nix flake prefetch .
-
-      - name: Eval host configurations
+      - name: Eval ${{ matrix.host }} toplevel
         run: |
           set -euo pipefail
-          nixos_hosts=(
-            jasonkwh-7300u
-            jasonkwh-7520u
-            jasonkwh-2450m
-            jasonkwh-3210m
-            jasonkwh-bcm2711
-          )
-          for host in "${nixos_hosts[@]}"; do
-            attr="nixosConfigurations.${host}.config.system.build.toplevel"
-            drvPath="$(nix eval --raw ".#${attr}.drvPath")"
-            printf '%s eval ok -> %s\n' "$host" "$drvPath"
-          done
-          deck_drv="$(nix eval --raw '.#homeConfigurations.jasonkwh-deck.activationPackage.drvPath')"
-          printf 'jasonkwh-deck eval ok -> %s\n' "$deck_drv"
+          if [ "${{ matrix.home }}" = "true" ]; then
+            attr="homeConfigurations.${{ matrix.host }}.activationPackage"
+          else
+            attr="nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
+          fi
+          nix eval --raw ".#${attr}.drvPath" \
+            | tee /tmp/drvPath
+          test -s /tmp/drvPath
+          printf '%s eval ok -> %s\n' "${{ matrix.host }}" "$(cat /tmp/drvPath)"
