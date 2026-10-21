@@ -205,6 +205,8 @@
       wineWow64Packages.full
       winetricks
       kdePackages.partitionmanager
+      # GUI front-end for the OpenRazer daemon.
+      polychromatic
     ]
     ++ [
     htop
@@ -429,6 +431,12 @@
 
   hardware = {
     enableRedistributableFirmware = true;
+
+    # Razer peripherals via OpenRazer instead of Windows-only Synapse.
+    openrazer = lib.mkIf (!isHeadless) {
+      enable = true;
+      users = [ username ];
+    };
 
     graphics = {
       enable = true;
