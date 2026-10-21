@@ -327,13 +327,19 @@ lib.mkMerge [
       wantedBy = [ "multi-user.target" ];
       before = [ "prometheus.service" ];
       serviceConfig.Type = "oneshot";
+      # Must succeed with [] when no rigs are online — switch-to-configuration runs this on deploy.
       script = ''
         out=/var/lib/prometheus/tensor-rig-targets.json
         tmp=$out.tmp.$$
-        ${pkgs.tailscale}/bin/tailscale status --json | ${pkgs.jq}/bin/jq \
+        ts=$(${pkgs.tailscale}/bin/tailscale status --json 2>/dev/null) || ts='{"Peer":[]}'
+        if ! ${pkgs.jq}/bin/jq -e . >/dev/null 2>&1 <<<"$ts"; then
+          ts='{"Peer":[]}'
+        fi
+        if ! ${pkgs.jq}/bin/jq \
           --arg prefix ${lib.escapeShellArg tensorRigHostnamePrefix} \
           --arg domain ${lib.escapeShellArg tailscaleDomain} \
-          --argjson registered ${builtins.toJSON nixosHostNames} '
+          --argjson registered ${lib.escapeShellArg (builtins.toJSON nixosHostNames)} \
+          '
           def is_rig:
             .HostName == $prefix or (.HostName | startswith($prefix + "-"));
           def registered($h): $registered | index($h) != null;
@@ -348,7 +354,9 @@ lib.mkMerge [
               targets: ["\(.).\($domain):9100"],
               labels: { ephemeral: "tensor-rig", host: . }
             })
-        ' > "$tmp"
+        ' <<<"$ts" > "$tmp"; then
+          printf '[]\n' > "$tmp"
+        fi
         ${pkgs.coreutils}/bin/mv "$tmp" "$out"
         ${pkgs.coreutils}/bin/chown prometheus:prometheus "$out"
       '';
