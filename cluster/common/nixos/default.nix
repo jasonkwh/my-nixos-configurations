@@ -466,16 +466,14 @@
   system.activationScripts.hermes-config-access = lib.mkIf config.services.hermes-agent.enable {
     deps = [ "users" ];
     text = ''
-      config_dir=${lib.escapeShellArg "${homeDirectory}/Documents/my-nixos-configurations"}
+      documents_dir=${lib.escapeShellArg "${homeDirectory}/Documents"}
       secrets_dir=${lib.escapeShellArg "${homeDirectory}/.secrets"}
       himalaya_dir=${lib.escapeShellArg "${homeDirectory}/.config/himalaya"}
 
-      if [ -d "$config_dir" ]; then
-        ${pkgs.acl}/bin/setfacl -m u:hermes:--x \
-          ${lib.escapeShellArg homeDirectory} \
-          ${lib.escapeShellArg "${homeDirectory}/Documents"}
-        ${pkgs.acl}/bin/setfacl -R -m u:hermes:rwX "$config_dir"
-        ${pkgs.findutils}/bin/find "$config_dir" -type d \
+      if [ -d "$documents_dir" ]; then
+        ${pkgs.acl}/bin/setfacl -m u:hermes:--x ${lib.escapeShellArg homeDirectory}
+        ${pkgs.acl}/bin/setfacl -R -m u:hermes:rwX "$documents_dir"
+        ${pkgs.findutils}/bin/find "$documents_dir" -type d \
           -exec ${pkgs.acl}/bin/setfacl -m d:u:hermes:rwX {} +
       fi
 
