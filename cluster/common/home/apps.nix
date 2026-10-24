@@ -69,6 +69,8 @@ in
       google-cloud-sdk
       terraform
       kubernetes-helm
+      pulumi
+      pulumiPackages.pulumi-go
       helmfile
       pigz
       pixz
