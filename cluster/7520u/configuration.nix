@@ -63,8 +63,6 @@ in
   services = {
     xserver.videoDrivers = [ "amdgpu" ];
 
-    pipewire.extraLv2Packages = [ pkgs.bankstown-lv2 ];
-
     # use evtest to find out the device id & key num
     udev.extraHwdb = ''
       evdev:atkbd:*
