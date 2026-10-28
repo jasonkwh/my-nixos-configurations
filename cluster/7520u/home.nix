@@ -51,6 +51,7 @@
     beekeeper-studio
     postman
     vscode
+    python3Packages.tensorboard
     # nixpkgs calls wrapGAppsHook from buildCommand before the fixup phase,
     # where its required $output context is unavailable.  The hook still runs
     # normally during fixup, so remove only the obsolete early invocation.
