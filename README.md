@@ -144,9 +144,3 @@ assets/
 version.yaml           # bumped on push to main
 .github/workflows/
 ```
-
-## Versioning
-
-`version.yaml` is the release number. On every push to `main`, **Bump
-Version** bumps patch (or `minor`/`major` via `workflow_dispatch`), commits,
-and tags `vX.Y.Z`.
