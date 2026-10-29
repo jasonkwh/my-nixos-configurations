@@ -636,7 +636,7 @@ lib.mkMerge [
       script = ''
         out=/var/lib/prometheus-textfile/singbox.prom
         tmp=$out.tmp
-        json=$(${pkgs.curl}/bin/curl -sf --max-time 5 http://127.0.0.1:9091/connections)
+        json=$(${pkgs.curl}/bin/curl -sf --max-time 5 http://127.0.0.1:9091/connections || true)
         if [ -z "$json" ]; then
           # API down: write only up=0, so panels go empty instead of stale.
           {
