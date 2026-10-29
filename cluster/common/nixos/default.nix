@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, isFleetHub ? false, hardwareConfig, hermesPeerHosts, hostDefs, syncthingDevices, tailscaleDomain, hermesModel, ... }:
+{ config, pkgs, lib, username, fullName, email, homeDirectory, isLaptop ? false, isHeadless ? false, isFleetHub ? false, isProxyServer ? false, hardwareConfig, hermesPeerHosts, hostDefs, syncthingDevices, tailscaleDomain, hermesModel, ... }:
 
 {
   # User-facing operating-system branding.  ShengOS remains NixOS underneath;
@@ -20,6 +20,7 @@
 
   imports = [ hardwareConfig ./monitoring.nix ]
     ++ lib.optionals (!isHeadless) [ ./xmrig.nix ]
+    ++ lib.optionals isProxyServer [ ./proxy.nix ]
     ++ lib.optionals isLaptop [ ./laptop.nix ]
     ++ lib.optionals isHeadless [ ./headless.nix ./tailscale.nix ./wifi.nix ];
 

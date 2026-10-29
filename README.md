@@ -17,6 +17,8 @@
   ·
   <a href="#mining">Mining</a>
   ·
+  <a href="docs/proxy.md">Proxy</a>
+  ·
   <a href="#commands">Commands</a>
 </p>
 
@@ -140,6 +142,7 @@ cluster/               # NixOS + Home Manager
   7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/ deck/
 misc/                  # SOUL.md, Grafana dashboards, Prometheus rules, helper scripts
 docs/install.md
+docs/proxy.md          # REALITY entry node: secrets, port forwarding, clients
 assets/
 version.yaml           # bumped on push to main
 .github/workflows/
