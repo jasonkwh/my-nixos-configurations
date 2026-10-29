@@ -367,9 +367,14 @@
       },
       "targets": [
         {
-          "expr": "1000 * probe_icmp_duration_seconds{job=\"proxy-latency\", phase=\"rtt\"}",
-          "legendFormat": "{{instance}} ({{provider}})",
+          "expr": "sum without (provider) (1000 * probe_icmp_duration_seconds{job=\"proxy-latency\", phase=\"rtt\", instance=\"223.5.5.5\"})",
+          "legendFormat": "223.5.5.5 (Alibaba)",
           "refId": "A"
+        },
+        {
+          "expr": "sum without (provider) (1000 * probe_icmp_duration_seconds{job=\"proxy-latency\", phase=\"rtt\", instance=\"119.29.29.29\"})",
+          "legendFormat": "119.29.29.29 (Tencent)",
+          "refId": "B"
         }
       ],
       "options": {
