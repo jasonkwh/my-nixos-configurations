@@ -261,12 +261,19 @@ lib.mkMerge [
         }
         {
           # ICMP RTT from the hub (the proxy node) to China's big-2 DNS.
-          # instance is the probed IP.
+          # instance is the probed IP. provider is the operator, for the legend.
           job_name = "proxy-latency";
           metrics_path = "/probe";
           params = { module = [ "icmp" ]; };
           static_configs = [
-            { targets = [ "223.5.5.5" "119.29.29.29" ]; }
+            {
+              targets = [ "223.5.5.5" ];
+              labels.provider = "Alibaba";
+            }
+            {
+              targets = [ "119.29.29.29" ];
+              labels.provider = "Tencent";
+            }
           ];
           relabel_configs = [
             { source_labels = [ "__address__" ]; target_label = "__param_target"; }

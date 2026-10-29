@@ -368,7 +368,7 @@
       "targets": [
         {
           "expr": "1000 * probe_icmp_duration_seconds{job=\"proxy-latency\", phase=\"rtt\"}",
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{instance}} ({{provider}})",
           "refId": "A"
         }
       ],
