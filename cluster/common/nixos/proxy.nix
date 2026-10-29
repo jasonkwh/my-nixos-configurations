@@ -8,6 +8,18 @@ let
   secretsDir = "/home/${username}/.secrets/proxy-env";
 in
 {
+  # Long-haul tunnel: this host is the sending side of the download direction.
+  boot = {
+    kernelModules = [ "tcp_bbr" ];
+    
+    kernel = {
+      sysctl = {
+        "net.ipv4.tcp_congestion_control" = "bbr";
+        "net.core.default_qdisc" = "fq";
+      };
+    };
+  };
+
   services.sing-box = {
     enable = true;
     settings = {
