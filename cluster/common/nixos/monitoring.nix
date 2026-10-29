@@ -50,6 +50,14 @@ lib.mkMerge [
               fail_if_body_not_matches_regexp = [ ''"status"\s*:\s*"connected"'' ];
             };
           };
+
+          # Proxy node -> China backbone RTT (half path only; the client side
+          # runs in China and cannot be probed from here).
+          modules.icmp = {
+            prober = "icmp";
+            timeout = "5s";
+            icmp.preferred_ip_protocol = "ip4";
+          };
         }
       );
     };
@@ -251,6 +259,21 @@ lib.mkMerge [
             { target_label = "__address__"; replacement = "127.0.0.1:7979"; }
           ];
         }
+        {
+          # ICMP RTT from the hub (the proxy node) to China's big-2 DNS.
+          # instance is the probed IP.
+          job_name = "proxy-latency";
+          metrics_path = "/probe";
+          params = { module = [ "icmp" ]; };
+          static_configs = [
+            { targets = [ "223.5.5.5" "119.29.29.29" ]; }
+          ];
+          relabel_configs = [
+            { source_labels = [ "__address__" ]; target_label = "__param_target"; }
+            { source_labels = [ "__param_target" ]; target_label = "instance"; }
+            { target_label = "__address__"; replacement = "127.0.0.1:9115"; }
+          ];
+        }
       ];
     };
 
@@ -295,6 +318,7 @@ lib.mkMerge [
               (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../../misc/grafana-syncthing.json))
               (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../../misc/grafana-agent-status.json))
               (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../../misc/grafana-logs.json))
+              (pkgs.writeTextDir "grafana-proxy.json" (builtins.readFile ../../../misc/grafana-proxy.json))
               # @moneroWallet@ and @bitaxeIp@ come from flake.nix.
               (pkgs.writeTextDir "grafana-mining.json" (
                 lib.replaceStrings
@@ -595,6 +619,60 @@ lib.mkMerge [
         OnCalendar = "*:0/2";
         AccuracySec = "15s";
         Persistent = true;
+      };
+    };
+  }
+
+  # Proxy node stats (connections, up/down bytes) from sing-box's Clash API.
+  # The API keeps cumulative totals, so Grafana derives rates with rate().
+  {
+    systemd.services.prometheus-singbox = lib.mkIf isFleetHub {
+      description = "Poll sing-box Clash API into node_exporter textfile";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = "hermes";
+      };
+      script = ''
+        out=/var/lib/prometheus-textfile/singbox.prom
+        tmp=$out.tmp
+        json=$(${pkgs.curl}/bin/curl -sf --max-time 5 http://127.0.0.1:9091/connections)
+        if [ -z "$json" ]; then
+          # API down: write only up=0, so panels go empty instead of stale.
+          {
+            printf '%s\n' \
+              '# HELP singbox_up sing-box Clash API reachable (1 = up, 0 = down)' \
+              '# TYPE singbox_up gauge'
+            printf 'singbox_up 0\n'
+          } > "$tmp"
+        else
+          {
+            printf '%s\n' \
+              '# HELP singbox_up sing-box Clash API reachable (1 = up, 0 = down)' \
+              '# TYPE singbox_up gauge' \
+              '# HELP singbox_connections_active Live connections through the node' \
+              '# TYPE singbox_connections_active gauge' \
+              '# HELP singbox_traffic_upload_bytes_total Bytes sent by clients since sing-box start' \
+              '# TYPE singbox_traffic_upload_bytes_total counter' \
+              '# HELP singbox_traffic_download_bytes_total Bytes delivered to clients since sing-box start' \
+              '# TYPE singbox_traffic_download_bytes_total counter'
+            ${pkgs.jq}/bin/jq -r '
+              "singbox_up 1",
+              "singbox_connections_active \(.connections | length)",
+              "singbox_traffic_upload_bytes_total \(.uploadTotal)",
+              "singbox_traffic_download_bytes_total \(.downloadTotal)"
+            ' <<<"$json"
+          } > "$tmp"
+        fi
+        ${pkgs.coreutils}/bin/mv "$tmp" "$out"
+      '';
+    };
+    systemd.timers.prometheus-singbox = lib.mkIf isFleetHub {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "30s";
+        OnUnitActiveSec = "15s";
+        AccuracySec = "5s";
       };
     };
   }

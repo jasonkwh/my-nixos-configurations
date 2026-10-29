@@ -7,7 +7,7 @@
   "spec": {
     "annotations": [],
     "cursorSync": "Crosshair",
-    "editable": false,
+    "editable": true,
     "elements": {
       "panel-1": {
         "kind": "Panel",

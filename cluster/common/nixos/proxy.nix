@@ -16,6 +16,9 @@ in
         timestamp = true;
       };
 
+      # Read-only stats for the textfile exporter. Loopback only, no auth.
+      experimental.clash_api.external_controller = "127.0.0.1:9091";
+
       inbounds = [
         {
           type = "vless";
