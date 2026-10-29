@@ -9,10 +9,13 @@ imports `cluster/common/nixos/proxy.nix`.
 
 A `sing-box` inbound of type `vless` with `flow: xtls-rprx-vision`, listening on
 TCP `443` — the only port the module opens. REALITY mirrors the TLS handshake of
-`www.microsoft.com`, so there is no certificate to obtain, no ACME loop, no
+`www.cloudflare.com`, so there is no certificate to obtain, no ACME loop, no
 renewal, and no domain required for the node itself. The upstream site is chosen
 because it speaks TLS 1.3 with X25519MLKEM768, has a clean chain, and is
-reachable from an Australian residential line.
+reachable from an Australian residential line. Do not point `sni` at an Akamai
+front (e.g. `www.microsoft.com`): sing-box 1.13 rejects those handshakes with
+`REALITY: processed invalid connection` because the site returns
+`supported_groups` in ServerHello.
 
 REALITY is not a transport of its own: to anything watching, the connection is a
 plain visit to that site. When a client cannot prove it knows the REALITY
@@ -76,7 +79,7 @@ camouflage site.
 The compact form is a share link, which every common client imports:
 
 ```
-vless://<uuid>@<node-ip>:443?security=reality&sni=www.microsoft.com&fp=chrome&pbk=<public-key>&sid=<short_id>&type=tcp&flow=xtls-rprx-vision#shengos
+vless://<uuid>@<node-ip>:443?security=reality&sni=www.cloudflare.com&fp=chrome&pbk=<public-key>&sid=<short_id>&type=tcp&flow=xtls-rprx-vision#shengos
 ```
 
 Clients: sing-box (Linux/NixOS, Android, iOS via Karing/Shadowrocket), v2rayN or

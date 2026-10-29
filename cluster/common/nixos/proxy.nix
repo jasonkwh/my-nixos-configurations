@@ -4,7 +4,7 @@
 { username, ... }:
 
 let
-  sni = "www.microsoft.com";
+  sni = "www.cloudflare.com";
   secretsDir = "/home/${username}/.secrets/proxy-env";
 in
 {
