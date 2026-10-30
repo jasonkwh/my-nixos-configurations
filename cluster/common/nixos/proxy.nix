@@ -35,7 +35,7 @@ in
         {
           type = "vless";
           tag = "vless-reality";
-          listen = "0.0.0.0";
+          listen = "::";
           listen_port = 443;
           users = [
             {
