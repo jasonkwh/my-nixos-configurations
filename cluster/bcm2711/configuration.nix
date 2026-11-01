@@ -36,4 +36,12 @@
   services.hermes-agent.settings.kanban.max_in_progress = 3;
 
   time.timeZone = "Australia/Melbourne";
+
+  # Pin the v6 IID: eero's firewall rule matches the literal address.
+  systemd.services.wifi-home.postStart = ''
+    nmcli connection modify wifi-home \
+      ipv6.ip6-privacy 0 \
+      ipv6.token "::4588:9b4:2e7c:4798"
+    nmcli connection up wifi-home
+  '';
 }
