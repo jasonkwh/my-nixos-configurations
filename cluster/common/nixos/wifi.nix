@@ -16,6 +16,8 @@
     after = [ "NetworkManager.service" ];
     wants = [ "NetworkManager.service" ];
     path = [ pkgs.networkmanager ];
+    # Re-running drops the link under the rebuild's Tailscale SSH session.
+    restartIfChanged = false;
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -27,13 +29,23 @@
         exit 0
       fi
 
+      modify_args=(
+        wifi-sec.key-mgmt wpa-psk
+        wifi-sec.psk "$psk_home"
+        connection.autoconnect yes
+      )
+      if [ -n "''${WIFI_IPV6_TOKEN:-}" ]; then
+        modify_args+=(
+          ipv6.ip6-privacy 0
+          ipv6.addr-gen-mode eui64
+          ipv6.token "$WIFI_IPV6_TOKEN"
+        )
+      fi
+
       nmcli connection delete wifi-home >/dev/null 2>&1 || true
       nmcli connection add type wifi ifname wlan0 con-name wifi-home \
         ssid "$ssid_home"
-      nmcli connection modify wifi-home \
-        wifi-sec.key-mgmt wpa-psk \
-        wifi-sec.psk "$psk_home" \
-        connection.autoconnect yes
+      nmcli connection modify wifi-home "''${modify_args[@]}"
       nmcli connection up wifi-home
     '';
   };
