@@ -39,10 +39,12 @@
 
   # Pin the v6 IID: eero's firewall rule matches the literal address.
   systemd.services.wifi-home.postStart = ''
-    nmcli connection modify wifi-home \
-      ipv6.ip6-privacy 0 \
-      ipv6.addr-gen-mode eui64 \
-      ipv6.token "::4588:9b4:2e7c:4798"
-    nmcli connection up wifi-home
+    if [ "$(nmcli -g ipv6.token connection show wifi-home)" != "::4588:9b4:2e7c:4798" ]; then
+      nmcli connection modify wifi-home \
+        ipv6.ip6-privacy 0 \
+        ipv6.addr-gen-mode eui64 \
+        ipv6.token "::4588:9b4:2e7c:4798"
+      nmcli connection up wifi-home
+    fi
   '';
 }
