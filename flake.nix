@@ -44,8 +44,8 @@
       monero = {
         wallet = "88A5zQJj99VEtRUPCZ4jP3cNqKKam2Y25frhMVrNFUvdFQPhxpbJg4DB3qjZRxfjmhfneVm5KV1Jc8tVeHcZL76vNmKFPzk";
         pools = [
-          { url = "xmr-sg.kryptex.network:8029"; tls = true; solo = true; }
           { url = "gulf.moneroocean.stream:20004"; tls = true; }
+          { url = "xmr-sg.kryptex.network:8029"; tls = true; solo = true; }
         ];
       };
 
