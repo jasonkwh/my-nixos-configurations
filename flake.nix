@@ -39,12 +39,14 @@
       # The hub discovers them for Prometheus (file_sd); they need not be in hostDefs.
       tensorRigHostnamePrefix = "jasonkwh-tensor-rig";
 
-      # XMRig / MoneroOcean mining — consumed by cluster/common/nixos/xmrig.nix.
-      # 2xxxx ports are TLS; a 1xxxx port with tls = true will not connect.
+      # XMRig — consumed by cluster/common/home/xmrig.nix.
+      # Pools are failover in order. solo = true prefixes that login with "solo:".
       monero = {
         wallet = "88A5zQJj99VEtRUPCZ4jP3cNqKKam2Y25frhMVrNFUvdFQPhxpbJg4DB3qjZRxfjmhfneVm5KV1Jc8tVeHcZL76vNmKFPzk";
-        pool.url = "gulf.moneroocean.stream:20004";
-        pool.tls = true;
+        pools = [
+          { url = "xmr-sg.kryptex.network:8029"; tls = true; solo = true; }
+          { url = "gulf.moneroocean.stream:20004"; tls = true; }
+        ];
       };
 
       # SHA-256 miners — consumed by cluster/common/nixos/monitoring.nix. These run

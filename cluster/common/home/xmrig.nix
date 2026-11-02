@@ -22,17 +22,19 @@
         port = 16000;
         restricted = true;
       };
-      pools = [
-        {
-          url = monero.pool.url;
-          user = monero.wallet;
-          pass = hostName;
-          nicehash = false;
-          keepalive = true;
-          coin = "monero";
-          tls = monero.pool.tls;
-        }
-      ];
+      pools = map (pool: {
+        url = pool.url;
+        # solo = true logs in as "solo:<wallet>"; otherwise the bare address.
+        user =
+          if pool.solo or false
+          then "solo:${monero.wallet}"
+          else monero.wallet;
+        pass = hostName;
+        nicehash = false;
+        keepalive = true;
+        coin = "monero";
+        tls = pool.tls;
+      }) monero.pools;
       print-time = 0;
       randomx = {
         init = -1;
