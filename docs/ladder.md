@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../assets/logos/logo_ladder.png" alt="Ladder logo" width="180">
+  <img src="../assets/logos/logo_ladder.png" alt="Ladder logo" width="200">
 </p>
 
 <h1 align="center">Ladder</h1>
