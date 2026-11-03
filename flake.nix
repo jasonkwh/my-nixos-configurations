@@ -169,10 +169,10 @@
       # adding it here would rewrite every NixOS Hermes config.
       hermesPeerHosts = builtins.attrNames nixosHostDefs;
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, isProxyServer ? false, isSteamMachine ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, isProxyServer ? false, isProxyClient ? false, isSteamMachine ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless isSteamMachine tailscaleDomain tensorRigHostnamePrefix;
-          inherit isFleetHub isProxyServer;
+          inherit isFleetHub isProxyServer isProxyClient;
           inherit name;
           inherit hermesPeerHosts;
           inherit hermesModel;
