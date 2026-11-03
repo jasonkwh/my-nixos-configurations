@@ -29,11 +29,11 @@ Nothing secret is in the nix store or this repository. The entry node reads
 `private-key` and `uuid`; a NixOS client reads `server`, `public-key`, and
 `uuid`:
 
-| File                               | Purpose                              |
-| ---------------------------------- | ------------------------------------ |
-| `~/.secrets/proxy-env/private-key` | REALITY X25519 private key (server)  |
-| `~/.secrets/proxy-env/public-key`  | same pair's public half (clients)    |
-| `~/.secrets/proxy-env/uuid`        | VLESS user id                        |
+| File                               | Purpose                                      |
+| ---------------------------------- | -------------------------------------------- |
+| `~/.secrets/proxy-env/private-key` | REALITY X25519 private key (server)          |
+| `~/.secrets/proxy-env/public-key`  | same pair's public half (clients)            |
+| `~/.secrets/proxy-env/uuid`        | VLESS user id                                |
 | `~/.secrets/proxy-env/server`      | entry node addresses, one per line (clients) |
 
 Generate them once:
@@ -93,12 +93,12 @@ Phones and other systems pin these four values, plus `flow: xtls-rprx-vision`.
 Anything mismatched fails with no useful error — the client just times out or
 sees the camouflage site.
 
-| Value      | Where                                                   |
-| ---------- | ------------------------------------------------------- |
-| `uuid`     | `~/.secrets/proxy-env/uuid`                             |
-| public key | `~/.secrets/proxy-env/public-key`                       |
-| `short_id` | `ladder.nix` (`short_id`)                               |
-| SNI        | `ladder.nix` (`sni`)                                    |
+| Value      | Where                             |
+| ---------- | --------------------------------- |
+| `uuid`     | `~/.secrets/proxy-env/uuid`       |
+| public key | `~/.secrets/proxy-env/public-key` |
+| `short_id` | `ladder.nix` (`short_id`)         |
+| SNI        | `ladder.nix` (`sni`)              |
 
 The compact form is a share link, which every common client imports:
 
