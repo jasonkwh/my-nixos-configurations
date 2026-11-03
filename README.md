@@ -42,6 +42,8 @@ the owner has verified with `shengos-switch`.
   leaves Desktop Mode's Plasma to SteamOS. Headless boards skip the
   GUI/Steam/GPU stack, use zram, and enrol from `~/.secrets/headless-env`.
 - **Dev-ready** — Podman, Kubernetes tooling, cloud CLIs, language runtimes.
+- **Ladder** — REALITY tunnel so a machine abroad can exit through the home
+  node.
 - **Monero mining** — XMRig on every desktop host (headless boards skip it).
   Wallet and pool live in `flake.nix` (`monero`).
 
