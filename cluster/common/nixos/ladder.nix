@@ -1,7 +1,7 @@
-# REALITY tunnel. Imported when a host sets isProxyServer or isProxyClient
+# REALITY tunnel. Imported when a host sets isLadderServer or isLadderClient
 # in flake.nix. Credentials are rendered from ~/.secrets/proxy-env at start,
 # so nothing secret lives in the store. A host is one side or the other.
-{ lib, pkgs, username, isProxyServer, isProxyClient, ... }:
+{ lib, pkgs, username, isLadderServer, isLadderClient, ... }:
 
 let
   sni = "www.cloudflare.com";
@@ -181,7 +181,7 @@ let
       echo "proxy-env/server contains no address" >&2
       exit 1
     fi
-    echo "sing-box proxy servers:" >&2
+    echo "sing-box ladder servers:" >&2
     printf '%s\n' "$ordered" >&2
     addrs_json=$(printf '%s\n' "$ordered" | ${pkgs.jq}/bin/jq -R . | ${pkgs.jq}/bin/jq -s .)
     count=$(printf '%s\n' "$ordered" | ${pkgs.gnugrep}/bin/grep -c .)
@@ -220,24 +220,24 @@ in
 {
   assertions = [
     {
-      assertion = isProxyServer || isProxyClient;
-      message = "proxy.nix requires isProxyServer or isProxyClient";
+      assertion = isLadderServer || isLadderClient;
+      message = "ladder.nix requires isLadderServer or isLadderClient";
     }
     {
-      assertion = !(isProxyServer && isProxyClient);
-      message = "isProxyServer and isProxyClient cannot both be set on the same host";
+      assertion = !(isLadderServer && isLadderClient);
+      message = "isLadderServer and isLadderClient cannot both be set on the same host";
     }
   ];
 
   boot = {
     kernelModules = lib.mkMerge [
       # Long-haul tunnel: the entry node is the sending side of the download direction.
-      (lib.mkIf isProxyServer [ "tcp_bbr" ])
+      (lib.mkIf isLadderServer [ "tcp_bbr" ])
       # auto_redirect pre-matching uses nfqueue.
-      (lib.mkIf isProxyClient [ "nfnetlink_queue" ])
+      (lib.mkIf isLadderClient [ "nfnetlink_queue" ])
     ];
 
-    kernel.sysctl = lib.mkIf isProxyServer {
+    kernel.sysctl = lib.mkIf isLadderServer {
       "net.ipv4.tcp_congestion_control" = "bbr";
       "net.core.default_qdisc" = "fq";
     };
@@ -245,16 +245,16 @@ in
 
   services.sing-box = {
     enable = true;
-    settings = if isProxyServer then serverSettings else clientSettings;
+    settings = if isLadderServer then serverSettings else clientSettings;
   };
 
   # After _secret substitution, so a multi-line server file can be expanded.
-  systemd.services.sing-box.serviceConfig.ExecStartPre = lib.mkIf isProxyClient (lib.mkAfter [
+  systemd.services.sing-box.serviceConfig.ExecStartPre = lib.mkIf isLadderClient (lib.mkAfter [
     "+${clientServers}"
   ]);
 
-  networking.firewall.allowedTCPPorts = lib.mkIf isProxyServer [ 443 ];
+  networking.firewall.allowedTCPPorts = lib.mkIf isLadderServer [ 443 ];
 
   # TUN replies fail a strict reverse-path check.
-  networking.firewall.checkReversePath = lib.mkIf isProxyClient "loose";
+  networking.firewall.checkReversePath = lib.mkIf isLadderClient "loose";
 }

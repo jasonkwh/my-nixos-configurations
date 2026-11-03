@@ -1,10 +1,10 @@
-# Proxy entry node
+# Ladder
 
 One host in the fleet can act as a REALITY entry node, so a device abroad can
 reach the internet (and the tailnet) through the home connection. It is off by
-default. Set `isProxyServer = true` on exactly one host in `flake.nix`, and
-`isProxyClient = true` on each NixOS machine that should dial it. Both import
-`cluster/common/nixos/proxy.nix`. A host is one side or the other.
+default. Set `isLadderServer = true` on exactly one host in `flake.nix`, and
+`isLadderClient = true` on each NixOS machine that should dial it. Both import
+`cluster/common/nixos/ladder.nix`. A host is one side or the other.
 
 ## What runs
 
@@ -70,9 +70,9 @@ quickly, so keep it to your own machines.
 
 ## NixOS client
 
-`isProxyClient` runs sing-box as a TUN (`singtun`) and sends traffic out
+`isLadderClient` runs sing-box as a TUN (`singtun`) and sends traffic out
 through the entry node. It reads `server`, `uuid`, and `public-key` from
-`proxy-env` at start; `short_id` and SNI stay in `proxy.nix`. `server` is one
+`proxy-env` at start; `short_id` and SNI stay in `ladder.nix`. `server` is one
 address per line, with no port. A single line is dialed as-is. Several lines
 are probed, and the one this network can reach is used, so an IPv4 line and
 an IPv6 line can both be listed. Application DNS is hijacked to
@@ -97,8 +97,8 @@ sees the camouflage site.
 | ---------- | ------------------------------------------------------- |
 | `uuid`     | `~/.secrets/proxy-env/uuid`                             |
 | public key | `~/.secrets/proxy-env/public-key`                       |
-| `short_id` | `proxy.nix` (`short_id`)                                |
-| SNI        | `proxy.nix` (`sni`)                                     |
+| `short_id` | `ladder.nix` (`short_id`)                               |
+| SNI        | `ladder.nix` (`sni`)                                    |
 
 The compact form is a share link, which every common client imports:
 

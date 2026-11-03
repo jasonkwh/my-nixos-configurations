@@ -51,7 +51,7 @@ lib.mkMerge [
             };
           };
 
-          # Proxy node -> China backbone RTT (half path only; the client side
+          # Ladder node -> China backbone RTT (half path only; the client side
           # runs in China and cannot be probed from here).
           modules.icmp = {
             prober = "icmp";
@@ -260,10 +260,10 @@ lib.mkMerge [
           ];
         }
         {
-          # ICMP RTT from the hub (the proxy node) to China's big-2 DNS.
+          # ICMP RTT from the hub (the ladder node) to China's big-2 DNS.
           # instance is the probed IP. Operator names stay in the Grafana
           # legend: a target label would split each IP into a second series.
-          job_name = "proxy-latency";
+          job_name = "ladder-latency";
           metrics_path = "/probe";
           params = { module = [ "icmp" ]; };
           static_configs = [
@@ -319,7 +319,7 @@ lib.mkMerge [
               (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../../misc/grafana-syncthing.json))
               (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../../misc/grafana-agent-status.json))
               (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../../misc/grafana-logs.json))
-              (pkgs.writeTextDir "grafana-proxy.json" (builtins.readFile ../../../misc/grafana-proxy.json))
+              (pkgs.writeTextDir "grafana-ladder.json" (builtins.readFile ../../../misc/grafana-ladder.json))
               # @moneroWallet@ and @bitaxeIp@ come from flake.nix.
               (pkgs.writeTextDir "grafana-mining.json" (
                 lib.replaceStrings
@@ -624,7 +624,7 @@ lib.mkMerge [
     };
   }
 
-  # Proxy node stats (connections, up/down bytes) from sing-box's Clash API.
+  # Ladder node stats (connections, up/down bytes) from sing-box's Clash API.
   # The API keeps cumulative totals, so Grafana derives rates with rate().
   {
     systemd.services.prometheus-singbox = lib.mkIf isFleetHub {

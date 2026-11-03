@@ -7,7 +7,7 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "Proxy node online",
+      "title": "Ladder node online",
       "datasource": {
         "type": "prometheus",
         "uid": "${ds_prometheus}"
@@ -359,12 +359,12 @@
       },
       "targets": [
         {
-          "expr": "sum without (provider) (1000 * probe_icmp_duration_seconds{job=\"proxy-latency\", phase=\"rtt\", instance=\"223.5.5.5\"})",
+          "expr": "sum without (provider) (1000 * probe_icmp_duration_seconds{job=\"ladder-latency\", phase=\"rtt\", instance=\"223.5.5.5\"})",
           "legendFormat": "223.5.5.5 (Alibaba)",
           "refId": "A"
         },
         {
-          "expr": "sum without (provider) (1000 * probe_icmp_duration_seconds{job=\"proxy-latency\", phase=\"rtt\", instance=\"119.29.29.29\"})",
+          "expr": "sum without (provider) (1000 * probe_icmp_duration_seconds{job=\"ladder-latency\", phase=\"rtt\", instance=\"119.29.29.29\"})",
           "legendFormat": "119.29.29.29 (Tencent)",
           "refId": "B"
         }
@@ -396,7 +396,7 @@
     }
   ],
   "schemaVersion": 39,
-  "tags": ["shengos", "proxy"],
+  "tags": ["shengos", "ladder"],
   "templating": {
     "list": [
       {
@@ -416,7 +416,7 @@
     "to": "now"
   },
   "timezone": "",
-  "title": "ShengOS Proxy Node",
-  "uid": "shengos-proxy",
+  "title": "ShengOS Ladder",
+  "uid": "shengos-ladder",
   "version": 1
 }

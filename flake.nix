@@ -125,7 +125,7 @@
           isHeadless = true;
           isFleetHub = true;
           isBuilder = true;
-          isProxyServer = true;
+          isLadderServer = true;
           buildSpeed = 1;
           maxBuildJobs = 1;
           extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
@@ -169,10 +169,10 @@
       # adding it here would rewrite every NixOS Hermes config.
       hermesPeerHosts = builtins.attrNames nixosHostDefs;
 
-      mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, isProxyServer ? false, isProxyClient ? false, isSteamMachine ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
+      mkHost = { name, isLaptop ? false, isHeadless ? false, isFleetHub ? false, isLadderServer ? false, isLadderClient ? false, isSteamMachine ? false, hostSystem ? "x86_64-linux", extraModules ? [ ], hostName, ... }: nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit username fullName email homeDirectory isLaptop isHeadless isSteamMachine tailscaleDomain tensorRigHostnamePrefix;
-          inherit isFleetHub isProxyServer isProxyClient;
+          inherit isFleetHub isLadderServer isLadderClient;
           inherit name;
           inherit hermesPeerHosts;
           inherit hermesModel;
