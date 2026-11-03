@@ -1,4 +1,8 @@
-# Ladder
+<p align="center">
+  <img src="../assets/logos/logo_ladder.png" alt="Ladder logo" width="180">
+</p>
+
+<h1 align="center">Ladder</h1>
 
 One host in the fleet can act as a REALITY entry node, so a device abroad can
 reach the internet (and the tailnet) through the home connection. It is off by
