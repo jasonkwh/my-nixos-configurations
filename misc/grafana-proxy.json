@@ -27,9 +27,7 @@
       ],
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -46,12 +44,12 @@
               "type": "value",
               "options": {
                 "0": {
-                  "text": "OFFLINE",
+                  "text": "offline",
                   "color": "red",
                   "index": 0
                 },
                 "1": {
-                  "text": "ONLINE",
+                  "text": "online",
                   "color": "green",
                   "index": 1
                 }
@@ -93,9 +91,7 @@
       ],
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -144,9 +140,7 @@
       ],
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -194,9 +188,7 @@
       ],
       "options": {
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -404,10 +396,7 @@
     }
   ],
   "schemaVersion": 39,
-  "tags": [
-    "shengos",
-    "proxy"
-  ],
+  "tags": ["shengos", "proxy"],
   "templating": {
     "list": [
       {
