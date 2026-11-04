@@ -15,7 +15,7 @@
   ·
   <a href="#fleet">Fleet</a>
   ·
-  <a href="#mining">Mining</a>
+  <a href="docs/mining.md">Mining</a>
   ·
   <a href="docs/ladder.md">Ladder</a>
   ·
@@ -96,28 +96,6 @@ admin password on first login):
 小升升 runs on Hermes-enabled hosts. Memories and skills sync over Syncthing;
 the WhatsApp gateway lives only on the hub.
 
-## Mining
-
-Desktop hosts (`!isHeadless` — laptops and the Mac Pro) install XMRig and
-write `~/.config/xmrig.json` from `cluster/common/nixos/xmrig.nix`. The Steam Deck
-gets the same file from `homeConfigurations.jasonkwh-deck`
-(`cluster/common/home/xmrig.nix`) with huge pages off. The headless hub
-does not mine.
-
-Wallet and pool list are the `monero` attrset in `flake.nix`. `monero.pools`
-is tried in order; later entries are failover. MoneroOcean ports in the
-`2xxxx` range are TLS; a `1xxxx` port with `tls = true` will not connect.
-Kryptex XMR uses `8029` for TLS and `7029` for plain TCP.
-
-The module reserves 1200 huge pages, loads `msr` with writes allowed, and
-wraps `xmrig` with `cap_sys_rawio` so RandomX can use MSR and huge pages.
-CPU threads yield so the desktop stays usable. The HTTP API listens on
-port `16000`, reachable from other Tailscale machines.
-
-```bash
-xmrig
-```
-
 ## Commands
 
 | Command                | Description                                                                                      |
@@ -146,6 +124,7 @@ cluster/               # NixOS + Home Manager
   7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/ deck/
 misc/                  # SOUL.md, Grafana dashboards, Prometheus rules, helper scripts
 docs/install.md
+docs/mining.md         # XMRig: pools, huge pages, HTTP API
 docs/ladder.md         # REALITY entry node: secrets, port forwarding, clients
 assets/
 version.yaml           # bumped on push to main
