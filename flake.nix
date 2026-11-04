@@ -64,7 +64,7 @@
       # cluster/common/nixos via specialArgs.
       hermesModel = {
         provider = "openai-codex";
-        default = "gpt-6-luna-900k";
+        default = "gpt-6-luna";
         base_url = "https://chatgpt.com/backend-api/codex";
       };
 
