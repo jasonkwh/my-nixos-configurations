@@ -63,9 +63,9 @@
       # Hermes model config — single source of truth; passed into
       # cluster/common/nixos via specialArgs.
       hermesModel = {
-        provider = "openai-codex";
-        default = "gpt-6-luna";
-        base_url = "https://chatgpt.com/backend-api/codex";
+        provider = "openrouter";
+        default = "deepseek/deepseek-v4.1-flash-1017";
+        base_url = "https://openrouter.ai/api/v1";
       };
 
       # Home Manager entry point shared verbatim by every host (and the Live
