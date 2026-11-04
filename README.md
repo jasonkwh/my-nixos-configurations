@@ -44,8 +44,8 @@ the owner has verified with `shengos-switch`.
 - **Dev-ready** — Podman, Kubernetes tooling, cloud CLIs, language runtimes.
 - **Ladder** — REALITY tunnel so a machine abroad can exit through the home
   node.
-- **Monero mining** — XMRig on every desktop host (headless boards skip it).
-  Wallet and pool live in `flake.nix` (`monero`).
+- **Mining** — XMRig on desktop hosts, Bitaxe on the LAN. Wallet, pools,
+  and miner addresses live in `flake.nix`.
 
 ## Quick start
 
@@ -124,7 +124,7 @@ cluster/               # NixOS + Home Manager
   7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/ deck/
 misc/                  # SOUL.md, Grafana dashboards, Prometheus rules, helper scripts
 docs/install.md
-docs/mining.md         # XMRig: pools, huge pages, HTTP API
+docs/mining.md         # XMRig + Bitaxe, Grafana BTC/XMR dashboard
 docs/ladder.md         # REALITY entry node: secrets, port forwarding, clients
 assets/
 version.yaml           # bumped on push to main
