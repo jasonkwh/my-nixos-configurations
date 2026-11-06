@@ -1,7 +1,7 @@
 { pkgs }:
 
 let
-  cursorVersion = "3.28.7";
+  cursorVersion = "3.29.9";
 in
 pkgs.code-cursor.overrideAttrs (old: {
   version = cursorVersion;
@@ -9,8 +9,8 @@ pkgs.code-cursor.overrideAttrs (old: {
     pname = "cursor";
     version = cursorVersion;
     src = pkgs.fetchurl {
-      url = "https://downloads.cursor.com/production/25b52e7d03ebf2d5608914158e119f7992432a34/linux/x64/Cursor-${cursorVersion}-x86_64.AppImage";
-      sha256 = "sha256-r1T5U/dAvXZ4LdreN2HrFKAiDIde+YL8TVtuAMtXMKQ=";
+      url = "https://downloads.cursor.com/production/306d153d51d714882ab7b1bc49649cab624e8a31/linux/x64/Cursor-${cursorVersion}-x86_64.AppImage";
+      sha256 = "sha256-xDtVthf031Xgmgv9fj54IJxuwQuCFcgupePxn11MppM=";
     };
   };
   sourceRoot = "cursor-${cursorVersion}-extracted/usr/share/cursor";
