@@ -415,7 +415,7 @@
     openssh = {
       enable = true; # Enable the OpenSSH daemon.
       settings = {
-        X11Forwarding = true;
+        X11Forwarding = false;
         PermitRootLogin = "no";
         # Key-only fleet: machines reach each other over Tailscale with
         # per-host identity keys declared in cluster/<host>/configuration.nix.
