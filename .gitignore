@@ -36,3 +36,9 @@ assets/secrets/
 
 # sealed secrets ciphertext (meow live / image)
 *.tar.enc
+
+# Ignore automatically generated direnv output
+.direnv
+
+# Ignore NixOS interactive test driver history
+**/.nixos-test-history
