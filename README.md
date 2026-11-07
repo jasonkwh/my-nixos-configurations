@@ -60,7 +60,7 @@ New machine: [docs/install.md](docs/install.md).
 
 ## Fleet
 
-Hosts are declared in `flake.nix` (`hostDefs`). `isLaptop` / `isHeadless` /
+Hosts are declared in `cluster/hosts.nix`. `isLaptop` / `isHeadless` /
 `isSteamMachine` / `isFleetHub` / `isBuilder` select the shared modules.
 x86 NixOS hosts can cross-build the Pi SD image. `isSteamMachine` marks a
 SteamOS device: it stays in the inventory and is left out of
@@ -80,10 +80,10 @@ peer list. The Deck still runs Hermes and XMRig on its own.
 `jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
 Alertmanager, Grafana, and Loki (per-host Alloy pushes journald to it).
 Every NixOS host exports `node_exporter` on `tailscale0:9100`; Prometheus
-scrapes those `hostDefs` targets via MagicDNS. Ephemeral GPU cloud boxes can
+scrapes those hosts via MagicDNS. Ephemeral GPU cloud boxes can
 join Tailscale as `jasonkwh-tensor-rig` / `jasonkwh-tensor-rig-N` (prefix in
 `flake.nix`); the hub refreshes Prometheus file_sd from `tailscale status`
-without adding each rig to `hostDefs`. SteamOS machines are omitted.
+without adding each rig to `cluster/hosts.nix`. SteamOS machines are omitted.
 Alertmanager posts to the hub's Hermes webhook, which forwards the message
 to WhatsApp. Rules are in
 `misc/prometheus-fleet-rules.yml`: one WhatsApp when a host that was up
@@ -107,7 +107,7 @@ the WhatsApp gateway lives only on the hub.
 | `meow gc`              | Delete old generations + refresh bootloader                                                      |
 | `meow image <host>`    | SD image, e.g. `jasonkwh-bcm2711` → `result/sd-image/*.img.zst`                                  |
 | `meow headless-env`    | Write Wi-Fi (+ optional Tailscale key) into `~/.secrets/headless-env`                            |
-| `meow syncthing-init`  | Print this machine's Syncthing device ID for `hostDefs`                                          |
+| `meow syncthing-init`  | Print this machine's Syncthing device ID for `cluster/hosts.nix`                                 |
 | `meow secrets-backup`  | Encrypt `~/.secrets` to `secrets.tar.enc`                                                        |
 | `meow secrets-restore` | Restore `~/.secrets` (modes + ACLs)                                                              |
 | `meow <hostname>`      | Rebuild a named host (e.g. `jasonkwh-7520u`)                                                     |
@@ -118,8 +118,9 @@ target.
 ## Layout
 
 ```
-flake.nix              # inputs + hostDefs
+flake.nix              # inputs and host wiring
 cluster/               # NixOS + Home Manager
+  hosts.nix            # fleet inventory
   common/              # nixos/, home/, hermes/
   7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/ deck/
 misc/                  # SOUL.md, Grafana dashboards, Prometheus rules, helper scripts
