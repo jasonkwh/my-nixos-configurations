@@ -14,7 +14,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    hermes-agent.url = "github:NousResearch/hermes-agent/v0.22.7";
+    hermes-agent.url = "github:NousResearch/hermes-agent/v0.23.0";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
@@ -24,6 +24,10 @@
       url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
+    };
+    brave = {
+      url = "git+https://codeberg.org/buckley310/brave-browser-nix?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -70,7 +74,7 @@
 
       # Home Manager entry point shared verbatim by every host (and the Live
       # image). cluster/common/home is a pure router: every host gets
-      # home/cli.nix; isLaptop/isHeadless flags (set per-host below)
+      # home/cli.nix; isLaptop/isHeadless flags (set in cluster/hosts.nix)
       # add home/apps.nix, home/plasma.nix, and home/laptop.nix. Per-host extra packages live
       # in cluster/<host>/home.nix.
       homeManagerModule = { isLaptop ? false, isHeadless ? false, isSteamMachine ? false, hostName }: {
@@ -85,76 +89,7 @@
         ];
       };
 
-      # Fleet inventory. Hardware lives in cluster/<name>/, not /etc/nixos.
-      # maxBuildJobs = min(cores, RAM_GB/4); Pi is 1 (hub services).
-      # hostPublicKey: on-board ssh_host_ed25519_key.pub — never ssh-keyscan.
-      hostDefs = {
-        "jasonkwh-7300u" = {
-          name = "7300u";
-          hostSystem = "x86_64-linux";
-          isLaptop = true;
-          isBuilder = true;
-          buildSpeed = 2;
-          maxBuildJobs = 2;
-          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk5ItDGM2FVXZhn7c2B7u96cgximMG2fmlR6B+7nef1";
-          syncthingId = "U5DJ45M-J37KSC4-6D5Y2KZ-ARKDIQ7-SAPGPD3-IVIUI6M-3NOIOGZ-I2X3QQV";
-        };
-        "jasonkwh-7520u" = {
-          name = "7520u";
-          hostSystem = "x86_64-linux";
-          isLaptop = true;
-          isBuilder = true;
-          buildSpeed = 3;
-          maxBuildJobs = 4;
-          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIODXodoJLkTtxwWGkqXIWW2dC0BXN/uHgb7eABbczTEZ";
-          syncthingId = "WGJTJ54-F66PGU2-RRUYEYV-DBUDMT7-YNCBJYI-6YKCJID-CJRD5GT-DUI6CQ5";
-        };
-        "jasonkwh-2450m" = {
-          name = "2450m";
-          hostSystem = "x86_64-linux";
-          isLaptop = true;
-          isBuilder = true;
-          buildSpeed = 1;
-          maxBuildJobs = 2;
-          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG+KOrVNYK6dBw+Ucv53poZ2Ptszaav5ZpFA+j/5+FKP";
-          syncthingId = "WGQMBDR-UDX7MWW-JMDKKSQ-PRSIE6H-WJXKGGU-PMPCZKA-JV6VJL6-C6YBSAN";
-        };
-        "jasonkwh-bcm2711" = {
-          name = "bcm2711";
-          hostSystem = "aarch64-linux";
-          isHeadless = true;
-          isFleetHub = true;
-          isBuilder = true;
-          isLadderServer = true;
-          buildSpeed = 1;
-          maxBuildJobs = 1;
-          extraModules = [ nixos-hardware.nixosModules.raspberry-pi-4 ];
-          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMliakPvWur4Rh8cPKw83mEFGwfS/2OlsfO5g9p+BztM";
-          syncthingId = "3HVJKXT-JBAOZME-7IO7IXE-ZVA3RPU-NVZ37PL-G26C3V7-JFAETLE-ZOFKBAB";
-        };
-        "jasonkwh-3210m" = {
-          name = "3210m";
-          hostSystem = "x86_64-linux";
-          isLaptop = true;
-          isBuilder = true;
-          buildSpeed = 1;
-          maxBuildJobs = 2;
-          hostPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJsR36gqTe9gKZ6y7STXvHaLbN/lDIJH9xD3c4akH4cN";
-          syncthingId = "WOXKEDN-PWOAESC-GEULKND-C66M4IV-FPQTUWW-TL6554M-H2BSD2L-P2AF3QX";
-        };
-        "jasonkwh-1650v2" = {
-          name = "1650v2";
-          hostSystem = "x86_64-linux";
-          isLaptop = false;
-        };
-        "jasonkwh-deck" = {
-          name = "deck";
-          hostSystem = "x86_64-linux";
-          isSteamMachine = true;
-          username = "deck";
-          homeDirectory = "/home/deck";
-        };
-      };
+      hostDefs = import ./cluster/hosts.nix { inherit nixos-hardware; };
 
       nixosHostDefs = lib.filterAttrs (_: def: !(def.isSteamMachine or false)) hostDefs;
 
@@ -190,6 +125,7 @@
         modules = [
           { nixpkgs.hostPlatform = hostSystem; }
           inputs.hermes-agent.nixosModules.default
+          inputs.brave.nixosModules.default
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
           ({ config, pkgs, ... }:
@@ -277,6 +213,11 @@
         pkgs = import nixpkgs {
           system = def.hostSystem;
           config.allowUnfree = true;
+          overlays = [
+            (_final: _prev: {
+              inherit (inputs.brave.packages.${def.hostSystem}) brave brave-origin;
+            })
+          ];
         };
         extraSpecialArgs = {
           inherit monero fullName email hermesModel hermesPeerHosts tailscaleDomain syncthingDevices;
