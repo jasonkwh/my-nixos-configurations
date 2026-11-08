@@ -29,6 +29,10 @@
       url = "git+https://codeberg.org/buckley310/brave-browser-nix?ref=main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    cursor = {
+      url = "github:jasonkwh/cursor-ide-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, plasma-manager, nixos-hardware, ... }@inputs:
@@ -126,6 +130,7 @@
           { nixpkgs.hostPlatform = hostSystem; }
           inputs.hermes-agent.nixosModules.default
           inputs.brave.nixosModules.default
+          inputs.cursor.nixosModules.default
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
           ({ config, pkgs, ... }:
@@ -216,6 +221,7 @@
           overlays = [
             (_final: _prev: {
               inherit (inputs.brave.packages.${def.hostSystem}) brave brave-origin;
+              inherit (inputs.cursor.packages.${def.hostSystem}) cursor;
             })
           ];
         };

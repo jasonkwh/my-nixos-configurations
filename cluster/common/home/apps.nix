@@ -14,7 +14,6 @@ let
     if builtins.isAttrs osConfig
     then osConfig.services.hermes-agent.enable or false
     else (config.services.hermes-agent or { }).enable or false;
-  cursor = import ./cursor.nix { inherit pkgs; };
 in
 {
   # Skip Cursor's Sentry crash-reporter and Electron GPU crashes.
@@ -92,6 +91,7 @@ in
       libreoffice-qt
       zoom-us
       brave
+      cursor
       sparrow
       buildah
       skopeo
@@ -99,7 +99,7 @@ in
       podman-compose
       kdePackages.isoimagewriter
       feather
-    ] ++ [ cursor ];
+    ];
 
   # Aliases ride along with the tools they point at (zsh is configured
   # in cli.nix).

@@ -21,6 +21,26 @@
         "url": "https://codeberg.org/buckley310/brave-browser-nix"
       }
     },
+    "cursor": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794140769,
+        "narHash": "sha256-jCU8lGOdZwPXjSnB/iGmNHzYPoOuxw69piT5VK0hLp0=",
+        "owner": "jasonkwh",
+        "repo": "cursor-ide-nix",
+        "rev": "7bf6890d58e14731fcf81ca68488cf9a6e0834be",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jasonkwh",
+        "repo": "cursor-ide-nix",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -269,6 +289,7 @@
     "root": {
       "inputs": {
         "brave": "brave",
+        "cursor": "cursor",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager_2",
         "nixos-hardware": "nixos-hardware",
