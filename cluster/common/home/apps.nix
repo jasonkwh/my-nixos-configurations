@@ -91,7 +91,7 @@ in
       libreoffice-qt
       zoom-us
       brave
-      cursor
+      code-cursor
       sparrow
       buildah
       skopeo

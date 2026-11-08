@@ -221,7 +221,7 @@
           overlays = [
             (_final: _prev: {
               inherit (inputs.brave.packages.${def.hostSystem}) brave brave-origin;
-              inherit (inputs.cursor.packages.${def.hostSystem}) cursor;
+              inherit (inputs.cursor.packages.${def.hostSystem}) code-cursor;
             })
           ];
         };
