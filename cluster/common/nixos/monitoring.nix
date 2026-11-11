@@ -7,10 +7,10 @@
 
 let
   # Hub MagicDNS name from hostDefs (Grafana :3001, Alloy -> Loki :3100).
-  fleetHubUrl = "${
-    builtins.head (builtins.attrNames
-      (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs))
-  }.${tailscaleDomain}";
+  fleetHubNames = builtins.attrNames (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs);
+  fleetHubUrl = "${builtins.head fleetHubNames}.${tailscaleDomain}";
+  # MQTT dashboard machine list. Hostnames are [A-Za-z0-9-], so this is a safe regex.
+  fleetHubHostRegex = lib.concatStringsSep "|" fleetHubNames;
 
   # Scrape lists stay the NixOS fleet. SteamOS is outside both jobs so
   # adding a Deck does not change the hub's Prometheus config.
@@ -319,6 +319,12 @@ lib.mkMerge [
               (pkgs.writeTextDir "grafana-syncthing.json" (builtins.readFile ../../../misc/grafana-syncthing.json))
               (pkgs.writeTextDir "grafana-agent-status.json" (builtins.readFile ../../../misc/grafana-agent-status.json))
               (pkgs.writeTextDir "grafana-logs.json" (builtins.readFile ../../../misc/grafana-logs.json))
+              (pkgs.writeTextDir "grafana-mqtt.json" (
+                lib.replaceStrings
+                  [ "@fleetHubHostRegex@" "@fleetHubHost@" ]
+                  [ fleetHubHostRegex (builtins.head fleetHubNames) ]
+                  (builtins.readFile ../../../misc/grafana-mqtt.json)
+              ))
               (pkgs.writeTextDir "grafana-ladder.json" (builtins.readFile ../../../misc/grafana-ladder.json))
               # @moneroWallet@ and @bitaxeIp@ come from flake.nix.
               (pkgs.writeTextDir "grafana-mining.json" (

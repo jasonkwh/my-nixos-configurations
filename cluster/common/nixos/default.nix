@@ -19,6 +19,7 @@
   };
 
   imports = [ hardwareConfig ./monitoring.nix ]
+    ++ lib.optionals isFleetHub [ ./mqtt.nix ]
     ++ lib.optionals (!isHeadless) [ ./xmrig.nix ]
     ++ lib.optionals (isLadderServer || isLadderClient) [ ./ladder.nix ]
     ++ lib.optionals isLaptop [ ./laptop.nix ]

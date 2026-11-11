@@ -1,0 +1,90 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "Messages",
+      "datasource": {
+        "type": "loki",
+        "uid": "${ds_loki}"
+      },
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "{job=\"mqtt\", host=~\"$host\"}",
+          "refId": "A",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "shengos",
+    "mqtt"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "ds_loki",
+        "type": "datasource",
+        "query": "loki",
+        "current": {
+          "text": "Loki",
+          "value": "Loki"
+        },
+        "hide": 2
+      },
+      {
+        "name": "host",
+        "label": "Machine",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${ds_loki}"
+        },
+        "query": "label_values({job=\"mqtt\", host=~\"@fleetHubHostRegex@\"}, host)",
+        "definition": "label_values({job=\"mqtt\", host=~\"@fleetHubHostRegex@\"}, host)",
+        "refresh": 1,
+        "includeAll": false,
+        "multi": false,
+        "current": {
+          "text": "@fleetHubHost@",
+          "value": "@fleetHubHost@"
+        },
+        "sort": 1
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "",
+  "title": "ShengOS MQTT Messages",
+  "uid": "shengos-mqtt",
+  "version": 1
+}

@@ -78,7 +78,12 @@ peer list. The Deck still runs Hermes and XMRig on its own.
 | **`jasonkwh-deck`**    | Valve Steam Deck (OLED) · 16GB                                                  |
 
 `jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
-Alertmanager, Grafana, and Loki (per-host Alloy pushes journald to it).
+Alertmanager, Grafana, Loki (per-host Alloy pushes journald to it), and the
+Eclipse Mosquitto MQTT broker on `tailscale0:1883`. The hub copies each
+client publish into Loki, and Grafana shows it on
+**ShengOS MQTT Messages**. The Machine list on that dashboard is only the
+fleet hub.
+
 Every NixOS host exports `node_exporter` on `tailscale0:9100`; Prometheus
 scrapes those hosts via MagicDNS. Ephemeral GPU cloud boxes can
 join Tailscale as `jasonkwh-tensor-rig` / `jasonkwh-tensor-rig-N` (prefix in
