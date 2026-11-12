@@ -20,7 +20,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"mqtt\", host=~\"$host\"}",
+          "expr": "{job=\"mqtt\", host=\"$host\"}",
           "refId": "A",
           "queryType": "range"
         }
@@ -61,21 +61,23 @@
       {
         "name": "host",
         "label": "Machine",
-        "type": "query",
-        "datasource": {
-          "type": "loki",
-          "uid": "${ds_loki}"
-        },
-        "query": "label_values({job=\"mqtt\", host=~\"@fleetHubHostRegex@\"}, host)",
-        "definition": "label_values({job=\"mqtt\", host=~\"@fleetHubHostRegex@\"}, host)",
-        "refresh": 1,
+        "type": "custom",
+        "query": "@fleetHubHost@",
+        "options": [
+          {
+            "text": "@fleetHubHost@",
+            "value": "@fleetHubHost@",
+            "selected": true
+          }
+        ],
         "includeAll": false,
         "multi": false,
+        "skipUrlSync": true,
         "current": {
+          "selected": true,
           "text": "@fleetHubHost@",
           "value": "@fleetHubHost@"
-        },
-        "sort": 1
+        }
       }
     ]
   },
