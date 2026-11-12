@@ -320,7 +320,7 @@ lib.mkMerge [
               (pkgs.writeTextDir "grafana-mqtt.json" (
                 lib.replaceStrings
                   [ "@fleetHubHost@" ]
-                  [ builtins.head fleetHubNames ]
+                  [ (builtins.head fleetHubNames) ]
                   (builtins.readFile ../../../misc/grafana-mqtt.json)
               ))
               (pkgs.writeTextDir "grafana-ladder.json" (builtins.readFile ../../../misc/grafana-ladder.json))
