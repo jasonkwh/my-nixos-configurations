@@ -20,7 +20,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"mqtt\", host=\"$host\"}",
+          "expr": "{job=\"mqtt\", host=\"$host\", topic=~\"$topic\"}",
           "refId": "A",
           "queryType": "range"
         }
@@ -78,6 +78,26 @@
           "text": "@fleetHubHost@",
           "value": "@fleetHubHost@"
         }
+      },
+      {
+        "name": "topic",
+        "label": "Topic",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${ds_loki}"
+        },
+        "query": "label_values({job=\"mqtt\", host=\"$host\"}, topic)",
+        "definition": "label_values({job=\"mqtt\", host=\"$host\"}, topic)",
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "sort": 1
       }
     ]
   },
