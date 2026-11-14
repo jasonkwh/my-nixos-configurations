@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794656986,
-        "narHash": "sha256-MBfNugCPPiQ1dXjoSeg58XspOwjA5n4Xi5bwIG6JXws=",
+        "lastModified": 1794664161,
+        "narHash": "sha256-509pDB+2Kc3dLHvN9T1DydQQrLQ8+aSDMPMjBVmBiJw=",
         "owner": "jasonkwh",
         "repo": "cursor-ide-nix",
-        "rev": "db915c52c421190a67acf0fdbb945f91b2571844",
+        "rev": "64c3a6dfb0d17b23959c2d0e23668b2d250bcf1b",
         "type": "github"
       },
       "original": {
