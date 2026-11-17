@@ -221,7 +221,7 @@
       # isSteamMachine, so the account lives on the hostDef, not here.
       mkSteamHome = hostName: def: home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
-          system = def.hostSystem;
+          hostPlatform = def.hostSystem;
           config.allowUnfree = true;
           overlays = [
             (_final: _prev: {
