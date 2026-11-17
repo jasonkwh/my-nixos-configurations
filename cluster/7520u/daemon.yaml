@@ -1,0 +1,11 @@
+LogLevel: 0
+PProfEnabled: false
+
+Clipboard:
+  Enabled: true
+  SSHUser: jasonkwh
+
+MQTTConn:
+  Host: jasonkwh-bcm2711
+  Port: 1883
+  KeepAlive: 30

@@ -1,0 +1,11 @@
+LogLevel: 0
+PProfEnabled: false
+
+Clipboard:
+  Enabled: false
+  SSHUser: jasonkwh
+
+MQTTConn:
+  Host: localhost
+  Port: 1883
+  KeepAlive: 30
