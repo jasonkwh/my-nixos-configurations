@@ -88,9 +88,11 @@ fleet hub.
 
 The flake also declares the [ShengOS Daemon](https://github.com/jasonkwh/shengos-daemon)
 service for every NixOS host.
-Each host's settings live in `cluster/<host>/daemon.yaml`; the common module
-installs that file at `/etc/shengos-daemon/config.yaml`. Fleet clients connect
-to the hub's MQTT broker, while the hub itself connects locally.
+Each host's overrides are derived in `cluster/common/nixos/shengosd.nix`
+(clipboard off on headless hosts; clients point at the hub's MQTT broker, the
+hub itself connects locally) and passed to the daemon as environment variables
+on top of the module's default `config/config.yaml`.
+The daemon runs as a systemd user service.
 
 Every NixOS host exports `node_exporter` on `tailscale0:9100`; Prometheus
 scrapes those hosts via MagicDNS. Ephemeral GPU cloud boxes can
