@@ -294,7 +294,28 @@
         "home-manager": "home-manager_2",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_3",
-        "plasma-manager": "plasma-manager"
+        "plasma-manager": "plasma-manager",
+        "shengos-daemon": "shengos-daemon"
+      }
+    },
+    "shengos-daemon": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794922603,
+        "narHash": "sha256-gxtDAEp2qboburzZ1SgmseXYwJn1GPQacAmxUdm1yS0=",
+        "owner": "jasonkwh",
+        "repo": "shengos-daemon",
+        "rev": "fdf45899bc439a535962b1ccf01ae4c25ece3438",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jasonkwh",
+        "repo": "shengos-daemon",
+        "type": "github"
       }
     },
     "uv2nix": {

@@ -33,6 +33,10 @@
       url = "github:jasonkwh/cursor-ide-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    shengos-daemon = {
+      url = "github:jasonkwh/shengos-daemon";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, plasma-manager, nixos-hardware, ... }@inputs:
@@ -129,6 +133,7 @@
         modules = [
           { nixpkgs.hostPlatform = hostSystem; }
           inputs.hermes-agent.nixosModules.default
+          inputs.shengos-daemon.nixosModules.default
           inputs.brave.nixosModules.default
           inputs.cursor.nixosModules.default
           # Hostname comes from the hostDefs key — single source of truth.
