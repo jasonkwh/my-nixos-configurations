@@ -119,20 +119,3 @@ the WhatsApp gateway lives only on the hub.
 
 `upgrade` uses the machine hostname unless you set `HOST=` or pass a host
 target.
-
-## Layout
-
-```
-flake.nix              # inputs and host wiring
-cluster/               # NixOS + Home Manager
-  hosts.nix            # fleet inventory
-  common/              # nixos/, home/, hermes/
-  7520u/ 7300u/ 2450m/ 3210m/ 1650v2/ bcm2711/ deck/
-misc/                  # SOUL.md, Grafana dashboards, Prometheus rules, helper scripts
-docs/install.md
-docs/mining.md         # XMRig + Bitaxe, Grafana BTC/XMR dashboard
-docs/ladder.md         # REALITY entry node: secrets, port forwarding, clients
-assets/
-version.yaml           # bumped on push to main
-.github/workflows/
-```
