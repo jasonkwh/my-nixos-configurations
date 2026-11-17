@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794873759,
-        "narHash": "sha256-17fXT1DjPz0CByv0hLoNKgwf56IXY1FyXquRUoNh0/U=",
+        "lastModified": 1794921307,
+        "narHash": "sha256-iplsvOvosMMzLAB0KYEz+fkesC8fBQsAdKWHgQoIDUY=",
         "owner": "jasonkwh",
         "repo": "cursor-ide-nix",
-        "rev": "31da68163787400e2727106a49613d8a695d74e5",
+        "rev": "19a6e1e9fa475936df68a366e663188fa3b4bc06",
         "type": "github"
       },
       "original": {
@@ -305,11 +305,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794922603,
-        "narHash": "sha256-gxtDAEp2qboburzZ1SgmseXYwJn1GPQacAmxUdm1yS0=",
+        "lastModified": 1794926908,
+        "narHash": "sha256-VBWjOYBCaIrteIaF58GeT7ydjH/7r0JJBv1t4cjV+us=",
         "owner": "jasonkwh",
         "repo": "shengos-daemon",
-        "rev": "fdf45899bc439a535962b1ccf01ae4c25ece3438",
+        "rev": "d551728160b8a0e8aee5bbff4dc79e6955683a09",
         "type": "github"
       },
       "original": {
