@@ -18,7 +18,7 @@
     };
   };
 
-  imports = [ hardwareConfig ./monitoring.nix ./shengos-daemon.nix ]
+  imports = [ hardwareConfig ./monitoring.nix ./shengosd.nix ]
     ++ lib.optionals isFleetHub [ ./mqtt.nix ]
     ++ lib.optionals (!isHeadless) [ ./xmrig.nix ]
     ++ lib.optionals (isLadderServer || isLadderClient) [ ./ladder.nix ]
