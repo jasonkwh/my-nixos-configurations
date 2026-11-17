@@ -42,6 +42,8 @@ the owner has verified with `shengos-switch`.
   leaves Desktop Mode's Plasma to SteamOS. Headless boards skip the
   GUI/Steam/GPU stack, use zram, and enrol from `~/.secrets/headless-env`.
 - **Dev-ready** — Podman, Kubernetes tooling, cloud CLIs, language runtimes.
+- **Clipboard Copy** — [ShengOS Daemon](https://github.com/jasonkwh/shengos-daemon)
+  syncs clipboard text, images, and files across enabled fleet hosts over MQTT.
 - **Ladder** — REALITY tunnel so a machine abroad can exit through the home
   node.
 - **Mining** — XMRig on desktop hosts, Bitaxe on the LAN. Wallet, pools,
@@ -83,6 +85,12 @@ Eclipse Mosquitto MQTT broker on `tailscale0:1883`. The hub copies each
 client publish into Loki, and Grafana shows it on
 **ShengOS MQTT Messages**. The Machine list on that dashboard is only the
 fleet hub.
+
+The flake also declares the [ShengOS Daemon](https://github.com/jasonkwh/shengos-daemon)
+service for every NixOS host.
+Each host's settings live in `cluster/<host>/daemon.yaml`; the common module
+installs that file at `/etc/shengos-daemon/config.yaml`. Fleet clients connect
+to the hub's MQTT broker, while the hub itself connects locally.
 
 Every NixOS host exports `node_exporter` on `tailscale0:9100`; Prometheus
 scrapes those hosts via MagicDNS. Ephemeral GPU cloud boxes can
