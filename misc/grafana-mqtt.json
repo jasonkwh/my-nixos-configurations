@@ -7,7 +7,7 @@
     {
       "id": 1,
       "type": "logs",
-      "title": "Messages",
+      "title": "Recent MQTT Messages",
       "datasource": {
         "type": "loki",
         "uid": "${ds_loki}"
@@ -27,11 +27,11 @@
       ],
       "options": {
         "showTime": true,
-        "showLabels": true,
+        "showLabels": false,
         "showCommonLabels": false,
         "wrapLogMessage": true,
         "prettifyLogMessage": false,
-        "enableLogDetails": true,
+        "enableLogDetails": false,
         "sortOrder": "Descending",
         "dedupStrategy": "none"
       },

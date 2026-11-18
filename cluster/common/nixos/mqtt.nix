@@ -9,7 +9,7 @@
 { config, lib, pkgs, isFleetHub, ... }:
 
 let
-  mqttPython = pkgs.python3.withPackages (ps: [ ps.paho-mqtt ]);
+  mqttPython = pkgs.python3.withPackages (ps: [ ps.paho-mqtt ps.msgpack ]);
   mqttToLoki = pkgs.writeText "mqtt-to-loki.py" ''
   import json
   import os
@@ -18,33 +18,67 @@ let
   import urllib.error
   import urllib.request
 
+  import msgpack
   import paho.mqtt.client as mqtt
 
   host = os.environ["MQTT_LOKI_HOST"]
   url = "http://127.0.0.1:3100/loki/api/v1/push"
+  max_preview_chars = 200
+
+  def clipped(text):
+      if len(text) <= max_preview_chars:
+          return text
+      return text[:max_preview_chars - 1] + "…"
+
+  def preview(topic, payload):
+      if topic.endswith("/clipboard"):
+          try:
+              msg = msgpack.unpackb(payload, raw=False, strict_map_key=False)
+              origin = str(msg.get("Origin", "?"))
+              fmt = msg.get("Format", 0)
+              data = msg.get("Data", b"")
+              if fmt == 1:
+                  kind = "text"
+                  content = data.decode("utf-8", errors="replace") if isinstance(data, bytes) else str(data)
+              elif fmt == 2:
+                  kind = "image"
+                  content = f"[{len(data)} bytes]"
+              elif fmt == 3:
+                  kind = "files"
+                  content = data.decode("utf-8", errors="replace") if isinstance(data, bytes) else str(data)
+              else:
+                  kind = "unknown"
+                  content = f"[{len(data)} bytes]"
+              return clipped(f"{origin} · {kind} · {content}")
+          except Exception as exc:
+              return clipped(f"clipboard · decode failed · {len(payload)} bytes ({exc})")
+      return clipped(payload.decode("utf-8", errors="replace"))
 
   def push(topic, payload):
       body = json.dumps({
           "streams": [{
               "stream": {"job": "mqtt", "host": host, "topic": topic},
-              "values": [[str(time.time_ns()), payload]],
+              "values": [[str(time.time_ns()), preview(topic, payload)]],
           }]
       }).encode()
       req = urllib.request.Request(
           url, data=body, headers={"Content-Type": "application/json"}
       )
-      delay = 1
-      while True:
+      for attempt in range(3):
           try:
               with urllib.request.urlopen(req, timeout=5) as resp:
                   resp.read()
               return
+          except urllib.error.HTTPError as exc:
+              detail = exc.read(512).decode("utf-8", errors="replace")
+              print(f"loki push failed: HTTP {exc.code}: {detail}", file=sys.stderr)
+              if 400 <= exc.code < 500:
+                  return
           except (urllib.error.URLError, TimeoutError, OSError) as exc:
               print(f"loki push failed: {exc}", file=sys.stderr)
-              if delay > 30:
-                  raise SystemExit(1)
-              time.sleep(delay)
-              delay = min(delay * 2, 30)
+          if attempt < 2:
+              time.sleep(2 ** attempt)
+      print("loki push dropped after 3 attempts", file=sys.stderr)
 
   def on_connect(client, _userdata, _flags, reason_code, _properties):
       if getattr(reason_code, "is_failure", reason_code != 0):
@@ -53,7 +87,10 @@ let
       client.subscribe("#", qos=0)
 
   def on_message(_client, _userdata, message):
-      push(message.topic, message.payload.decode("utf-8", errors="replace"))
+      try:
+          push(message.topic, message.payload)
+      except Exception as exc:
+          print(f"mqtt message logging failed: {exc}", file=sys.stderr)
 
   client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
   client.on_connect = on_connect
