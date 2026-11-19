@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794536218,
-        "narHash": "sha256-X7xhMfn/4STesAJUa/sWfL1xK8vV85YmoIxYdz2+0dA=",
+        "lastModified": 1795038981,
+        "narHash": "sha256-HhgGDM4KhaSZwT2VCz70PuTO3l4E4XINopsMfI5qHjg=",
         "ref": "main",
-        "rev": "539ce193b353aa022c9fcb7a7bc32b057d327807",
-        "revCount": 8,
+        "rev": "d5b908ff64703be2f07b420e2bac98148f95e8d8",
+        "revCount": 9,
         "type": "git",
         "url": "https://codeberg.org/buckley310/brave-browser-nix"
       },
@@ -67,22 +67,21 @@
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
-        "npm-lockfile-fix": "npm-lockfile-fix",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1793908658,
-        "narHash": "sha256-PzkocTi9jbkuht4cvpmXu/hTIAUNtE/xyivPoncNq8Y=",
+        "lastModified": 1794857325,
+        "narHash": "sha256-IgtyKYVzRbDmeyMuRqSkyV9ev+4tx2Qcg8QRvJkoSS8=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19",
+        "rev": "ae2a81ccc00e9b7c06301523e5bb09608397149c",
         "type": "github"
       },
       "original": {
         "owner": "NousResearch",
-        "ref": "v0.23.0",
+        "ref": "v0.23.2",
         "repo": "hermes-agent",
         "type": "github"
       }
@@ -134,11 +133,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1794906521,
-        "narHash": "sha256-B3ox9O5jQ7/RU2IECjP6MtA0BRqL9+yunGJRow0c1gA=",
+        "lastModified": 1795018746,
+        "narHash": "sha256-glQAHvZGgBVjzGIWgIZYSf3X10gvtO2LPR4rtyP/Soc=",
         "owner": "NixOS",
         "repo": "nixos-hardware",
-        "rev": "d9da8426d86bd7e937226f5ecef1df1504ead2e8",
+        "rev": "33475966110df258f52d05ec4d4cd6394637cbb9",
         "type": "github"
       },
       "original": {
@@ -189,27 +188,6 @@
         "owner": "NixOS",
         "ref": "nixos-26.05",
         "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "npm-lockfile-fix": {
-      "inputs": {
-        "nixpkgs": [
-          "hermes-agent",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775903712,
-        "narHash": "sha256-2GV79U6iVH4gKAPWYrxUReB0S41ty/Y3dBLquU8AlaA=",
-        "owner": "jeslie0",
-        "repo": "npm-lockfile-fix",
-        "rev": "c6093acb0c0548e0f9b8b3d82918823721930fe8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "jeslie0",
-        "repo": "npm-lockfile-fix",
         "type": "github"
       }
     },
