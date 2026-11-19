@@ -9,7 +9,8 @@
 { config, lib, pkgs, isFleetHub, ... }:
 
 let
-  mqttPython = pkgs.python3.withPackages (ps: [ ps.paho-mqtt ps.msgpack ]);
+  mqttPort = 1883;
+  mqttPython = pkgs.python3.withPackages (ps: [ ps.paho-mqtt ]);
   mqttToLoki = pkgs.writeText "mqtt-to-loki.py" ''
   import json
   import os
@@ -18,7 +19,6 @@ let
   import urllib.error
   import urllib.request
 
-  import msgpack
   import paho.mqtt.client as mqtt
 
   host = os.environ["MQTT_LOKI_HOST"]
@@ -30,35 +30,14 @@ let
           return text
       return text[:max_preview_chars - 1] + "…"
 
-  def preview(topic, payload):
-      if topic.endswith("/clipboard"):
-          try:
-              msg = msgpack.unpackb(payload, raw=False, strict_map_key=False)
-              origin = str(msg.get("Origin", "?"))
-              fmt = msg.get("Format", 0)
-              data = msg.get("Data", b"")
-              if fmt == 1:
-                  kind = "text"
-                  content = data.decode("utf-8", errors="replace") if isinstance(data, bytes) else str(data)
-              elif fmt == 2:
-                  kind = "image"
-                  content = f"[{len(data)} bytes]"
-              elif fmt == 3:
-                  kind = "files"
-                  content = data.decode("utf-8", errors="replace") if isinstance(data, bytes) else str(data)
-              else:
-                  kind = "unknown"
-                  content = f"[{len(data)} bytes]"
-              return clipped(f"{origin} · {kind} · {content}")
-          except Exception as exc:
-              return clipped(f"clipboard · decode failed · {len(payload)} bytes ({exc})")
+  def preview(payload):
       return clipped(payload.decode("utf-8", errors="replace"))
 
   def push(topic, payload):
       body = json.dumps({
           "streams": [{
               "stream": {"job": "mqtt", "host": host, "topic": topic},
-              "values": [[str(time.time_ns()), preview(topic, payload)]],
+              "values": [[str(time.time_ns()), preview(payload)]],
           }]
       }).encode()
       req = urllib.request.Request(
@@ -97,7 +76,7 @@ let
   client.on_message = on_message
   while True:
       try:
-          client.connect("127.0.0.1", 1883, keepalive=60)
+          client.connect("127.0.0.1", ${toString mqttPort}, keepalive=60)
           client.loop_forever(retry_first_connection=True)
       except Exception as exc:
           print(f"mqtt connection failed: {exc}", file=sys.stderr)
@@ -114,14 +93,14 @@ in
 
   environment.systemPackages = [ pkgs.mosquitto ];
 
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 1883 ];
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ mqttPort ];
 
   services.mosquitto = {
     enable = true;
     persistence = true;
     listeners = [
       {
-        port = 1883;
+        port = mqttPort;
         omitPasswordAuth = true;
         settings.allow_anonymous = true;
         # The ACL plugin denies everything when the file is empty.
