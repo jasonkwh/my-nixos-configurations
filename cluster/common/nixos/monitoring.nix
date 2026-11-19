@@ -182,7 +182,7 @@ lib.mkMerge [
           params = { module = [ "whatsapp_connected" ]; };
           static_configs = [
             {
-              targets = [ "127.0.0.1:3000/health" ];
+              targets = [ "127.0.0.1:3002/health" ];
             }
           ];
           relabel_configs = [
@@ -197,7 +197,7 @@ lib.mkMerge [
           metrics_path = "/probe";
           params = { module = [ "whatsapp_gateway" ]; };
           static_configs = [
-            { targets = [ "http://127.0.0.1:3000/health" ]; }
+            { targets = [ "http://127.0.0.1:3002/health" ]; }
           ];
           relabel_configs = [
             { source_labels = [ "__address__" ]; target_label = "__param_target"; }
@@ -345,6 +345,30 @@ lib.mkMerge [
       "d /var/lib/prometheus 0755 prometheus prometheus -"
       "f /var/lib/prometheus/tensor-rig-targets.json 0644 prometheus prometheus - []"
     ];
+    systemd.services.whatsapp-health-proxy = lib.mkIf (isFleetHub && config.services.hermes-agent.enable) {
+      description = "Authenticated WhatsApp health for local monitoring";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "hermes-agent.service" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.python3}/bin/python3 ${../../../misc/whatsapp-health-proxy.py}";
+        User = "hermes";
+        Group = "hermes";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        NoNewPrivileges = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateTmp = true;
+        PrivateDevices = true;
+        ProtectProc = "invisible";
+        CapabilityBoundingSet = "";
+        RestrictAddressFamilies = [ "AF_INET" ];
+        IPAddressDeny = "any";
+        IPAddressAllow = "localhost";
+        UMask = "0077";
+      };
+    };
+
     systemd.services.prometheus-tensor-rig-targets = lib.mkIf isFleetHub {
       description = "Write Prometheus file_sd targets for online tensor-rig Tailscale peers";
       after = [ "tailscaled.service" "network-online.target" ];
