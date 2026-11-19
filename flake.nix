@@ -143,11 +143,8 @@
               systemd.services.hermes-agent.preStart = lib.mkAfter ''
                 bridge_src="${inputs.hermes-agent}/scripts/whatsapp-bridge"
                 bridge_dst="/var/lib/hermes/.hermes/scripts/whatsapp-bridge"
-                if [ ! -f "$bridge_dst/bridge.js" ]; then
-                  mkdir -p "$bridge_dst"
-                  ${pkgs.coreutils}/bin/cp -r "$bridge_src"/. "$bridge_dst"/
-                  chown -R hermes:hermes "$bridge_dst"
-                fi
+                mkdir -p "$bridge_dst"
+                ${pkgs.coreutils}/bin/cp -r --no-preserve=mode "$bridge_src"/. "$bridge_dst"/
                 # Store files are 0444; npm needs to write package-lock.json here.
                 ${pkgs.coreutils}/bin/chmod -R u+w "$bridge_dst"
                 chown -R hermes:hermes "$bridge_dst"
