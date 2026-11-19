@@ -30,34 +30,24 @@ let
           return text
       return text[:max_preview_chars - 1] + "…"
 
-  def preview(payload):
-      return clipped(repr(payload[:max_preview_chars]))
-
   def push(topic, payload):
       body = json.dumps({
           "streams": [{
               "stream": {"job": "mqtt", "host": host, "topic": topic},
-              "values": [[str(time.time_ns()), preview(payload)]],
+              "values": [[str(time.time_ns()), clipped(repr(payload[:max_preview_chars]))]],
           }]
       }).encode()
       req = urllib.request.Request(
           url, data=body, headers={"Content-Type": "application/json"}
       )
-      for attempt in range(3):
-          try:
-              with urllib.request.urlopen(req, timeout=5) as resp:
-                  resp.read()
-              return
-          except urllib.error.HTTPError as exc:
-              detail = exc.read(512).decode("utf-8", errors="replace")
-              print(f"loki push failed: HTTP {exc.code}: {detail}", file=sys.stderr)
-              if 400 <= exc.code < 500:
-                  return
-          except (urllib.error.URLError, TimeoutError, OSError) as exc:
-              print(f"loki push failed: {exc}", file=sys.stderr)
-          if attempt < 2:
-              time.sleep(2 ** attempt)
-      print("loki push dropped after 3 attempts", file=sys.stderr)
+      try:
+          with urllib.request.urlopen(req, timeout=5) as resp:
+              resp.read()
+      except urllib.error.HTTPError as exc:
+          detail = exc.read(512).decode("utf-8", errors="replace")
+          print(f"loki push failed: HTTP {exc.code}: {detail}", file=sys.stderr)
+      except (urllib.error.URLError, TimeoutError, OSError) as exc:
+          print(f"loki push failed: {exc}", file=sys.stderr)
 
   def on_connect(client, _userdata, _flags, reason_code, _properties):
       if getattr(reason_code, "is_failure", reason_code != 0):
