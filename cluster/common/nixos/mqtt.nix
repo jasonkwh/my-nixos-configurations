@@ -31,7 +31,7 @@ let
       return text[:max_preview_chars - 1] + "…"
 
   def preview(payload):
-      return clipped(payload.decode("utf-8", errors="replace"))
+      return clipped(repr(payload[:max_preview_chars]))
 
   def push(topic, payload):
       body = json.dumps({
