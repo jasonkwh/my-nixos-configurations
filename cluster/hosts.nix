@@ -61,11 +61,4 @@
     hostSystem = "x86_64-linux";
     isLaptop = false;
   };
-  "jasonkwh-deck" = {
-    name = "deck";
-    hostSystem = "x86_64-linux";
-    isSteamMachine = true;
-    username = "deck";
-    homeDirectory = "/home/deck";
-  };
 }

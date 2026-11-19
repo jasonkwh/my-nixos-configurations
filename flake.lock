@@ -283,11 +283,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794974737,
-        "narHash": "sha256-XrE6EYRfxZRbqNScLQ+152OwDFVo7IIEzgJbSuwOG2U=",
+        "lastModified": 1795058895,
+        "narHash": "sha256-qNT/1z+u1KLEX4Y7Qs+ewHuXEXHivCBwS0UqYXE39GQ=",
         "owner": "jasonkwh",
         "repo": "shengos-daemon",
-        "rev": "12617115b34a4c46b04cfc14161d5acf568583c7",
+        "rev": "1cd2a9060f2d4c0f62fd8d43b55da8f57edc3edc",
         "type": "github"
       },
       "original": {

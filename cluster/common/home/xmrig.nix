@@ -1,7 +1,5 @@
 # User-level XMRig: the package and ~/.config/xmrig.json.
-# Imported by the NixOS module (cluster/common/nixos/xmrig.nix) and by the
-# SteamOS home configuration, which cannot apply the kernel setup.
-{ pkgs, monero, hostName, isSteamMachine ? false, ... }:
+{ pkgs, monero, hostName, ... }:
 
 {
   home.packages = [ pkgs.xmrig ];
@@ -10,7 +8,7 @@
     text = builtins.toJSON {
       autosave = false;
       cpu = {
-        huge-pages = !isSteamMachine;
+        huge-pages = true;
         max-threads-hint = 100;
         priority = null;
         yield = true;

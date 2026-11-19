@@ -10,12 +10,9 @@ let
   fleetHubNames = builtins.attrNames (lib.filterAttrs (_: d: d.isFleetHub or false) hostDefs);
   fleetHubUrl = "${builtins.head fleetHubNames}.${tailscaleDomain}";
 
-  # Scrape lists stay the NixOS fleet. SteamOS is outside both jobs so
-  # adding a Deck does not change the hub's Prometheus config.
-  nixosHostNames = builtins.attrNames
-    (lib.filterAttrs (_: d: !(d.isSteamMachine or false)) hostDefs);
+  nixosHostNames = builtins.attrNames hostDefs;
   xmrigHosts = builtins.attrNames
-    (lib.filterAttrs (_: d: !(d.isHeadless or false) && !(d.isSteamMachine or false)) hostDefs);
+    (lib.filterAttrs (_: d: !(d.isHeadless or false)) hostDefs);
 in
 lib.mkMerge [
   {
@@ -235,7 +232,6 @@ lib.mkMerge [
           # MoneroOcean miners exposing xmrig's HTTP API on the tailnet.
           # Targets follow hostDefs, not a hand-written list: xmrig.nix applies
           # to every non-headless NixOS host, so a new machine joins automatically.
-          # SteamOS is excluded; the hub config stays the pre-Deck list.
           # xmrig runs manually, so down targets are expected, not a fault.
           # instance is the hostDefs hostname.
           job_name = "xmrig";

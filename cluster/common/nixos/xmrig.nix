@@ -24,6 +24,5 @@
   home-manager.users.${username} = import ../home/xmrig.nix {
     inherit pkgs monero;
     hostName = config.networking.hostName;
-    isSteamMachine = false;
   };
 }

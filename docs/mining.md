@@ -72,9 +72,8 @@ the hub.
 | Paid               | XMR already paid out                                                                                   |
 
 XMRig is started by hand, so a desktop that is off or not mining shows as
-down. That is expected, and there is no alert for it. The Steam Deck is
-left out of the scrape (see below). The wallet panels still count every
-worker mining to MoneroOcean under `monero.wallet`, Deck included. Hashes
+down. That is expected, and there is no alert for it. The wallet panels
+still count every worker mining to MoneroOcean under `monero.wallet`. Hashes
 sent to the Kryptex failover pool stay off those wallet panels; the
 per-host hashrate panels still show them, because they read the local API.
 
@@ -82,8 +81,6 @@ per-host hashrate panels still show them, because they read the local API.
 
 Desktop NixOS hosts (`!isHeadless` — the laptops and the Mac Pro) install
 XMRig and write `~/.config/xmrig.json` from `cluster/common/nixos/xmrig.nix`.
-The Steam Deck gets the same file from `homeConfigurations.jasonkwh-deck`
-(`cluster/common/home/xmrig.nix`).
 
 Start it in a terminal. There is no systemd unit:
 
@@ -121,10 +118,6 @@ On NixOS the module reserves 1200 huge pages (`vm.nr_hugepages`, about
 2.4 GiB), loads `msr` with `msr.allow_writes=on`, gives the `wheel` group
 read-write on `/dev/msr*`, and wraps `xmrig` with `cap_sys_rawio` so
 RandomX can use MSR and huge pages.
-
-The Deck cannot apply that kernel setup. Its config turns huge pages off.
-Prometheus also skips `isSteamMachine`, so the Deck never joins the
-`xmrig` scrape list.
 
 ### HTTP API
 

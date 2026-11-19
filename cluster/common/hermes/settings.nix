@@ -1,5 +1,4 @@
-# Shared Hermes agent configuration. The NixOS service and the SteamOS
-# home-manager module both consume this; only the service wrapper differs.
+# Shared Hermes agent configuration.
 {
   lib,
   pkgs,
@@ -9,9 +8,6 @@
   hostName,
   homeDirectory,
   isFleetHub ? false,
-  # Tailnet peers dial this host by name. The default API server binds
-  # localhost, which those peers cannot reach.
-  bindApiServer ? false,
 }:
 
 {
@@ -65,16 +61,7 @@
     # Always present. An omitted attr would drop the empty set that NixOS
     # laptops already write, and the hub's webhook would no longer match.
     platforms =
-      lib.optionalAttrs bindApiServer {
-        api_server = {
-          enabled = true;
-          extra = {
-            host = "0.0.0.0";
-            port = 8642;
-          };
-        };
-      }
-      // lib.optionalAttrs isFleetHub {
+      lib.optionalAttrs isFleetHub {
         # The gateway itself is host-specific (only one machine may hold the
         # WhatsApp session). The home channel is fleet-wide.
         webhook = {

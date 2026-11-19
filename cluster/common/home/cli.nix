@@ -1,9 +1,7 @@
 # CLI toolchain shared by every host. Headless boards import only this.
 {
   config,
-  # NixOS passes the system config. Standalone Home Manager (SteamOS)
-  # passes osConfig = null and turns mail on via the user Hermes service.
-  osConfig ? null,
+  osConfig,
   pkgs,
   lib,
   username,
@@ -14,10 +12,7 @@
 }:
 
 let
-  enableHermes =
-    if builtins.isAttrs osConfig
-    then osConfig.services.hermes-agent.enable or false
-    else (config.services.hermes-agent or { }).enable or false;
+  enableHermes = osConfig.services.hermes-agent.enable or false;
 in
 {
   targets.genericLinux.enable = true;

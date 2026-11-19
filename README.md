@@ -38,8 +38,7 @@ the owner has verified with `shengos-switch`.
   same-architecture builds, and binfmt-enabled x86 hosts can also build for
   aarch64 peers (e.g. help the Pi) via emulated builders.
 - **Desktop or board** — Plasma (theming, shortcuts, Fcitx5) on laptops and
-  the Mac Pro. The Steam Deck installs the same desktop applications and
-  leaves Desktop Mode's Plasma to SteamOS. Headless boards skip the
+  the Mac Pro. Headless boards skip the
   GUI/Steam/GPU stack, use zram, and enrol from `~/.secrets/headless-env`.
 - **Dev-ready** — Podman, Kubernetes tooling, cloud CLIs, language runtimes.
 - **Clipboard Copy** — [ShengOS Daemon](https://github.com/jasonkwh/shengos-daemon)
@@ -63,11 +62,8 @@ New machine: [docs/install.md](docs/install.md).
 ## Fleet
 
 Hosts are declared in `cluster/hosts.nix`. `isLaptop` / `isHeadless` /
-`isSteamMachine` / `isFleetHub` / `isBuilder` select the shared modules.
-x86 NixOS hosts can cross-build the Pi SD image. `isSteamMachine` marks a
-SteamOS device: it stays in the inventory and is left out of
-`nixosConfigurations`, the Prometheus scrapes, and the NixOS Hermes
-peer list. The Deck still runs Hermes and XMRig on its own.
+`isFleetHub` / `isBuilder` select the shared modules.
+x86 NixOS hosts can cross-build the Pi SD image.
 
 | Host                   | Hardware                                                                        |
 | ---------------------- | ------------------------------------------------------------------------------- |
@@ -77,7 +73,6 @@ peer list. The Deck still runs Hermes and XMRig on its own.
 | **`jasonkwh-3210m`**   | Intel Core i5-3210M · Intel HD Graphics 4000 + NVIDIA GeForce GT 640M LE · 12GB |
 | **`jasonkwh-1650v2`**  | Intel Xeon E5-1650 v2 · AMD FirePro D500 x2 · 64GB                              |
 | **`jasonkwh-bcm2711`** | Broadcom BCM2711 · Broadcom VideoCore VI · 4GB                                  |
-| **`jasonkwh-deck`**    | Valve Steam Deck (OLED) · 16GB                                                  |
 
 `jasonkwh-bcm2711` is the fleet hub — WhatsApp gateway, Prometheus,
 Alertmanager, Grafana, Loki (per-host Alloy pushes journald to it), and the
@@ -98,7 +93,7 @@ Every NixOS host exports `node_exporter` on `tailscale0:9100`; Prometheus
 scrapes those hosts via MagicDNS. Ephemeral GPU cloud boxes can
 join Tailscale as `jasonkwh-tensor-rig` / `jasonkwh-tensor-rig-N` (prefix in
 `flake.nix`); the hub refreshes Prometheus file_sd from `tailscale status`
-without adding each rig to `cluster/hosts.nix`. SteamOS machines are omitted.
+without adding each rig to `cluster/hosts.nix`.
 Alertmanager posts to the hub's Hermes webhook, which forwards the message
 to WhatsApp. Rules are in
 `misc/prometheus-fleet-rules.yml`: one WhatsApp when a host that was up

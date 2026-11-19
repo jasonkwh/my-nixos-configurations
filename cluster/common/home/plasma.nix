@@ -1,5 +1,4 @@
-# NixOS Plasma session. SteamOS already runs Desktop Mode, so
-# isSteamMachine hosts do not import this.
+# NixOS Plasma session.
 { config, ... }:
 
 {

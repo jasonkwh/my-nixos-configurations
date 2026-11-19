@@ -1,19 +1,15 @@
-# Desktop applications and user config. Imported for every !isHeadless host,
-# including SteamOS. Plasma itself lives in plasma.nix.
+# Desktop applications and user config. Imported for every !isHeadless host.
+# Plasma itself lives in plasma.nix.
 {
   config,
-  osConfig ? null,
+  osConfig,
   pkgs,
   lib,
   ...
 }:
 
 let
-  # NixOS Hermes is a system service. On SteamOS it is the user service.
-  enableHermes =
-    if builtins.isAttrs osConfig
-    then osConfig.services.hermes-agent.enable or false
-    else (config.services.hermes-agent or { }).enable or false;
+  enableHermes = osConfig.services.hermes-agent.enable or false;
 in
 {
   # Skip Cursor's Sentry crash-reporter and Electron GPU crashes.

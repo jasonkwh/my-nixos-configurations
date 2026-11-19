@@ -1,5 +1,4 @@
-# Fleet Syncthing settings. NixOS runs this as the hermes user; SteamOS
-# runs it as the login user. Only the folder paths differ.
+# Fleet Syncthing settings.
 { syncthingDevices, tailscaleDomain, folderPaths }:
 
 let

@@ -30,10 +30,6 @@ jobs:
           - jasonkwh-2450m
           - jasonkwh-3210m
           - jasonkwh-bcm2711
-          - jasonkwh-deck
-        include:
-          - host: jasonkwh-deck
-            home: true
 
     steps:
       - name: Checkout repo
@@ -48,11 +44,7 @@ jobs:
       - name: Eval ${{ matrix.host }} toplevel
         run: |
           set -euo pipefail
-          if [ "${{ matrix.home }}" = "true" ]; then
-            attr="homeConfigurations.${{ matrix.host }}.activationPackage"
-          else
-            attr="nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
-          fi
+          attr="nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
           nix eval --raw ".#${attr}.drvPath" \
             | tee /tmp/drvPath
           test -s /tmp/drvPath
