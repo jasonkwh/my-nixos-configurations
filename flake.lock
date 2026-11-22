@@ -1,26 +1,5 @@
 {
   "nodes": {
-    "brave": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1795302764,
-        "narHash": "sha256-an1OpVZ8pWndQUK4GQ7mB6P9XhqCAtdU1HFTkhnBkac=",
-        "ref": "main",
-        "rev": "e8475c3ecce6e04ddb71229a63e32aa51d9f7a65",
-        "revCount": 10,
-        "type": "git",
-        "url": "https://codeberg.org/buckley310/brave-browser-nix"
-      },
-      "original": {
-        "ref": "main",
-        "type": "git",
-        "url": "https://codeberg.org/buckley310/brave-browser-nix"
-      }
-    },
     "cursor": {
       "inputs": {
         "nixpkgs": [
@@ -266,7 +245,6 @@
     },
     "root": {
       "inputs": {
-        "brave": "brave",
         "cursor": "cursor",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager_2",
@@ -283,11 +261,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795355818,
-        "narHash": "sha256-BWrfrfzqT8oCguVZvztL0PNf9Q1quFIxaz3mBrHUjvo=",
+        "lastModified": 1795357885,
+        "narHash": "sha256-z7suTi2ULjYXLdgxOP7WD8Of3qFzCEYXSsItiHNC0I0=",
         "owner": "jasonkwh",
         "repo": "shengos-daemon",
-        "rev": "f3caa79de0f45c895ee415d033b15c79cb9c93b3",
+        "rev": "bea04530213fc860c53dae8198d9f77e6ba221a4",
         "type": "github"
       },
       "original": {

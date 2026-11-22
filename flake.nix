@@ -25,10 +25,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
-    brave = {
-      url = "git+https://codeberg.org/buckley310/brave-browser-nix?ref=main";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     cursor = {
       url = "github:jasonkwh/cursor-ide-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -128,7 +124,6 @@
           { nixpkgs.hostPlatform = hostSystem; }
           inputs.hermes-agent.nixosModules.default
           inputs.shengos-daemon.nixosModules.default
-          inputs.brave.nixosModules.default
           inputs.cursor.nixosModules.default
           # Hostname comes from the hostDefs key — single source of truth.
           { networking.hostName = lib.mkOverride 900 hostName; }
